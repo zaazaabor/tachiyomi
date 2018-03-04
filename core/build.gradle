@@ -1,0 +1,16 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+dependencies {
+  api deps.kotlin.stdlib
+  api deps.rxjava
+  api deps.okhttp
+}
+
+kapt {
+  generateStubs = true
+}

@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
+android {
+  compileSdkVersion buildConfig.compileSdk
+  defaultConfig {
+    minSdkVersion buildConfig.minSdk
+    targetSdkVersion buildConfig.targetSdk
+  }
+  libraryVariants.all {
+    it.generateBuildConfig.enabled = false
+  }
+}
+
+dependencies {
+  implementation project(':core')
+  implementation deps.duktape
+
+  implementation deps.toothpick.runtime
+  kapt deps.toothpick.compiler
+}
+
+kapt {
+  generateStubs = true
+  arguments {
+    arg("toothpick_registry_package_name", "tachiyomi.core")
+  }
+}

@@ -1,0 +1,59 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+  compileSdkVersion buildConfig.compileSdk
+  defaultConfig {
+    applicationId "tachiyomi.app"
+    minSdkVersion buildConfig.minSdk
+    targetSdkVersion buildConfig.targetSdk
+    versionCode buildConfig.version.code
+    versionName buildConfig.version.name
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+}
+
+dependencies {
+  implementation project(':core')
+  implementation project(':core-android')
+  implementation project(':domain')
+  implementation project(':data')
+
+  implementation deps.support.appcompat
+  implementation deps.support.recyclerview
+
+  implementation deps.anko.commons
+  implementation deps.anko.sdk19
+  implementation deps.anko.appcompat
+  implementation deps.conductor
+
+  implementation deps.rxjava
+  implementation deps.rxandroid
+
+  implementation deps.kotlin.stdlib
+
+  implementation deps.toothpick.runtime
+  implementation deps.toothpick.smoothie
+  kapt deps.toothpick.compiler
+
+  implementation 'com.hannesdorfmann.mosby3:mvi-conductor:3.1.0'
+  implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+
+  implementation "info.android15.nucleus5:nucleus:7.0.0"
+}
+
+kapt {
+  generateStubs = true
+  arguments {
+    arg("toothpick_registry_package_name", "tachiyomi.app")
+    arg("toothpick_registry_children_package_names", "tachiyomi.data,tachiyomi.domain," +
+      "tachiyomi.core")
+  }
+}

@@ -1,0 +1,73 @@
+buildscript {
+  ext.buildConfig = [
+    'compileSdk': 27,
+    'minSdk'    : 19,
+    'targetSdk' : 27,
+    'version'   : [
+      'name': '1.0',
+      'code': 1
+    ]
+  ]
+  ext.versions = [
+    'kotlin'        : '1.2.30',
+    'coroutines'    : '0.21.2',
+    'supportLibrary': '27.0.2',
+    'okhttp'        : '3.10.0',
+    'anko'          : '0.10.4',
+    'toothpick'     : '1.1.1',
+    'rxjava'        : '2.1.8',
+    'rxandroid'     : '2.0.1',
+    'storio'        : '3.0.0',
+    'conductor'     : '2.1.4',
+    'timber'        : '4.6.1'
+  ]
+  ext.deps = [
+    'kotlin'   : [
+      'stdlib'    : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${versions.kotlin}",
+      'coroutines': [
+        'core'   : "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutines}",
+        'android': "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
+      ]
+    ],
+    'support'  : [
+      'appcompat': "com.android.support:appcompat-v7:${versions.supportLibrary}",
+      'recyclerview' : "com.android.support:recyclerview-v7:${versions.supportLibrary}"
+    ],
+    'storio'   : "com.pushtorefresh.storio3:sqlite:${versions.storio}",
+    'rxjava'   : "io.reactivex.rxjava2:rxjava:${versions.rxjava}",
+    'rxandroid': "io.reactivex.rxjava2:rxandroid:${versions.rxandroid}",
+    'toothpick': [
+      'runtime' : "com.github.stephanenicolas.toothpick:toothpick-runtime:${versions.toothpick}",
+      'smoothie': "com.github.stephanenicolas.toothpick:smoothie:${versions.toothpick}",
+      'compiler': "com.github.stephanenicolas.toothpick:toothpick-compiler:${versions.toothpick}"
+    ],
+    'anko'     : [
+      'commons'  : "org.jetbrains.anko:anko-commons:${versions.anko}",
+      'sdk19'    : "org.jetbrains.anko:anko-sdk19:${versions.anko}",
+      'appcompat': "org.jetbrains.anko:anko-appcompat-v7:${versions.anko}"
+    ],
+    'conductor': "com.bluelinelabs:conductor:${versions.conductor}",
+    'okhttp': "com.squareup.okhttp3:okhttp:${versions.okhttp}",
+    'timber': "com.jakewharton.timber:timber:${versions.timber}",
+    'duktape': "com.squareup.duktape:duktape-android:1.2.0"
+  ]
+  repositories {
+    google()
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:3.0.1'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+  }
+}
+
+allprojects {
+  repositories {
+    google()
+    jcenter()
+    maven { url 'https://jitpack.io' }
+  }
+}
+
+apply plugin: 'com.github.ben-manes.versions'
