@@ -4,7 +4,7 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 class GetCommonCategories @Inject constructor(

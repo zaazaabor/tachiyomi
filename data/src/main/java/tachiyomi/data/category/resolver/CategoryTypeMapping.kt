@@ -41,7 +41,6 @@ internal class CategoryPutResolver : DefaultPutResolver<Category>() {
 
   override fun mapToContentValues(obj: Category): ContentValues {
     return ContentValues(4).apply {
-//      put(COL_ID, if (obj.id == -1L) null else obj.id)
       put(COL_ID, obj.id.takeIf { it != -1L })
       put(COL_NAME, obj.name)
       put(COL_ORDER, obj.order)

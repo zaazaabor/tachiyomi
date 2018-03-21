@@ -6,11 +6,18 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
 dependencies {
+  implementation project(':core')
   implementation deps.kotlin.stdlib
   implementation deps.rxjava
 
   implementation deps.toothpick.runtime
   kapt deps.toothpick.compiler
+
+  testImplementation deps.junit
+  testImplementation deps.mockito.core
+  testImplementation deps.mockito.kotlin
+  testImplementation deps.toothpick.testing
+  kaptTest deps.toothpick.compiler
 }
 
 kapt {

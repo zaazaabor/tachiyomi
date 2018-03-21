@@ -14,7 +14,7 @@ android {
 }
 
 dependencies {
-  implementation project(':core')
+  api project(':core')
   implementation deps.duktape
 
   implementation deps.toothpick.runtime

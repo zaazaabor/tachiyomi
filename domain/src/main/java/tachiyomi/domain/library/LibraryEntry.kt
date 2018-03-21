@@ -1,9 +1,9 @@
 package tachiyomi.domain.library
 
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 
 data class LibraryEntry(
   val manga: Manga,
-  val category: Int,
+  val category: Long,
   val unread: Int
 )

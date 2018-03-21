@@ -1,9 +1,10 @@
 package tachiyomi.domain.manga.interactor
 
 import io.reactivex.Single
-import tachiyomi.domain.manga.Manga
+import tachiyomi.core.util.Optional
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.SManga
+import tachiyomi.domain.source.model.SManga
 import javax.inject.Inject
 
 class GetOrAddMangaFromSource @Inject internal constructor(
@@ -11,8 +12,16 @@ class GetOrAddMangaFromSource @Inject internal constructor(
 ) {
 
   fun interact(manga: SManga, sourceId: Long): Single<Manga> {
-    return mangaRepository.getManga(manga.url, sourceId)
-      .switchIfEmpty(Single.defer { mangaRepository.saveAndReturnNewManga(manga, sourceId) })
+    return mangaRepository.getManga(manga.key, sourceId)
+      .take(1)
+      .singleOrError()
+      .flatMap { optional ->
+        if (optional is Optional.Some) {
+          Single.just(optional.value)
+        } else {
+          mangaRepository.saveAndReturnNewManga(manga, sourceId)
+        }
+      }
   }
 
 }

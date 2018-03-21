@@ -7,7 +7,7 @@ import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.library.LibraryEntry
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 
 internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryEntry>() {
 
@@ -52,10 +52,10 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryEntry>() {
     val viewer = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_VIEWER))
     val flags = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_FLAGS))
 
-    val manga = Manga(id, source, url, artist, author, description, genre, title, status,
-      cover, favorite, lastUpdate, initialized, viewer, flags)
+    val manga = Manga(id, source, url, artist, author, description, genre, title,
+      status, cover, favorite, lastUpdate, initialized, viewer, flags)
 
-    val category = cursor.getInt(cursor.getColumnIndex("a_category"))
+    val category = cursor.getLong(cursor.getColumnIndex("a_category"))
     val unread = cursor.getInt(cursor.getColumnIndex("a_unread"))
 
     return LibraryEntry(manga, category, unread)

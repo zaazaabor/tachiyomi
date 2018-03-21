@@ -1,6 +1,7 @@
 package tachiyomi.data.db
 
 import android.database.sqlite.SQLiteOpenHelper
+import com.pushtorefresh.storio3.Optional
 import com.pushtorefresh.storio3.Queries
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
@@ -12,7 +13,7 @@ import tachiyomi.data.chapter.model.Chapter
 import tachiyomi.data.chapter.resolver.ChapterTypeMapping
 import tachiyomi.data.manga.resolver.MangaTypeMapping
 import tachiyomi.domain.category.Category
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 
 fun SQLiteOpenHelper.wrapDb(): StorIOSQLite {
   return DefaultStorIOSQLite.builder()
@@ -57,4 +58,8 @@ fun PreparedDelete.Builder.withIds(
     .whereArgs(*ids.toTypedArray())
     .build()
   )
+}
+
+fun <T> Optional<T>.toCoreOptional(): tachiyomi.core.util.Optional<T> {
+  return tachiyomi.core.util.Optional.of(orNull())
 }

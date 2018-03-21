@@ -6,7 +6,7 @@ import com.pushtorefresh.storio3.sqlite.operations.put.PutResolver
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 
 internal class MangaFavoritePutResolver : PutResolver<Manga>() {
 

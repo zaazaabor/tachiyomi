@@ -12,14 +12,15 @@ import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.library.resolver.LibraryMangaGetResolver
 import tachiyomi.data.manga.resolver.MangaFavoritePutResolver
 import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.domain.library.LibraryCategory
+import tachiyomi.domain.category.repository.CategoryRepository
 import tachiyomi.domain.library.LibraryEntry
 import tachiyomi.domain.library.repository.LibraryRepository
-import tachiyomi.domain.manga.Manga
+import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 internal class LibraryRepositoryImpl @Inject constructor(
-  private val storio: StorIOSQLite
+  private val storio: StorIOSQLite,
+  private val categoryRepository: CategoryRepository
 ) : LibraryRepository {
 
   override fun getLibraryManga(): Flowable<List<Manga>> {
@@ -46,10 +47,6 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.BUFFER)
-  }
-
-  override fun getLibraryByCategory(): Flowable<List<LibraryCategory>> {
-    return Flowable.empty()
   }
 
   override fun addToLibrary(manga: Manga): Completable {

@@ -10,7 +10,6 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.domain.manga.Manga
 import tachiyomi.data.manga.table.MangaTable.COL_ARTIST
 import tachiyomi.data.manga.table.MangaTable.COL_AUTHOR
 import tachiyomi.data.manga.table.MangaTable.COL_COVER
@@ -27,6 +26,7 @@ import tachiyomi.data.manga.table.MangaTable.COL_TITLE
 import tachiyomi.data.manga.table.MangaTable.COL_URL
 import tachiyomi.data.manga.table.MangaTable.COL_VIEWER
 import tachiyomi.data.manga.table.MangaTable.TABLE
+import tachiyomi.domain.manga.model.Manga
 
 internal class MangaTypeMapping : SQLiteTypeMapping<Manga>(
   MangaPutResolver(),
@@ -52,13 +52,13 @@ internal class MangaPutResolver : DefaultPutResolver<Manga>() {
 
   override fun mapToContentValues(obj: Manga): ContentValues {
     return ContentValues(15).apply {
-      put(COL_ID, obj.id)
+      put(COL_ID, obj.id.takeIf { it != -1L })
       put(COL_SOURCE, obj.source)
-      put(COL_URL, obj.url)
+      put(COL_URL, obj.key)
       put(COL_ARTIST, obj.artist)
       put(COL_AUTHOR, obj.author)
       put(COL_DESCRIPTION, obj.description)
-      put(COL_GENRE, obj.genre)
+      put(COL_GENRE, obj.genres)
       put(COL_TITLE, obj.title)
       put(COL_STATUS, obj.status)
       put(COL_COVER, obj.cover)
@@ -89,7 +89,8 @@ internal class MangaGetResolver : DefaultGetResolver<Manga>() {
     val viewer = cursor.getInt(cursor.getColumnIndex(COL_VIEWER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
 
-    return Manga(id, source, url, artist, author, description, genre, title, status,
+    return Manga(id, source, url, artist, author, description, genre,
+      title, status,
       cover, favorite, lastUpdate, initialized, viewer, flags)
   }
 }

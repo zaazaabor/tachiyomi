@@ -11,6 +11,8 @@ android {
     targetSdkVersion buildConfig.targetSdk
     versionCode buildConfig.version.code
     versionName buildConfig.version.name
+
+    vectorDrawables.useSupportLibrary = true
   }
   buildTypes {
     release {
@@ -26,12 +28,11 @@ dependencies {
   implementation project(':domain')
   implementation project(':data')
 
+  implementation deps.support.design
   implementation deps.support.appcompat
   implementation deps.support.recyclerview
+  implementation deps.support.card
 
-  implementation deps.anko.commons
-  implementation deps.anko.sdk19
-  implementation deps.anko.appcompat
   implementation deps.conductor
 
   implementation deps.rxjava
@@ -43,10 +44,8 @@ dependencies {
   implementation deps.toothpick.smoothie
   kapt deps.toothpick.compiler
 
-  implementation 'com.hannesdorfmann.mosby3:mvi-conductor:3.1.0'
-  implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
-
-  implementation "info.android15.nucleus5:nucleus:7.0.0"
+  implementation deps.materialDimens
+  implementation deps.materialDialog
 }
 
 kapt {
@@ -56,4 +55,8 @@ kapt {
     arg("toothpick_registry_children_package_names", "tachiyomi.data,tachiyomi.domain," +
       "tachiyomi.core")
   }
+}
+
+androidExtensions {
+  experimental = true
 }

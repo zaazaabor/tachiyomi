@@ -1,30 +1,109 @@
 package tachiyomi.ui
 
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
-import com.bluelinelabs.conductor.ChangeHandlerFrameLayout
+import android.support.v7.graphics.drawable.DrawerArrowDrawable
 import com.bluelinelabs.conductor.Conductor
+import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.Router
-import com.bluelinelabs.conductor.RouterTransaction
-import org.jetbrains.anko.custom.ankoView
-import org.jetbrains.anko.linearLayout
-import tachiyomi.ui.category.CategoryController
+import kotlinx.android.synthetic.main.main_activity.*
+import tachiyomi.app.R
+import tachiyomi.ui.base.withFadeTransaction
+import tachiyomi.ui.library.LibraryController
 
 class MainActivity : AppCompatActivity() {
 
   private lateinit var router: Router
 
+  private var drawerArrow: DrawerArrowDrawable? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    linearLayout {
-      val container = ankoView(::ChangeHandlerFrameLayout, 0) {
+    // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
+    if (!isTaskRoot) {
+      finish()
+      return
+    }
 
+    // Init view
+    setContentView(R.layout.main_activity)
+    setSupportActionBar(toolbar)
+
+    // Init conductor
+    router = Conductor.attachRouter(this, controller_container, savedInstanceState)
+
+    // Set toolbar nav icon
+    drawerArrow = DrawerArrowDrawable(this)
+    drawerArrow?.color = Color.WHITE
+    toolbar.navigationIcon = drawerArrow
+
+    toolbar.setNavigationOnClickListener {
+      if (router.backstackSize <= 1) {
+        drawer.openDrawer(GravityCompat.START)
+      } else {
+        onBackPressed()
       }
-      router = Conductor.attachRouter(this@MainActivity, container, savedInstanceState)
-      if (!router.hasRootController()) {
-        router.setRoot(RouterTransaction.with(CategoryController()))
+    }
+
+    nav_view.setNavigationItemSelectedListener { item ->
+      val id = item.itemId
+
+      val currentRoot = router.backstack.firstOrNull()
+      if (currentRoot?.tag()?.toIntOrNull() != id) {
+        when (id) {
+          R.id.nav_drawer_library -> setRoot(LibraryController(), id)
+//          R.id.nav_drawer_recent_updates -> setRoot(RecentChaptersController(), id)
+//          R.id.nav_drawer_recently_read -> setRoot(RecentlyReadController(), id)
+//          R.id.nav_drawer_catalogues -> setRoot(CatalogueController(), id)
+//          R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
+//          R.id.nav_drawer_downloads -> {
+//            router.pushController(DownloadController().withFadeTransaction())
+//          }
+//          R.id.nav_drawer_settings -> {
+//            router.pushController(SettingsMainController().withFadeTransaction())
+//          }
+        }
       }
+      drawer.closeDrawer(GravityCompat.START)
+      true
+    }
+
+    if (!router.hasRootController()) {
+      // Set start screen
+      if (!handleIntentAction(intent)) {
+        setSelectedDrawerItem(R.id.nav_drawer_library)
+      }
+    }
+  }
+
+  override fun onDestroy() {
+    nav_view.setNavigationItemSelectedListener(null)
+    toolbar.setNavigationOnClickListener(null)
+    super.onDestroy()
+  }
+
+  private fun setRoot(controller: Controller, id: Int) {
+    router.setRoot(controller.withFadeTransaction().tag(id.toString()))
+  }
+
+  private fun setSelectedDrawerItem(itemId: Int) {
+    if (!isFinishing) {
+      nav_view.setCheckedItem(itemId)
+      nav_view.menu.performIdentifierAction(itemId, 0)
+    }
+  }
+
+  private fun handleIntentAction(intent: Intent): Boolean {
+    return false // TODO
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    if (!handleIntentAction(intent)) {
+      super.onNewIntent(intent)
     }
   }
 
