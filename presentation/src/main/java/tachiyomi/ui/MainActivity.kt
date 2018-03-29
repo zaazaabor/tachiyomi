@@ -12,6 +12,7 @@ import com.bluelinelabs.conductor.Router
 import kotlinx.android.synthetic.main.main_activity.*
 import tachiyomi.app.R
 import tachiyomi.ui.base.withFadeTransaction
+import tachiyomi.ui.catalogs.CatalogsController
 import tachiyomi.ui.library.LibraryController
 
 class MainActivity : AppCompatActivity() {
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
           R.id.nav_drawer_library -> setRoot(LibraryController(), id)
 //          R.id.nav_drawer_recent_updates -> setRoot(RecentChaptersController(), id)
 //          R.id.nav_drawer_recently_read -> setRoot(RecentlyReadController(), id)
-//          R.id.nav_drawer_catalogues -> setRoot(CatalogueController(), id)
+          R.id.nav_drawer_catalogues -> setRoot(CatalogsController(), id)
 //          R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
 //          R.id.nav_drawer_downloads -> {
 //            router.pushController(DownloadController().withFadeTransaction())
@@ -112,4 +113,5 @@ class MainActivity : AppCompatActivity() {
       super.onBackPressed()
     }
   }
+
 }

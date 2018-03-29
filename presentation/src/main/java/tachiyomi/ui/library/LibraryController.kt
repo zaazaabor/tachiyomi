@@ -4,19 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import tachiyomi.applicationScope
-import tachiyomi.ui.base.MvpController
-import toothpick.Toothpick
+import tachiyomi.ui.base.MvpScopedController
 
-class LibraryController : MvpController<LibraryPresenter>() {
+class LibraryController : MvpScopedController<LibraryPresenter>() {
 
-  private val scope = applicationScope(this).also {
-    it.installModules(LibraryModule(this))
-  }
+  override fun getPresenterClass() = LibraryPresenter::class.java
 
-  override fun createPresenter(): LibraryPresenter {
-    return scope.getInstance(LibraryPresenter::class.java)
-  }
+  override fun getModule() = LibraryModule(this)
 
   //===========================================================================
   // ~ Lifecycle
@@ -29,11 +23,6 @@ class LibraryController : MvpController<LibraryPresenter>() {
   ): View {
     presenter // TODO forcing presenter creation
     return View(container.context) // TODO
-  }
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
   }
 
 }

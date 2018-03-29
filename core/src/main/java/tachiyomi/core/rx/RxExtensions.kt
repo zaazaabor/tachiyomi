@@ -1,4 +1,4 @@
-package tachiyomi.core.util
+package tachiyomi.core.rx
 
 import io.reactivex.disposables.Disposable
 import io.reactivex.internal.disposables.DisposableContainer

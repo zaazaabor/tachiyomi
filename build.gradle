@@ -11,7 +11,8 @@ buildscript {
   ext.versions = [
     'kotlin'        : '1.2.30',
     'coroutines'    : '0.21.2',
-    'supportLibrary': '27.0.2',
+    'supportLibrary': '27.1.0',
+    'constraint'    : '1.0.2',
     'okhttp'        : '3.10.0',
     'toothpick'     : '1.1.3',
     'rxjava'        : '2.1.8',
@@ -38,6 +39,7 @@ buildscript {
       'recyclerview' : "com.android.support:recyclerview-v7:${versions.supportLibrary}",
       'card': "com.android.support:cardview-v7:${versions.supportLibrary}"
     ],
+    'constraint': "com.android.support.constraint:constraint-layout:${versions.constraint}",
     'storio'   : "com.pushtorefresh.storio3:sqlite:${versions.storio}",
     'rxjava'   : "io.reactivex.rxjava2:rxjava:${versions.rxjava}",
     'rxandroid': "io.reactivex.rxjava2:rxandroid:${versions.rxandroid}",
@@ -64,7 +66,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.0.1'
+    classpath 'com.android.tools.build:gradle:3.1.0'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
   }

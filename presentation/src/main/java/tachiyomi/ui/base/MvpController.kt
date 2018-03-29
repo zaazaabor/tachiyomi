@@ -8,10 +8,11 @@ abstract class MvpController<out P : BasePresenter>(
 
   val presenter: P by lazy { createPresenter() }
 
+  abstract fun createPresenter(): P
+
   override fun onDestroy() {
-    presenter.destroy()
     super.onDestroy()
+    presenter.destroy()
   }
 
-  abstract fun createPresenter(): P
 }

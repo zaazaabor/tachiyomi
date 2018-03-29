@@ -36,6 +36,6 @@ class App : Application() {
 
 object AppScope
 
-fun applicationScope(vararg any: Any): Scope {
+fun openApplicationScope(vararg any: Any): Scope {
   return Toothpick.openScopes(AppScope, any)
 }

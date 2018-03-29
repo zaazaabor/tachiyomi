@@ -32,6 +32,7 @@ dependencies {
   implementation deps.support.appcompat
   implementation deps.support.recyclerview
   implementation deps.support.card
+  implementation deps.constraint
 
   implementation deps.conductor
 

@@ -8,6 +8,7 @@ import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDelete
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDeleteByQuery
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
+import tachiyomi.core.rx.RxOptional
 import tachiyomi.data.category.resolver.CategoryTypeMapping
 import tachiyomi.data.chapter.model.Chapter
 import tachiyomi.data.chapter.resolver.ChapterTypeMapping
@@ -60,6 +61,6 @@ fun PreparedDelete.Builder.withIds(
   )
 }
 
-fun <T> Optional<T>.toCoreOptional(): tachiyomi.core.util.Optional<T> {
-  return tachiyomi.core.util.Optional.of(orNull())
+fun <T> Optional<T>.toRxOptional(): RxOptional<T> {
+  return RxOptional.of(orNull())
 }

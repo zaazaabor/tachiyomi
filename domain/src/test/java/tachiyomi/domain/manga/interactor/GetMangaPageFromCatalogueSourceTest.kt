@@ -14,7 +14,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnitRunner
-import tachiyomi.core.util.Optional
+import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.CatalogueSource
@@ -55,13 +55,13 @@ class GetMangaPageFromCatalogueSourceTest {
     `when`(source.fetchMangaList(anyInt())).thenReturn(sourceMangaPage)
 
     `when`(mangaRepository.getManga(eq("url1"), anyLong()))
-      .thenReturn(Flowable.just(Optional.of(dbManga1)))
+      .thenReturn(Flowable.just(RxOptional.of(dbManga1)))
 
     `when`(mangaRepository.getManga(eq("url2"), anyLong()))
-      .thenReturn(Flowable.just(Optional.None))
+      .thenReturn(Flowable.just(RxOptional.None))
 
     `when`(mangaRepository.getManga(eq("url3"), anyLong()))
-      .thenReturn(Flowable.just(Optional.None))
+      .thenReturn(Flowable.just(RxOptional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga1), anyLong()))
       .thenReturn(Single.just(dbManga1))

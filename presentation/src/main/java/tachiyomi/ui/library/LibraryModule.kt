@@ -7,4 +7,5 @@ class LibraryModule(private val controller: LibraryController) : Module() {
   init {
     bind(LibraryPresenter::class.java).singletonInScope()
   }
+
 }
