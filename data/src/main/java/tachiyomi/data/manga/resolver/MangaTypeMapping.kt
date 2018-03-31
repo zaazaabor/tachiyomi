@@ -19,11 +19,11 @@ import tachiyomi.data.manga.table.MangaTable.COL_FLAGS
 import tachiyomi.data.manga.table.MangaTable.COL_GENRE
 import tachiyomi.data.manga.table.MangaTable.COL_ID
 import tachiyomi.data.manga.table.MangaTable.COL_INITIALIZED
+import tachiyomi.data.manga.table.MangaTable.COL_KEY
 import tachiyomi.data.manga.table.MangaTable.COL_LAST_UPDATE
 import tachiyomi.data.manga.table.MangaTable.COL_SOURCE
 import tachiyomi.data.manga.table.MangaTable.COL_STATUS
 import tachiyomi.data.manga.table.MangaTable.COL_TITLE
-import tachiyomi.data.manga.table.MangaTable.COL_URL
 import tachiyomi.data.manga.table.MangaTable.COL_VIEWER
 import tachiyomi.data.manga.table.MangaTable.TABLE
 import tachiyomi.domain.manga.model.Manga
@@ -54,12 +54,12 @@ internal class MangaPutResolver : DefaultPutResolver<Manga>() {
     return ContentValues(15).apply {
       put(COL_ID, obj.id.takeIf { it != -1L })
       put(COL_SOURCE, obj.source)
-      put(COL_URL, obj.key)
+      put(COL_KEY, obj.key)
+      put(COL_TITLE, obj.title)
       put(COL_ARTIST, obj.artist)
       put(COL_AUTHOR, obj.author)
       put(COL_DESCRIPTION, obj.description)
       put(COL_GENRE, obj.genres)
-      put(COL_TITLE, obj.title)
       put(COL_STATUS, obj.status)
       put(COL_COVER, obj.cover)
       put(COL_FAVORITE, obj.favorite)
@@ -75,12 +75,12 @@ internal class MangaGetResolver : DefaultGetResolver<Manga>() {
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): Manga {
     val id = cursor.getLong(cursor.getColumnIndex(COL_ID))
     val source = cursor.getLong(cursor.getColumnIndex(COL_SOURCE))
-    val url = cursor.getString(cursor.getColumnIndex(COL_URL))
+    val key = cursor.getString(cursor.getColumnIndex(COL_KEY))
+    val title = cursor.getString(cursor.getColumnIndex(COL_TITLE))
     val artist = cursor.getString(cursor.getColumnIndex(COL_ARTIST))
     val author = cursor.getString(cursor.getColumnIndex(COL_AUTHOR))
     val description = cursor.getString(cursor.getColumnIndex(COL_DESCRIPTION))
     val genre = cursor.getString(cursor.getColumnIndex(COL_GENRE))
-    val title = cursor.getString(cursor.getColumnIndex(COL_TITLE))
     val status = cursor.getInt(cursor.getColumnIndex(COL_STATUS))
     val cover = cursor.getString(cursor.getColumnIndex(COL_COVER))
     val favorite = cursor.getInt(cursor.getColumnIndex(COL_FAVORITE)) == 1
@@ -89,9 +89,10 @@ internal class MangaGetResolver : DefaultGetResolver<Manga>() {
     val viewer = cursor.getInt(cursor.getColumnIndex(COL_VIEWER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
 
-    return Manga(id, source, url, artist, author, description, genre,
-      title, status,
-      cover, favorite, lastUpdate, initialized, viewer, flags)
+    return Manga(
+      id, source, key, title, artist, author, description, genre, status,
+      cover, favorite, lastUpdate, initialized, viewer, flags
+    )
   }
 }
 

@@ -20,6 +20,8 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
 
   override fun getPresenterClass() = CatalogsPresenter::class.java
 
+  override fun getTitle() = resources?.getString(R.string.label_catalogues)
+
   //===========================================================================
   // ~ Lifecycle
   //===========================================================================

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import tachiyomi.app.R
 import tachiyomi.ui.base.MvpScopedController
 
 class LibraryController : MvpScopedController<LibraryPresenter>() {
@@ -11,6 +12,8 @@ class LibraryController : MvpScopedController<LibraryPresenter>() {
   override fun getPresenterClass() = LibraryPresenter::class.java
 
   override fun getModule() = LibraryModule(this)
+
+  override fun getTitle() = resources?.getString(R.string.label_library)
 
   //===========================================================================
   // ~ Lifecycle

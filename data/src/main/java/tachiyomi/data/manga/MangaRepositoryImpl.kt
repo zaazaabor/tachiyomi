@@ -9,8 +9,8 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.data.db.toRxOptional
+import tachiyomi.data.manga.resolver.MangaDetailsUpdatePutResolver
 import tachiyomi.data.manga.resolver.MangaFlagsPutResolver
-import tachiyomi.data.manga.resolver.NewMangaPutResolver
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.data.manga.util.asDbManga
 import tachiyomi.domain.manga.model.Manga
@@ -40,7 +40,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
         .table(MangaTable.TABLE)
-        .where("${MangaTable.COL_URL} = ? AND ${MangaTable.COL_SOURCE} = ?")
+        .where("${MangaTable.COL_KEY} = ? AND ${MangaTable.COL_SOURCE} = ?")
         .whereArgs(key, sourceId)
         .build())
       .prepare()
@@ -48,11 +48,18 @@ internal class MangaRepositoryImpl @Inject constructor(
       .map { it.toRxOptional() }
   }
 
+  override fun updateMangaDetails(manga: Manga): Completable {
+    return storio.put()
+      .`object`(manga)
+      .withPutResolver(MangaDetailsUpdatePutResolver())
+      .prepare()
+      .asRxCompletable()
+  }
+
   override fun saveAndReturnNewManga(manga: SManga, sourceId: Long): Single<Manga> {
     val newManga = manga.asDbManga(sourceId)
     return storio.put()
       .`object`(newManga)
-      .withPutResolver(NewMangaPutResolver())
       .prepare()
       .asRxSingle()
       .map { newManga.copy(id = it.insertedId()!!) }

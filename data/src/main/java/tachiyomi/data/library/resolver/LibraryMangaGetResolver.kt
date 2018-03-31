@@ -38,7 +38,7 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryEntry>() {
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryEntry {
     val id = cursor.getLong(cursor.getColumnIndex(MangaTable.COL_ID))
     val source = cursor.getLong(cursor.getColumnIndex(MangaTable.COL_SOURCE))
-    val url = cursor.getString(cursor.getColumnIndex(MangaTable.COL_URL))
+    val url = cursor.getString(cursor.getColumnIndex(MangaTable.COL_KEY))
     val artist = cursor.getString(cursor.getColumnIndex(MangaTable.COL_ARTIST))
     val author = cursor.getString(cursor.getColumnIndex(MangaTable.COL_AUTHOR))
     val description = cursor.getString(cursor.getColumnIndex(MangaTable.COL_DESCRIPTION))

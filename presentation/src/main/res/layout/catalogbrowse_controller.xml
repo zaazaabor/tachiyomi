@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<FrameLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+  <tachiyomi.widget.AutofitRecyclerView
+    android:id="@+id/catalogbrowse_recycler"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnWidth="140dp"
+    android:clipToPadding="false"
+    style="@style/Theme.Widget.GridView.Catalogue"
+    tools:listitem="@layout/manga_grid_item"/>
+
+  <ProgressBar
+    android:id="@+id/catalogbrowse_progress"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"/>
+
+</FrameLayout>

@@ -2,6 +2,7 @@ package tachiyomi.ui.catalogs
 
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
+import tachiyomi.core.rx.addTo
 import tachiyomi.domain.source.CatalogueSource
 import tachiyomi.domain.source.interactor.GetCatalogueSources
 import tachiyomi.ui.base.BasePresenter
@@ -24,6 +25,7 @@ class CatalogsPresenter @Inject constructor(
     catalogueChanges.scan(initialState, ::reduce)
       .logOnNext()
       .subscribe(stateRelay::onNext)
+      .addTo(disposables)
   }
 
 }

@@ -15,6 +15,8 @@ interface MangaRepository {
 
   fun getManga(key: String, sourceId: Long): Flowable<RxOptional<Manga>>
 
+  fun updateMangaDetails(manga: Manga): Completable
+
   fun saveAndReturnNewManga(manga: SManga, sourceId: Long): Single<Manga>
 
   fun deleteNonFavorite(): Completable

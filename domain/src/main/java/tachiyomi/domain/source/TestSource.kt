@@ -1,8 +1,8 @@
 package tachiyomi.domain.source
 
-import tachiyomi.domain.source.model.SMangasPage
 import tachiyomi.domain.source.model.SChapter
 import tachiyomi.domain.source.model.SManga
+import tachiyomi.domain.source.model.SMangasPage
 import tachiyomi.domain.source.model.SPage
 
 class TestSource : CatalogueSource {
@@ -32,6 +32,8 @@ class TestSource : CatalogueSource {
   }
 
   private fun getTestManga(): List<SManga> {
+    val list = mutableListOf<SManga>()
+
     val manga1 = SManga(
       "1",
       "Manga 1",
@@ -43,10 +45,13 @@ class TestSource : CatalogueSource {
       "",
       false
     )
-    val manga2 = manga1.copy(key = "2", title = "Manga 2")
-    val manga3 = manga1.copy(key = "3", title = "Manga 3")
+    list += manga1
 
-    return listOf(manga1, manga2, manga3)
+    for (i in 2..20) {
+      list += manga1.copy(key = "$i", title = "Manga $i")
+    }
+
+    return list
   }
 
   private fun getTestChapters(): List<SChapter> {

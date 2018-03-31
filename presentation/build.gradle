@@ -47,6 +47,10 @@ dependencies {
 
   implementation deps.materialDimens
   implementation deps.materialDialog
+
+  implementation deps.glide.core
+  implementation deps.glide.okhttp
+  kapt deps.glide.compiler
 }
 
 kapt {

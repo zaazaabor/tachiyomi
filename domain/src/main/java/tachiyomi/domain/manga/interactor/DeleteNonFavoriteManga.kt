@@ -4,7 +4,7 @@ import io.reactivex.Completable
 import tachiyomi.domain.manga.repository.MangaRepository
 import javax.inject.Inject
 
-class DeleteNonFavoriteManga @Inject constructor(
+class DeleteNonFavoriteManga @Inject internal constructor(
   private val mangaRepository: MangaRepository
 ) {
 

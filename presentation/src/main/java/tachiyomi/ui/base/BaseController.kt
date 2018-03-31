@@ -2,8 +2,11 @@ package tachiyomi.ui.base
 
 import android.os.Bundle
 import android.support.annotation.CallSuper
+import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.bluelinelabs.conductor.Controller
+import com.bluelinelabs.conductor.ControllerChangeHandler
+import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RestoreViewOnCreateController
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -21,10 +24,22 @@ abstract class BaseController(
   override val containerView: View?
     get() = view
 
+  private var _title: String? = null
+
   init {
     addLifecycleListener(object : LifecycleListener() {
       override fun postCreateView(controller: Controller, view: View) {
         onViewCreated(view)
+      }
+
+      override fun onChangeStart(
+        controller: Controller,
+        changeHandler: ControllerChangeHandler,
+        changeType: ControllerChangeType
+      ) {
+        if (changeType.isEnter) {
+          setToolbarTitle()
+        }
       }
     })
   }
@@ -41,6 +56,27 @@ abstract class BaseController(
     super.onDestroyView(view)
     viewDisposables.dispose()
     clearFindViewByIdCache()
+  }
+
+  open fun getTitle(): String? {
+    return _title
+  }
+
+  fun setTitle(title: String) {
+    if (_title == title) return
+    _title = title
+
+    val lastTransaction = router.backstack.lastOrNull { it.controller() is BaseController }
+    if (this == lastTransaction?.controller()) {
+      setToolbarTitle()
+    }
+  }
+
+  private fun setToolbarTitle() {
+    val title = getTitle()
+    if (title != null) {
+      (activity as? AppCompatActivity)?.supportActionBar?.title = title
+    }
   }
 
   fun <T> Observable<T>.subscribeWithView(onNext: (T) -> Unit): Disposable {
