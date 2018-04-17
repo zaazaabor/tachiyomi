@@ -1,54 +1,137 @@
 package tachiyomi.ui.catalogbrowse
 
+import android.support.v7.recyclerview.extensions.AsyncDifferConfig
+import android.support.v7.recyclerview.extensions.AsyncListDiffer
+import android.support.v7.util.AdapterListUpdateCallback
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import tachiyomi.app.R
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.ui.base.BaseListAdapter
 import tachiyomi.widget.AutofitRecyclerView
 
 class CatalogBrowseAdapter(
   val controller: CatalogBrowseController
-) : BaseListAdapter<Manga, MangaHolder>(Diff()) {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-//  init {
-//    setHasStableIds(true)
-//  }
+  private val listener = controller as? Listener
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MangaHolder {
-    val isListMode = (parent as? AutofitRecyclerView)?.layoutManager !is GridLayoutManager
-    val inflater = LayoutInflater.from(parent.context)
-    return if (!isListMode) {
-      val view = inflater.inflate(R.layout.manga_grid_item, parent, false)
-      MangaGridHolder(view, this)
+  private val differ = AsyncListDiffer(AdapterListUpdateCallback(this),
+    AsyncDifferConfig.Builder(Diff()).build())
+
+  private var showProgress = false
+
+  private var showEndReached = false
+
+  override fun getItemCount(): Int {
+    return differ.currentList.size + if (showProgress || showEndReached) 1 else 0
+  }
+
+  fun getItem(position: Int): Manga {
+    return differ.currentList[position]
+  }
+
+  fun getItemOrNull(position: Int): Manga? {
+    return differ.currentList.getOrNull(position)
+  }
+
+  fun submitList(mangas: List<Manga>) {
+    differ.submitList(mangas)
+  }
+
+  fun setLoading(visible: Boolean) {
+    if (showProgress == visible) return
+
+    showProgress = visible
+    setFooterVisibility(visible)
+  }
+
+  fun setEndReached(endReached: Boolean) {
+    if (showEndReached == endReached) return
+
+    showEndReached = endReached
+    setFooterVisibility(endReached)
+  }
+
+  private fun setFooterVisibility(visible: Boolean) {
+    val footerPosition = differ.currentList.size
+    if (visible) {
+      notifyItemInserted(footerPosition)
     } else {
-      val view = inflater.inflate(R.layout.manga_list_item, parent, false)
-      MangaListHolder(view, this)
+      notifyItemRemoved(footerPosition)
     }
   }
 
-  override fun onBindViewHolder(holder: MangaHolder, position: Int) {
+  override fun getItemViewType(position: Int): Int {
+    return when (getItemOrNull(position)) {
+      is Manga -> MANGA_VIEWTYPE
+      else -> FOOTER_VIEWTYPE
+    }
+  }
+
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    val inflater = LayoutInflater.from(parent.context)
+    return when (viewType) {
+      MANGA_VIEWTYPE -> {
+        val isListMode = (parent as? AutofitRecyclerView)?.layoutManager !is GridLayoutManager
+        if (!isListMode) {
+          val view = inflater.inflate(R.layout.manga_grid_item, parent, false)
+          MangaGridHolder(view, this)
+        } else {
+          val view = inflater.inflate(R.layout.manga_list_item, parent, false)
+          MangaListHolder(view, this)
+        }
+      }
+      FOOTER_VIEWTYPE -> {
+        val view = inflater.inflate(R.layout.catalogbrowse_footer_item, parent, false)
+        FooterHolder(view)
+      }
+      else -> error("$viewType is not a valid viewtype")
+    }
+
+  }
+
+  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
     onBindViewHolder(holder, position, emptyList())
   }
 
-  override fun onBindViewHolder(holder: MangaHolder, position: Int, payloads: List<Any>) {
-    val manga = getItem(position)
-    if (payloads.isEmpty()) {
-      holder.bind(manga)
-    } else {
-      for (payload in payloads) {
-        if (payload == CoverChange) {
+  override fun onBindViewHolder(
+    holder: RecyclerView.ViewHolder,
+    position: Int,
+    payloads: List<Any>
+  ) {
+    when (holder) {
+      is MangaHolder -> {
+        val manga = getItem(position)
+        if (payloads.isEmpty()) {
+          holder.bind(manga)
+        } else if (CoverChange in payloads) {
           holder.bindImage(manga)
         }
+      }
+      is FooterHolder -> {
+        holder.bind(showProgress, showEndReached)
       }
     }
   }
 
-//  override fun getItemId(position: Int): Long {
-//    return getItem(position).id
-//  }
+  fun handleClick(position: Int) {
+    val item = getItemOrNull(position) ?: return
+    listener?.onMangaClick(item)
+  }
+
+  fun getSpanSize(position: Int): Int? {
+    return when (getItemViewType(position)) {
+      MANGA_VIEWTYPE -> 1
+      else -> null
+    }
+  }
+
+  interface Listener {
+    fun onMangaClick(manga: Manga)
+  }
 
   private class Diff : DiffUtil.ItemCallback<Manga>() {
     override fun areItemsTheSame(oldItem: Manga, newItem: Manga): Boolean {
@@ -60,7 +143,6 @@ class CatalogBrowseAdapter(
     }
 
     override fun getChangePayload(oldItem: Manga, newItem: Manga): Any? {
-      // TODO this method isn't called in 27.1.0. Will be fixed in the next release
       return if (oldItem.cover != newItem.cover) {
         CoverChange
       } else {
@@ -70,5 +152,10 @@ class CatalogBrowseAdapter(
   }
 
   private object CoverChange
+
+  private companion object {
+    const val MANGA_VIEWTYPE = 1
+    const val FOOTER_VIEWTYPE = 2
+  }
 
 }

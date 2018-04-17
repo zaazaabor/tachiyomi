@@ -62,7 +62,7 @@ abstract class BaseController(
     return _title
   }
 
-  fun setTitle(title: String) {
+  fun requestTitle(title: String) {
     if (_title == title) return
     _title = title
 

@@ -38,6 +38,10 @@ dependencies {
 
   implementation deps.rxjava
   implementation deps.rxandroid
+  implementation deps.rxkotlin
+  implementation deps.rxbinding.platform
+  implementation deps.rxbinding.support
+  implementation deps.rxbinding.appcompat
 
   implementation deps.kotlin.stdlib
 

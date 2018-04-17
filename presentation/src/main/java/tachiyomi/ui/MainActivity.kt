@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     if (!router.hasRootController()) {
       // Set start screen
       if (!handleIntentAction(intent)) {
-        setSelectedDrawerItem(R.id.nav_drawer_library)
+        setSelectedDrawerItem(R.id.nav_drawer_catalogues)
       }
     }
     router.addChangeListener(object : ControllerChangeHandler.ControllerChangeListener {

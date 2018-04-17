@@ -12,6 +12,12 @@ class MangaGridHolder(
   private val adapter: CatalogBrowseAdapter
 ) : MangaHolder(view, adapter) {
 
+  init {
+    view.setOnClickListener {
+      adapter.handleClick(adapterPosition)
+    }
+  }
+
   override fun bind(manga: Manga) {
     // Set manga title
     title.text = manga.title

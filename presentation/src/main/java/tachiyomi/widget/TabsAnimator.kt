@@ -15,7 +15,7 @@ class TabsAnimator(val tabs: TabLayout) {
   /**
    * Whether the last state of the tab layout is shown or hidden.
    */
-  private var isLastStateShown = true
+  private var isLastStateShown = false
 
   /**
    * Animation used to expand and collapse the tab layout.

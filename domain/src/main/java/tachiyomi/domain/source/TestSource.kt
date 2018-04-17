@@ -12,13 +12,14 @@ class TestSource : CatalogueSource {
   override val lang get() = "en"
 
   override fun fetchMangaList(page: Int): SMangasPage {
-    Thread.sleep(1000)
-    return SMangasPage(getTestManga(), false)
+    Thread.sleep(1500)
+    return SMangasPage(getTestManga(page), page < 3)
   }
 
   override fun fetchMangaDetails(manga: SManga): SManga {
     Thread.sleep(1000)
-    return manga.copy(cover = "cover.jpg", initialized = true)
+    val id = manga.title.split(" ")[1]
+    return manga.copy(cover = "https://picsum.photos/300/400/?image=$id", initialized = true)
   }
 
   override fun fetchChapterList(manga: SManga): List<SChapter> {
@@ -31,12 +32,12 @@ class TestSource : CatalogueSource {
     return getTestPages()
   }
 
-  private fun getTestManga(): List<SManga> {
+  private fun getTestManga(page: Int): List<SManga> {
     val list = mutableListOf<SManga>()
-
+    val id = (page - 1) * 20 + 1
     val manga1 = SManga(
-      "1",
-      "Manga 1",
+      "$id",
+      "Manga $id",
       "",
       "",
       "",
@@ -47,8 +48,8 @@ class TestSource : CatalogueSource {
     )
     list += manga1
 
-    for (i in 2..20) {
-      list += manga1.copy(key = "$i", title = "Manga $i")
+    for (i in 1..19) {
+      list += manga1.copy(key = "${id + i}", title = "Manga ${id + i}")
     }
 
     return list

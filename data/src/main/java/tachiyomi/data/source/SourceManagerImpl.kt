@@ -16,7 +16,7 @@ class SourceManagerImpl @Inject constructor(
 
   init {
     if (BuildConfig.DEBUG) {
-      registerSource(TestSource()) // TODO temporary
+      registerSource(TestSource())
     }
   }
 
