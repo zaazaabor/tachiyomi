@@ -6,7 +6,7 @@ import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.core.util.replaceFirst
+import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.domain.manga.interactor.GetMangaPageFromCatalogueSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.model.Manga

@@ -11,6 +11,10 @@ private val DEFAULT_CACHE_CONTROL = CacheControl.Builder().maxAge(10, MINUTES).b
 private val DEFAULT_HEADERS = Headers.Builder().build()
 private val DEFAULT_BODY: RequestBody = FormBody.Builder().build()
 
+/**
+ * Builds a HTTP GET request for the given [url], allowing optional [headers] and [cache] control.
+ * Note this function does not execute the request.
+ */
 fun GET(
   url: String,
   headers: Headers = DEFAULT_HEADERS,
@@ -23,6 +27,11 @@ fun GET(
     .build()
 }
 
+/**
+ * Builds a HTTP POST request for the given [url], allowing optional [headers], [body] and [cache]
+ * control.
+ * Note this function does not execute the request.
+ */
 fun POST(
   url: String,
   headers: Headers = DEFAULT_HEADERS,

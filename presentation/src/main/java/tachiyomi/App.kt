@@ -5,7 +5,6 @@ import tachiyomi.app.BuildConfig
 import tachiyomi.app.FactoryRegistry
 import tachiyomi.app.MemberInjectorRegistry
 import tachiyomi.core.http.HttpModule
-import tachiyomi.core.js.JSModule
 import tachiyomi.data.di.DataModule
 import timber.log.Timber
 import toothpick.Scope
@@ -29,7 +28,7 @@ class App : Application() {
     MemberInjectorRegistryLocator.setRootRegistry(MemberInjectorRegistry())
 
     val scope = Toothpick.openScope(AppScope)
-    scope.installModules(SmoothieApplicationModule(this), HttpModule, JSModule, DataModule)
+    scope.installModules(SmoothieApplicationModule(this), HttpModule, DataModule)
   }
 
 }

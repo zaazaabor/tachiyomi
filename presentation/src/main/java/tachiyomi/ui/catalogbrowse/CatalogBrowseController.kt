@@ -29,7 +29,6 @@ import tachiyomi.ui.base.withFadeTransaction
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.util.visibleIf
 import tachiyomi.widget.EndlessRecyclerViewScrollListener
-import timber.log.Timber
 
 class CatalogBrowseController(
   bundle: Bundle? = null
@@ -268,7 +267,6 @@ class CatalogBrowseController(
   }
 
   override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-    Timber.w("Load more! $page , $totalItemsCount")
     presenter.loadMore()
   }
 

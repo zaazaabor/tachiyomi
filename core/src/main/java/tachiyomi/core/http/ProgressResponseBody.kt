@@ -9,6 +9,10 @@ import okio.Okio
 import okio.Source
 import java.io.IOException
 
+/**
+ * A custom response body that allows listening for the progress of the original [responseBody]
+ * through a [progressListener].
+ */
 class ProgressResponseBody(
   private val responseBody: ResponseBody,
   private val progressListener: ProgressListener
