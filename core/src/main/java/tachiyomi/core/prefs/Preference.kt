@@ -11,7 +11,7 @@ interface Preference<T> {
   /**
    * Returns the current value of this preference.
    */
-  fun get(): T?
+  fun get(): T
 
   /**
    * Sets a new [value] for this preference.

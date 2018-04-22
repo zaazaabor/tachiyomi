@@ -1,6 +1,8 @@
 package tachiyomi.data.di
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
+import tachiyomi.data.catalog.prefs.CatalogPreferences
+import tachiyomi.data.catalog.prefs.CatalogPreferencesProvider
 import tachiyomi.data.category.CategoryRepositoryImpl
 import tachiyomi.data.db.SQLite
 import tachiyomi.data.library.LibraryRepositoryImpl
@@ -21,5 +23,7 @@ object DataModule : Module() {
     bind(LibraryRepository::class.java).to(LibraryRepositoryImpl::class.java).singletonInScope()
     bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
     bind(SourceManager::class.java).to(SourceManagerImpl::class.java).singletonInScope()
+    bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
+      .providesSingletonInScope()
   }
 }

@@ -7,7 +7,7 @@ data class CatalogBrowseViewState(
   val source: CatalogueSource? = null,
   val mangas: List<Manga> = emptyList(),
   val query: String = "",
-  val isListMode: Boolean = false,
+  val isGridMode: Boolean = true,
   val isLoading: Boolean = false,
   val hasMorePages: Boolean = true,
   val error: Throwable? = null
@@ -16,7 +16,7 @@ data class CatalogBrowseViewState(
   override fun toString(): String{
     return "CatalogBrowseViewState(source=$source, mangas={size: ${mangas.size}, ids: " +
            "[${mangas.joinToString(", ") { it.id.toString() }}]}, " +
-           "query='$query', isListMode=$isListMode, isLoading=$isLoading, " +
+           "query='$query', isGridMode=$isGridMode, isLoading=$isLoading, " +
            "hasMorePages=$hasMorePages error=$error)"
   }
 }

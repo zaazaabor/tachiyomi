@@ -7,6 +7,7 @@ import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.core.stdlib.replaceFirst
+import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.domain.manga.interactor.GetMangaPageFromCatalogueSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.model.Manga
@@ -22,7 +23,8 @@ class CatalogBrowsePresenter @Inject constructor(
   private val sourceId: Long?,
   private val sourceManager: SourceManager, // TODO new use case to retrieve a catalogue?
   private val getMangaPageFromCatalogueSource: GetMangaPageFromCatalogueSource,
-  private val mangaInitializer: MangaInitializer
+  private val mangaInitializer: MangaInitializer,
+  private val catalogPreferences: CatalogPreferences
 ) : BasePresenter() {
 
   val stateRelay = BehaviorProcessor.create<CatalogBrowseViewState>()
@@ -32,7 +34,9 @@ class CatalogBrowsePresenter @Inject constructor(
   private val actionsObserver = actionsRelay.onBackpressureBuffer().share()
 
   init {
-    val initialState = CatalogBrowseViewState()
+    val gridPreference = catalogPreferences.gridMode()
+
+    val initialState = CatalogBrowseViewState(isGridMode = gridPreference.get())
 
     val mangaInitializerSubject = PublishProcessor.create<List<Manga>>().toSerialized()
 
@@ -82,7 +86,12 @@ class CatalogBrowsePresenter @Inject constructor(
       .distinctUntilChanged()
 
     val displayMode = actionsObserver.ofType(Action.SwapDisplayMode::class.java)
-      .map { Change.DisplayModeUpdate }
+      .map {
+        val newValue = !gridPreference.get()
+        gridPreference.set(newValue)
+        newValue
+      }
+      .map(Change::DisplayModeUpdate)
 
     val errorDelivered = actionsObserver.ofType(Action.ErrorDelivered::class.java)
       .map { Change.LoadingError(null) }
@@ -122,7 +131,7 @@ private sealed class Action {
 private sealed class Change {
   data class SourceUpdate(val source: CatalogueSource) : Change()
   data class PageReceived(val mangas: List<Manga>, val hasMore: Boolean) : Change()
-  object DisplayModeUpdate : Change()
+  data class DisplayModeUpdate(val isGridMode: Boolean) : Change()
   data class MangaInitialized(val manga: Manga) : Change()
   data class QueryUpdate(val query: String) : Change()
   data class Loading(val isLoading: Boolean) : Change()
@@ -134,7 +143,7 @@ private fun reduce(state: CatalogBrowseViewState, change: Change): CatalogBrowse
     is Change.SourceUpdate -> state.copy(source = change.source, mangas = emptyList())
     is Change.PageReceived -> state.copy(mangas = state.mangas + change.mangas,
       isLoading = false, hasMorePages = change.hasMore)
-    is Change.DisplayModeUpdate -> state.copy(isListMode = !state.isListMode)
+    is Change.DisplayModeUpdate -> state.copy(isGridMode = change.isGridMode)
     is Change.MangaInitialized -> state.copy(mangas = state.mangas
       .replaceFirst({ it.id == change.manga.id }, change.manga)
     )

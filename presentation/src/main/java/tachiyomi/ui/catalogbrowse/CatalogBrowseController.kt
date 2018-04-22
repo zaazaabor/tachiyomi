@@ -40,7 +40,7 @@ class CatalogBrowseController(
 
   private var menuSubscription: Disposable? = null
   private var querySubject = BehaviorSubject.create<String>()
-  private var listModeSubject = BehaviorSubject.create<Boolean>()
+  private var gridModeSubject = BehaviorSubject.create<Boolean>()
 
   constructor(sourceId: Long) : this(Bundle().apply {
     putLong(SOURCE_KEY, sourceId)
@@ -115,9 +115,9 @@ class CatalogBrowseController(
     if (state.source != null && state.source != prevState?.source) {
       renderSource(state.source)
     }
-    if (state.isListMode != prevState?.isListMode) {
-      renderLayoutManager(state.isListMode)
-      renderDisplayMode(state.isListMode)
+    if (state.isGridMode != prevState?.isGridMode) {
+      renderLayoutManager(state.isGridMode)
+      renderDisplayMode(state.isGridMode)
     }
     if (state.query != prevState?.query) {
       renderQuery(state.query)
@@ -137,7 +137,7 @@ class CatalogBrowseController(
     requestTitle(source.name)
   }
 
-  private fun renderLayoutManager(isListMode: Boolean) {
+  private fun renderLayoutManager(isGridMode: Boolean) {
     while (catalogbrowse_recycler.itemDecorationCount > 0) {
       catalogbrowse_recycler.removeItemDecorationAt(0)
     }
@@ -145,10 +145,7 @@ class CatalogBrowseController(
 
     val prevLayoutState = catalogbrowse_recycler.layoutManager?.onSaveInstanceState()
 
-    val layoutManager = if (isListMode) {
-      catalogbrowse_recycler.addItemDecoration(DividerItemDecoration(activity, VERTICAL))
-      LinearLayoutManager(activity)
-    } else {
+    val layoutManager = if (isGridMode) {
       GridLayoutManager(activity, 2).apply {
         spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
           override fun getSpanSize(position: Int): Int {
@@ -156,6 +153,9 @@ class CatalogBrowseController(
           }
         }
       }
+    } else {
+      catalogbrowse_recycler.addItemDecoration(DividerItemDecoration(activity, VERTICAL))
+      LinearLayoutManager(activity)
     }
     val endlessScroll = EndlessRecyclerViewScrollListener(layoutManager, this)
 
@@ -167,8 +167,8 @@ class CatalogBrowseController(
     catalogbrowse_recycler.adapter = adapter
   }
 
-  private fun renderDisplayMode(isListMode: Boolean) {
-    listModeSubject.onNext(isListMode)
+  private fun renderDisplayMode(isGridMode: Boolean) {
+    gridModeSubject.onNext(isGridMode)
   }
 
   private fun renderQuery(query: String) {
@@ -219,12 +219,13 @@ class CatalogBrowseController(
       }
     })
 
-    val listModeUpdates = listModeSubject
-      .doOnNext { isListMode ->
-        val icon = if (isListMode)
-          R.drawable.ic_view_module_white_24dp
-        else
+    val listModeUpdates = gridModeSubject
+      .doOnNext { isGridMode ->
+        val icon = if (isGridMode) {
           R.drawable.ic_view_list_white_24dp
+        } else {
+          R.drawable.ic_view_module_white_24dp
+        }
         displayItem.setIcon(icon)
       }
 

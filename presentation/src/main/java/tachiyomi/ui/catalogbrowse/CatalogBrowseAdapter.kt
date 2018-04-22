@@ -75,8 +75,8 @@ class CatalogBrowseAdapter(
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
       MANGA_VIEWTYPE -> {
-        val isListMode = (parent as? AutofitRecyclerView)?.layoutManager !is GridLayoutManager
-        if (!isListMode) {
+        val isGridMode = (parent as? AutofitRecyclerView)?.layoutManager is GridLayoutManager
+        if (isGridMode) {
           val view = inflater.inflate(R.layout.manga_grid_item, parent, false)
           MangaGridHolder(view, this)
         } else {

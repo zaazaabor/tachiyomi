@@ -9,35 +9,31 @@ interface PreferenceStore {
   /**
    * Returns an [String] preference for this [key].
    */
-  fun getString(key: String): Preference<String>
+  fun getString(key: String, defaultValue: String = ""): Preference<String>
 
   /**
    * Returns a [Long] preference for this [key].
    */
-  fun getLong(key: String): Preference<Long>
+  fun getLong(key: String, defaultValue: Long = 0): Preference<Long>
 
   /**
    * Returns an [Int] preference for this [key].
    */
-  fun getInt(key: String): Preference<Int>
+  fun getInt(key: String, defaultValue: Int = 0): Preference<Int>
 
   /**
    * Returns a [Float] preference for this [key].
    */
-  fun getFloat(key: String): Preference<Float>
-
-  /**
-   * Returns a [Double] preference for this [key].
-   */
-  fun getDouble(key: String): Preference<Double>
+  fun getFloat(key: String, defaultValue: Float = 0f): Preference<Float>
 
   /**
    * Returns a [Boolean] preference for this [key].
    */
-  fun getBoolean(key: String): Preference<Boolean>
+  fun getBoolean(key: String, defaultValue: Boolean = false): Preference<Boolean>
 
   /**
    * Returns a [Set<String>] preference for this [key].
    */
-  fun getStringSet(key: String): Preference<Set<String>>
+  fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Preference<Set<String>>
+
 }
