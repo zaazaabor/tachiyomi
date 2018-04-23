@@ -18,8 +18,9 @@ class TestSource : CatalogueSource {
 
   override fun fetchMangaDetails(manga: SManga): SManga {
     Thread.sleep(1000)
-    val id = manga.title.split(" ")[1]
-    return manga.copy(cover = "https://picsum.photos/300/400/?image=$id", initialized = true)
+    val noHipstersOffset = 10
+    val picId = manga.title.split(" ")[1].toInt() + noHipstersOffset
+    return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
   override fun fetchChapterList(manga: SManga): List<SChapter> {

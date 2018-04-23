@@ -55,7 +55,9 @@ class CatalogBrowsePresenter @Inject constructor(
           .map { currentPage.get() }
           .concatMap f@{ requestedPage ->
             val page = currentPage.get()
-            if (!hasNextPage.get() || requestedPage < page) return@f Flowable.empty<Change>()
+            if (!hasNextPage.get()) return@f Flowable.just(Change.EndReached)
+            if (requestedPage < page) return@f Flowable.empty<Change>()
+
 
             getMangaPageFromCatalogueSource.interact(source, page)
               .subscribeOn(Schedulers.io())
@@ -64,7 +66,7 @@ class CatalogBrowsePresenter @Inject constructor(
                 hasNextPage.set(mangasPage.hasNextPage)
                 currentPage.incrementAndGet()
               }
-              .map<Change> { Change.PageReceived(it.mangas, it.hasNextPage) }
+              .map<Change> { Change.PageReceived(it.mangas) }
               .toFlowable()
               .onErrorReturn(Change::LoadingError)
               .startWith(Change.Loading(true))
@@ -130,19 +132,21 @@ private sealed class Action {
 
 private sealed class Change {
   data class SourceUpdate(val source: CatalogueSource) : Change()
-  data class PageReceived(val mangas: List<Manga>, val hasMore: Boolean) : Change()
+  data class PageReceived(val mangas: List<Manga>) : Change()
   data class DisplayModeUpdate(val isGridMode: Boolean) : Change()
   data class MangaInitialized(val manga: Manga) : Change()
   data class QueryUpdate(val query: String) : Change()
   data class Loading(val isLoading: Boolean) : Change()
   data class LoadingError(val error: Throwable?) : Change()
+  object EndReached : Change()
 }
 
 private fun reduce(state: CatalogBrowseViewState, change: Change): CatalogBrowseViewState {
   return when (change) {
-    is Change.SourceUpdate -> state.copy(source = change.source, mangas = emptyList())
+    is Change.SourceUpdate -> state.copy(source = change.source, mangas = emptyList(),
+      hasMorePages = true)
     is Change.PageReceived -> state.copy(mangas = state.mangas + change.mangas,
-      isLoading = false, hasMorePages = change.hasMore)
+      isLoading = false)
     is Change.DisplayModeUpdate -> state.copy(isGridMode = change.isGridMode)
     is Change.MangaInitialized -> state.copy(mangas = state.mangas
       .replaceFirst({ it.id == change.manga.id }, change.manga)
@@ -150,5 +154,6 @@ private fun reduce(state: CatalogBrowseViewState, change: Change): CatalogBrowse
     is Change.QueryUpdate -> state.copy(query = change.query)
     is Change.Loading -> state.copy(isLoading = change.isLoading)
     is Change.LoadingError -> state.copy(error = change.error, isLoading = false)
+    is Change.EndReached -> state.copy(hasMorePages = false)
   }
 }

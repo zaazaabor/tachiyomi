@@ -1,29 +1,12 @@
-package tachiyomi.data.db
+package tachiyomi.core.db
 
-import android.database.sqlite.SQLiteOpenHelper
 import com.pushtorefresh.storio3.Optional
 import com.pushtorefresh.storio3.Queries
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
-import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDelete
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDeleteByQuery
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import tachiyomi.core.rx.RxOptional
-import tachiyomi.data.category.resolver.CategoryTypeMapping
-import tachiyomi.data.chapter.model.Chapter
-import tachiyomi.data.chapter.resolver.ChapterTypeMapping
-import tachiyomi.data.manga.resolver.MangaTypeMapping
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.manga.model.Manga
-
-fun SQLiteOpenHelper.wrapDb(): StorIOSQLite {
-  return DefaultStorIOSQLite.builder()
-    .sqliteOpenHelper(this)
-    .addTypeMapping(Manga::class.java, MangaTypeMapping())
-    .addTypeMapping(Chapter::class.java, ChapterTypeMapping())
-    .addTypeMapping(Category::class.java, CategoryTypeMapping())
-    .build()
-}
 
 inline fun StorIOSQLite.inTransaction(block: () -> Unit) {
   lowLevel().beginTransaction()

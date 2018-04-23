@@ -4,7 +4,6 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.data.catalog.prefs.CatalogPreferencesProvider
 import tachiyomi.data.category.CategoryRepositoryImpl
-import tachiyomi.data.db.SQLite
 import tachiyomi.data.library.LibraryRepositoryImpl
 import tachiyomi.data.manga.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerImpl
@@ -17,8 +16,7 @@ import toothpick.config.Module
 object DataModule : Module() {
 
   init {
-    bind(SQLite::class.java).singletonInScope()
-    bind(StorIOSQLite::class.java).toProvider(StorioProvider::class.java).providesSingletonInScope()
+    bind(StorIOSQLite::class.java).toProvider(StorIOProvider::class.java).providesSingletonInScope()
     bind(MangaRepository::class.java).to(MangaRepositoryImpl::class.java).singletonInScope()
     bind(LibraryRepository::class.java).to(LibraryRepositoryImpl::class.java).singletonInScope()
     bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
@@ -26,4 +24,5 @@ object DataModule : Module() {
     bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
       .providesSingletonInScope()
   }
+
 }

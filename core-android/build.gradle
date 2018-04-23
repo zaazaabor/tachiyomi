@@ -17,6 +17,7 @@ dependencies {
   api project(':core')
   implementation deps.duktape
   implementation deps.rxpreferences
+  implementation deps.storio
 
   implementation deps.toothpick.runtime
   kapt deps.toothpick.compiler

@@ -4,10 +4,13 @@ import android.content.SharedPreferences
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 
 /**
- * An implementation of a [PreferenceStore] backed by Android's [SharedPreferences].
+ * An implementation of a [PreferenceStore] backed by Android's [SharedPreferences]. All the
+ * preferences are read and written from the given [sharedPreferences] instance.
+ *
+ * Note: there should be only one instance of this class per shared preferences file.
  */
 class SharedPreferencesStore(
-  sharedPreferences: SharedPreferences
+  private val sharedPreferences: SharedPreferences
 ) : PreferenceStore {
 
   /**

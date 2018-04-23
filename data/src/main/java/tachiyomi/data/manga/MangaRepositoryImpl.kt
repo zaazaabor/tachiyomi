@@ -8,7 +8,7 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import tachiyomi.core.rx.RxOptional
-import tachiyomi.data.db.toRxOptional
+import tachiyomi.core.db.toRxOptional
 import tachiyomi.data.manga.resolver.MangaDetailsUpdatePutResolver
 import tachiyomi.data.manga.resolver.MangaFlagsPutResolver
 import tachiyomi.data.manga.table.MangaTable
