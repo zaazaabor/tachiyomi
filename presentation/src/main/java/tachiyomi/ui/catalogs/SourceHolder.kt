@@ -2,7 +2,7 @@ package tachiyomi.ui.catalogs
 
 import android.view.View
 import kotlinx.android.synthetic.main.catalogue_card_item.*
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.ui.base.BaseViewHolder
 
 class SourceHolder(view: View, adapter: CatalogsAdapter) : BaseViewHolder(view) {
@@ -19,7 +19,7 @@ class SourceHolder(view: View, adapter: CatalogsAdapter) : BaseViewHolder(view) 
     }
   }
 
-  fun bind(item: CatalogueSource) {
+  fun bind(item: CatalogSource) {
     title.text = item.name
   }
 

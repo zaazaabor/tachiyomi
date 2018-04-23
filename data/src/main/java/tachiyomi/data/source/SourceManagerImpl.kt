@@ -2,7 +2,7 @@ package tachiyomi.data.source
 
 import android.app.Application
 import tachiyomi.core.BuildConfig
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.domain.source.Source
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.domain.source.TestSource
@@ -24,8 +24,8 @@ class SourceManagerImpl @Inject constructor(
     return sources[key]
   }
 
-  override fun getSources(): List<CatalogueSource> {
-    return sources.values.filterIsInstance<CatalogueSource>()
+  override fun getSources(): List<CatalogSource> {
+    return sources.values.filterIsInstance<CatalogSource>()
   }
 
   override fun registerSource(source: Source, overwrite: Boolean) {

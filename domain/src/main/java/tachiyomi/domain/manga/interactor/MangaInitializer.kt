@@ -4,7 +4,7 @@ import io.reactivex.Maybe
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.Source
-import tachiyomi.domain.source.model.SManga
+import tachiyomi.domain.source.model.MangaMeta
 import javax.inject.Inject
 
 class MangaInitializer @Inject internal constructor(
@@ -14,7 +14,7 @@ class MangaInitializer @Inject internal constructor(
   fun interact(source: Source, manga: Manga): Maybe<Manga> {
     if (manga.initialized) return Maybe.empty()
 
-    val stubManga = SManga(
+    val stubManga = MangaMeta(
       key = manga.key,
       title = manga.title,
       artist = manga.artist,

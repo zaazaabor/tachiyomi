@@ -17,22 +17,22 @@ import org.mockito.junit.MockitoJUnitRunner
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.CatalogueSource
-import tachiyomi.domain.source.model.SManga
-import tachiyomi.domain.source.model.SMangasPage
+import tachiyomi.domain.source.CatalogSource
+import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.domain.source.model.MangasPageMeta
 import toothpick.testing.ToothPickRule
 import javax.inject.Inject
 
 @RunWith(MockitoJUnitRunner::class)
-class GetMangaPageFromCatalogueSourceTest {
+class GetMangaPageFromCatalogSourceTest {
 
   @Rule @JvmField
-  val toothpickRule = ToothPickRule(this, "GetMangaPageFromCatalogueSource")
+  val toothpickRule = ToothPickRule(this, "GetMangaPageFromCatalogSource")
 
   @Mock lateinit var mangaRepository: MangaRepository
-  @Mock lateinit var source: CatalogueSource
+  @Mock lateinit var source: CatalogSource
 
-  @Inject lateinit var getMangaFromSource: GetMangaPageFromCatalogueSource
+  @Inject lateinit var getMangaFromSource: GetMangaPageFromCatalogSource
 
   @Before
   fun setup() {
@@ -42,10 +42,10 @@ class GetMangaPageFromCatalogueSourceTest {
   @Test
   fun test_interact() {
     // GIVEN
-    val sourceManga1 = SManga("url1", "title1")
-    val sourceManga2 = SManga("url2", "title2")
-    val sourceManga3 = SManga("url3", "title3")
-    val sourceMangaPage = SMangasPage(listOf(sourceManga1, sourceManga2, sourceManga3), false)
+    val sourceManga1 = MangaMeta("url1", "title1")
+    val sourceManga2 = MangaMeta("url2", "title2")
+    val sourceManga3 = MangaMeta("url3", "title3")
+    val sourceMangaPage = MangasPageMeta(listOf(sourceManga1, sourceManga2, sourceManga3), false)
 
     val dbManga1 = Manga(1, 1, "url1", "title1")
     val dbManga2 = Manga(2, 1, "url2", "title2")

@@ -1,42 +1,42 @@
 package tachiyomi.domain.source
 
-import tachiyomi.domain.source.model.SChapter
-import tachiyomi.domain.source.model.SManga
-import tachiyomi.domain.source.model.SMangasPage
-import tachiyomi.domain.source.model.SPage
+import tachiyomi.domain.source.model.ChapterMeta
+import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.domain.source.model.MangasPageMeta
+import tachiyomi.domain.source.model.PageMeta
 
-class TestSource : CatalogueSource {
+class TestSource : CatalogSource {
 
   override val id = 1L
   override val name = "Test source"
   override val lang get() = "en"
 
-  override fun fetchMangaList(page: Int): SMangasPage {
+  override fun fetchMangaList(page: Int): MangasPageMeta {
     Thread.sleep(1500)
-    return SMangasPage(getTestManga(page), page < 3)
+    return MangasPageMeta(getTestManga(page), page < 3)
   }
 
-  override fun fetchMangaDetails(manga: SManga): SManga {
+  override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
     Thread.sleep(1000)
     val noHipstersOffset = 10
     val picId = manga.title.split(" ")[1].toInt() + noHipstersOffset
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
-  override fun fetchChapterList(manga: SManga): List<SChapter> {
+  override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
     Thread.sleep(1000)
     return getTestChapters()
   }
 
-  override fun fetchPageList(chapter: SChapter): List<SPage> {
+  override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
     Thread.sleep(1000)
     return getTestPages()
   }
 
-  private fun getTestManga(page: Int): List<SManga> {
-    val list = mutableListOf<SManga>()
+  private fun getTestManga(page: Int): List<MangaMeta> {
+    val list = mutableListOf<MangaMeta>()
     val id = (page - 1) * 20 + 1
-    val manga1 = SManga(
+    val manga1 = MangaMeta(
       "$id",
       "Manga $id",
       "",
@@ -56,8 +56,8 @@ class TestSource : CatalogueSource {
     return list
   }
 
-  private fun getTestChapters(): List<SChapter> {
-    val chapter1 = SChapter(
+  private fun getTestChapters(): List<ChapterMeta> {
+    val chapter1 = ChapterMeta(
       "1",
       "Chapter 1",
       System.currentTimeMillis()
@@ -68,10 +68,10 @@ class TestSource : CatalogueSource {
     return listOf(chapter1, chapter2, chapter3)
   }
 
-  private fun getTestPages(): List<SPage> {
+  private fun getTestPages(): List<PageMeta> {
     return listOf(
-      SPage("url1", "imageUrl1"),
-      SPage("url2", "imageUrl2")
+      PageMeta("url1", "imageUrl1"),
+      PageMeta("url2", "imageUrl2")
     )
   }
 

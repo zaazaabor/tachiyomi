@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransaction
 import tachiyomi.ui.manga.MangaController
@@ -133,7 +133,7 @@ class CatalogBrowseController(
     }
   }
 
-  private fun renderSource(source: CatalogueSource) {
+  private fun renderSource(source: CatalogSource) {
     requestTitle(source.name)
   }
 

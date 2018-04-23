@@ -15,7 +15,7 @@ import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.data.manga.util.asDbManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.SManga
+import tachiyomi.domain.source.model.MangaMeta
 import javax.inject.Inject
 
 internal class MangaRepositoryImpl @Inject constructor(
@@ -56,7 +56,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxCompletable()
   }
 
-  override fun saveAndReturnNewManga(manga: SManga, sourceId: Long): Single<Manga> {
+  override fun saveAndReturnNewManga(manga: MangaMeta, sourceId: Long): Single<Manga> {
     val newManga = manga.asDbManga(sourceId)
     return storio.put()
       .`object`(newManga)

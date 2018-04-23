@@ -1,6 +1,6 @@
 package tachiyomi.domain.source.model
 
-data class SMangasPage(
-  val mangas: List<SManga>,
+data class MangasPageMeta(
+  val mangas: List<MangaMeta>,
   val hasNextPage: Boolean
 )

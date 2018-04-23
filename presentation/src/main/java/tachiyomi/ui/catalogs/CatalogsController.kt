@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.catalogue_controller.*
 import tachiyomi.app.R
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransaction
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
@@ -41,7 +41,7 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
     catalogue_recycler.adapter = adapter
 
     presenter.stateRelay
-      .map { it.catalogues }
+      .map { it.catalogs }
       .distinctUntilChanged()
       .observeOn(AndroidSchedulers.mainThread())
       .subscribeWithView(::renderCatalogues)
@@ -56,23 +56,23 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
   // ~ Render
   //===========================================================================
 
-  private fun renderCatalogues(catalogues: List<CatalogueSource>) {
-    adapter?.submitList(catalogues)
+  private fun renderCatalogues(catalogs: List<CatalogSource>) {
+    adapter?.submitList(catalogs)
   }
 
   //===========================================================================
   // ~ User interaction
   //===========================================================================
 
-  override fun onRowClick(catalogue: CatalogueSource) {
-    router.pushController(CatalogBrowseController(catalogue.id).withFadeTransaction())
+  override fun onRowClick(catalog: CatalogSource) {
+    router.pushController(CatalogBrowseController(catalog.id).withFadeTransaction())
   }
 
-  override fun onBrowseClick(catalogue: CatalogueSource) {
-    onRowClick(catalogue)
+  override fun onBrowseClick(catalog: CatalogSource) {
+    onRowClick(catalog)
   }
 
-  override fun onLatestClick(catalogue: CatalogueSource) {
+  override fun onLatestClick(catalog: CatalogSource) {
   }
 
 }

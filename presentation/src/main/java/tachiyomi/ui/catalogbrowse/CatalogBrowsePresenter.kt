@@ -8,10 +8,10 @@ import io.reactivex.schedulers.Schedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.data.catalog.prefs.CatalogPreferences
-import tachiyomi.domain.manga.interactor.GetMangaPageFromCatalogueSource
+import tachiyomi.domain.manga.interactor.GetMangaPageFromCatalogSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.ui.base.BasePresenter
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class CatalogBrowsePresenter @Inject constructor(
   private val sourceId: Long?,
   private val sourceManager: SourceManager, // TODO new use case to retrieve a catalogue?
-  private val getMangaPageFromCatalogueSource: GetMangaPageFromCatalogueSource,
+  private val getMangaPageFromCatalogSource: GetMangaPageFromCatalogSource,
   private val mangaInitializer: MangaInitializer,
   private val catalogPreferences: CatalogPreferences
 ) : BasePresenter() {
@@ -40,7 +40,7 @@ class CatalogBrowsePresenter @Inject constructor(
 
     val mangaInitializerSubject = PublishProcessor.create<List<Manga>>().toSerialized()
 
-    val sourceRelay = Flowable.fromCallable { sourceManager.get(sourceId!!) as? CatalogueSource }
+    val sourceRelay = Flowable.fromCallable { sourceManager.get(sourceId!!) as? CatalogSource }
       .share()
 
     val sourceChange = sourceRelay.map(Change::SourceUpdate)
@@ -59,7 +59,7 @@ class CatalogBrowsePresenter @Inject constructor(
             if (requestedPage < page) return@f Flowable.empty<Change>()
 
 
-            getMangaPageFromCatalogueSource.interact(source, page)
+            getMangaPageFromCatalogSource.interact(source, page)
               .subscribeOn(Schedulers.io())
               .doOnSuccess { mangasPage ->
                 mangaInitializerSubject.onNext(mangasPage.mangas)
@@ -131,7 +131,7 @@ private sealed class Action {
 }
 
 private sealed class Change {
-  data class SourceUpdate(val source: CatalogueSource) : Change()
+  data class SourceUpdate(val source: CatalogSource) : Change()
   data class PageReceived(val mangas: List<Manga>) : Change()
   data class DisplayModeUpdate(val isGridMode: Boolean) : Change()
   data class MangaInitialized(val manga: Manga) : Change()

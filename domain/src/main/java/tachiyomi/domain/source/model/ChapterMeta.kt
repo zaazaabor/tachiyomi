@@ -1,6 +1,6 @@
 package tachiyomi.domain.source.model
 
-data class SChapter(
+data class ChapterMeta(
   var key: String,
   var name: String,
   var date_upload: Long,

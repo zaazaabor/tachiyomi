@@ -16,6 +16,7 @@ interface DbOpenCallback {
    * Called when the [db] needs to be upgraded from [oldVersion] to [newVersion]. The implementation
    * of this method is optional.
    */
-  fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
+  fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+  }
 
 }

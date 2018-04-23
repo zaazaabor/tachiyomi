@@ -4,12 +4,12 @@ import android.support.v7.util.DiffUtil
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import tachiyomi.app.R
-import tachiyomi.domain.source.CatalogueSource
+import tachiyomi.domain.source.CatalogSource
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogsAdapter(
   controller: CatalogsController
-) : BaseListAdapter<CatalogueSource, SourceHolder>(Diff()) {
+) : BaseListAdapter<CatalogSource, SourceHolder>(Diff()) {
 
   private val listener: Listener = controller
 
@@ -39,17 +39,17 @@ class CatalogsAdapter(
   }
 
   interface Listener {
-    fun onRowClick(catalogue: CatalogueSource)
-    fun onBrowseClick(catalogue: CatalogueSource)
-    fun onLatestClick(catalogue: CatalogueSource)
+    fun onRowClick(catalog: CatalogSource)
+    fun onBrowseClick(catalog: CatalogSource)
+    fun onLatestClick(catalog: CatalogSource)
   }
 
-  private class Diff : DiffUtil.ItemCallback<CatalogueSource>() {
-    override fun areItemsTheSame(oldItem: CatalogueSource, newItem: CatalogueSource): Boolean {
+  private class Diff : DiffUtil.ItemCallback<CatalogSource>() {
+    override fun areItemsTheSame(oldItem: CatalogSource, newItem: CatalogSource): Boolean {
       return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: CatalogueSource, newItem: CatalogueSource): Boolean {
+    override fun areContentsTheSame(oldItem: CatalogSource, newItem: CatalogSource): Boolean {
       return true
     }
   }

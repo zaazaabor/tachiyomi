@@ -16,7 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.SManga
+import tachiyomi.domain.source.model.MangaMeta
 import toothpick.testing.ToothPickRule
 import javax.inject.Inject
 
@@ -30,7 +30,7 @@ class GetOrAddMangaFromSourceTest {
 
   @Inject lateinit var getOrAddMangaFromSource: GetOrAddMangaFromSource
 
-  private val sourceManga = SManga("url", "title")
+  private val sourceManga = MangaMeta("url", "title")
   private val sourceId = 1L
   private val dbManga = Manga(1, sourceId, sourceManga.key, sourceManga.title)
 

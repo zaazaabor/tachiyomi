@@ -3,13 +3,13 @@ package tachiyomi.ui.catalogs
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.source.CatalogueSource
-import tachiyomi.domain.source.interactor.GetCatalogueSources
+import tachiyomi.domain.source.CatalogSource
+import tachiyomi.domain.source.interactor.GetCatalogSources
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val getCatalogueSources: GetCatalogueSources
+  private val getCatalogSources: GetCatalogSources
 ) : BasePresenter() {
 
   val stateRelay = BehaviorProcessor.create<CatalogsViewState>().toSerialized()
@@ -17,7 +17,7 @@ class CatalogsPresenter @Inject constructor(
   init {
     val initialState = CatalogsViewState()
 
-    val catalogueChanges = getCatalogueSources.interact()
+    val catalogueChanges = getCatalogSources.interact()
       .subscribeOn(Schedulers.io())
       .map(Change::CatalogueUpdate)
       .toFlowable() // TODO reactive SourceManager?
@@ -31,11 +31,11 @@ class CatalogsPresenter @Inject constructor(
 }
 
 private sealed class Change {
-  data class CatalogueUpdate(val catalogues: List<CatalogueSource>) : Change()
+  data class CatalogueUpdate(val catalogs: List<CatalogSource>) : Change()
 }
 
 private fun reduce(state: CatalogsViewState, change: Change): CatalogsViewState {
   return when (change) {
-    is Change.CatalogueUpdate -> state.copy(catalogues = change.catalogues)
+    is Change.CatalogueUpdate -> state.copy(catalogs = change.catalogs)
   }
 }

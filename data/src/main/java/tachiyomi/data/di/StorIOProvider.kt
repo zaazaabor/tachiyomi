@@ -31,8 +31,10 @@ internal class StorIOProvider @Inject constructor(
   }
 
   private fun createDb(): DbOpenHelper {
+    val name = "tachiyomi.db"
+    val version = 1
     val callbacks = listOf(MangaTable, ChapterTable, CategoryTable, MangaCategoryTable)
-    return DbOpenHelper(context, "tachiyomi.db", 1, callbacks)
+    return DbOpenHelper(context, name, version, callbacks)
   }
 
 }
