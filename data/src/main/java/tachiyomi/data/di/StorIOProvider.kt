@@ -1,10 +1,9 @@
 package tachiyomi.data.di
 
 import android.app.Application
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
+import tachiyomi.core.db.DbOpenHelper
 import tachiyomi.data.category.resolver.CategoryTypeMapping
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
@@ -31,16 +30,9 @@ internal class StorIOProvider @Inject constructor(
       .build()
   }
 
-  private fun createDb() = object : SQLiteOpenHelper(context, "tachiyomi.db", null, 1) {
-    override fun onCreate(db: SQLiteDatabase) {
-      db.execSQL(MangaTable.createTableQuery)
-      db.execSQL(ChapterTable.createTableQuery)
-      db.execSQL(CategoryTable.createTableQuery)
-      db.execSQL(MangaCategoryTable.createTableQuery)
-    }
-
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-    }
+  private fun createDb(): DbOpenHelper {
+    val callbacks = listOf(MangaTable, ChapterTable, CategoryTable, MangaCategoryTable)
+    return DbOpenHelper(context, "tachiyomi.db", 1, callbacks)
   }
 
 }

@@ -1,6 +1,9 @@
 package tachiyomi.data.manga.table
 
-internal object MangaTable {
+import android.database.sqlite.SQLiteDatabase
+import tachiyomi.core.db.DbOpenCallback
+
+internal object MangaTable : DbOpenCallback {
 
   const val TABLE = "manga"
 
@@ -20,7 +23,7 @@ internal object MangaTable {
   const val COL_VIEWER = "m_viewer"
   const val COL_FLAGS = "m_flags"
 
-  val createTableQuery: String
+  private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
             $COL_ID INTEGER NOT NULL PRIMARY KEY,
             $COL_SOURCE INTEGER NOT NULL,
@@ -44,4 +47,9 @@ internal object MangaTable {
 
   val createFavoriteIndexQuery: String
     get() = "CREATE INDEX ${TABLE}_${COL_FAVORITE}_index ON $TABLE($COL_FAVORITE)"
+
+  override fun onCreate(db: SQLiteDatabase) {
+    db.execSQL(createTableQuery)
+  }
+
 }

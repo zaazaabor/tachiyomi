@@ -1,6 +1,9 @@
 package tachiyomi.data.category.table
 
-internal object CategoryTable {
+import android.database.sqlite.SQLiteDatabase
+import tachiyomi.core.db.DbOpenCallback
+
+internal object CategoryTable : DbOpenCallback {
 
   const val TABLE = "categories"
 
@@ -9,12 +12,16 @@ internal object CategoryTable {
   const val COL_ORDER = "ca_sort"
   const val COL_FLAGS = "ca_flags"
 
-  val createTableQuery: String
+  private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
             $COL_ID INTEGER NOT NULL PRIMARY KEY,
             $COL_NAME TEXT NOT NULL,
             $COL_ORDER INTEGER NOT NULL,
             $COL_FLAGS INTEGER NOT NULL
             )"""
+
+  override fun onCreate(db: SQLiteDatabase) {
+    db.execSQL(createTableQuery)
+  }
 
 }

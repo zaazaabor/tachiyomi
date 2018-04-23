@@ -1,8 +1,10 @@
 package tachiyomi.data.category.table
 
+import android.database.sqlite.SQLiteDatabase
+import tachiyomi.core.db.DbOpenCallback
 import tachiyomi.data.manga.table.MangaTable
 
-internal object MangaCategoryTable {
+internal object MangaCategoryTable : DbOpenCallback {
 
   const val TABLE = "mangas_categories"
 
@@ -10,7 +12,7 @@ internal object MangaCategoryTable {
   const val COL_MANGA_ID = "mc_manga_id"
   const val COL_CATEGORY_ID = "mc_category_id"
 
-  val createTableQuery: String
+  private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
             $COL_ID INTEGER NOT NULL PRIMARY KEY,
             $COL_MANGA_ID INTEGER NOT NULL,
@@ -20,5 +22,9 @@ internal object MangaCategoryTable {
             FOREIGN KEY($COL_MANGA_ID) REFERENCES ${MangaTable.TABLE} (${MangaTable.COL_ID})
             ON DELETE CASCADE
             )"""
+
+  override fun onCreate(db: SQLiteDatabase) {
+    db.execSQL(createTableQuery)
+  }
 
 }
