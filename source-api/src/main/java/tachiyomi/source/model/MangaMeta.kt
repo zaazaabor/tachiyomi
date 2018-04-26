@@ -1,4 +1,4 @@
-package tachiyomi.domain.source.model
+package tachiyomi.source.model
 
 /**
  * Model for a manga given by a source

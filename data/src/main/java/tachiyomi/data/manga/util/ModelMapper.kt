@@ -1,7 +1,7 @@
 package tachiyomi.data.manga.util
 
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.source.model.MangaMeta
 
 internal fun MangaMeta.asDbManga(sourceId: Long): Manga {
   return Manga(

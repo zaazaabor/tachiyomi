@@ -1,8 +1,8 @@
-package tachiyomi.domain.source
+package tachiyomi.source
 
-import tachiyomi.domain.source.model.ChapterMeta
-import tachiyomi.domain.source.model.MangaMeta
-import tachiyomi.domain.source.model.PageMeta
+import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.MangaMeta
+import tachiyomi.source.model.PageMeta
 
 /**
  * A basic interface for creating a source. It could be an online source, a local source, etc...

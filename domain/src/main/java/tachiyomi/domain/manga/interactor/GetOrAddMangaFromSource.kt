@@ -4,7 +4,7 @@ import io.reactivex.Single
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.source.model.MangaMeta
 import javax.inject.Inject
 
 class GetOrAddMangaFromSource @Inject internal constructor(

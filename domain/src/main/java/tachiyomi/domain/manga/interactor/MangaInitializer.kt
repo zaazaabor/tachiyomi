@@ -3,8 +3,8 @@ package tachiyomi.domain.manga.interactor
 import io.reactivex.Maybe
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.Source
-import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.source.Source
+import tachiyomi.source.model.MangaMeta
 import javax.inject.Inject
 
 class MangaInitializer @Inject internal constructor(

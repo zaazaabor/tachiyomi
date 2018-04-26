@@ -1,4 +1,4 @@
-package tachiyomi.domain.source.model
+package tachiyomi.source.model
 
 @Suppress("unused")
 sealed class Filter<T>(val name: String, var state: T) {

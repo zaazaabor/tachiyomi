@@ -1,4 +1,4 @@
-package tachiyomi.domain.source.model
+package tachiyomi.source.model
 
 data class MangasPageMeta(
   val mangas: List<MangaMeta>,

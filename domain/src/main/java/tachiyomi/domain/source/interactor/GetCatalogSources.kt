@@ -1,8 +1,8 @@
 package tachiyomi.domain.source.interactor
 
 import io.reactivex.Single
-import tachiyomi.domain.source.CatalogSource
 import tachiyomi.domain.source.SourceManager
+import tachiyomi.source.CatalogSource
 import javax.inject.Inject
 
 class GetCatalogSources @Inject constructor(

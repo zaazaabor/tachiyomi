@@ -7,15 +7,15 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
-import tachiyomi.core.rx.RxOptional
 import tachiyomi.core.db.toRxOptional
+import tachiyomi.core.rx.RxOptional
 import tachiyomi.data.manga.resolver.MangaDetailsUpdatePutResolver
 import tachiyomi.data.manga.resolver.MangaFlagsPutResolver
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.data.manga.util.asDbManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.source.model.MangaMeta
 import javax.inject.Inject
 
 internal class MangaRepositoryImpl @Inject constructor(

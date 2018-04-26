@@ -3,8 +3,8 @@ package tachiyomi.ui.catalogs
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.source.CatalogSource
 import tachiyomi.domain.source.interactor.GetCatalogSources
+import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 

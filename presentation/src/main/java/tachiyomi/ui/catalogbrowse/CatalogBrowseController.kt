@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransaction
 import tachiyomi.ui.manga.MangaController

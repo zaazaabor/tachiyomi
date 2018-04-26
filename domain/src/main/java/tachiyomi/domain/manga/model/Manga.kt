@@ -1,6 +1,6 @@
 package tachiyomi.domain.manga.model
 
-import tachiyomi.domain.source.model.MangaMeta
+import tachiyomi.source.model.MangaMeta
 
 data class Manga(
   val id: Long = -1,

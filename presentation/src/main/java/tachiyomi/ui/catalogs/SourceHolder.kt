@@ -2,7 +2,7 @@ package tachiyomi.ui.catalogs
 
 import android.view.View
 import kotlinx.android.synthetic.main.catalogue_card_item.*
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.BaseViewHolder
 
 class SourceHolder(view: View, adapter: CatalogsAdapter) : BaseViewHolder(view) {

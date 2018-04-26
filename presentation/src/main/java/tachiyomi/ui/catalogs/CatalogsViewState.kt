@@ -1,6 +1,6 @@
 package tachiyomi.ui.catalogs
 
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 
 data class CatalogsViewState(
   val catalogs: List<CatalogSource> = emptyList()

@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.catalogue_controller.*
 import tachiyomi.app.R
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransaction
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController

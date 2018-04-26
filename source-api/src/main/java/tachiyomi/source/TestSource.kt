@@ -1,11 +1,11 @@
-package tachiyomi.domain.source
+package tachiyomi.source
 
-import tachiyomi.domain.source.model.ChapterMeta
-import tachiyomi.domain.source.model.Filter
-import tachiyomi.domain.source.model.FilterList
-import tachiyomi.domain.source.model.MangaMeta
-import tachiyomi.domain.source.model.MangasPageMeta
-import tachiyomi.domain.source.model.PageMeta
+import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.Filter
+import tachiyomi.source.model.FilterList
+import tachiyomi.source.model.MangaMeta
+import tachiyomi.source.model.MangasPageMeta
+import tachiyomi.source.model.PageMeta
 
 class TestSource : CatalogSource {
 

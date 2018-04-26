@@ -1,7 +1,7 @@
-package tachiyomi.domain.source
+package tachiyomi.source
 
-import tachiyomi.domain.source.model.FilterList
-import tachiyomi.domain.source.model.MangasPageMeta
+import tachiyomi.source.model.FilterList
+import tachiyomi.source.model.MangasPageMeta
 
 interface CatalogSource : Source {
 

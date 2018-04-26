@@ -15,9 +15,9 @@ import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SearchMangaPageFromCatalogSource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
-import tachiyomi.domain.source.CatalogSource
 import tachiyomi.domain.source.SourceManager
-import tachiyomi.domain.source.model.FilterList
+import tachiyomi.source.CatalogSource
+import tachiyomi.source.model.FilterList
 import tachiyomi.ui.base.BasePresenter
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean

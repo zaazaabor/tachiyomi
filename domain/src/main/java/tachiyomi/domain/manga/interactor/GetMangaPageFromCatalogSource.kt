@@ -3,7 +3,7 @@ package tachiyomi.domain.manga.interactor
 import io.reactivex.Flowable
 import io.reactivex.Single
 import tachiyomi.domain.manga.model.MangasPage
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 import javax.inject.Inject
 
 class GetMangaPageFromCatalogSource @Inject internal constructor(

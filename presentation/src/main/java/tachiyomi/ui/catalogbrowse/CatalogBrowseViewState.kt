@@ -1,8 +1,8 @@
 package tachiyomi.ui.catalogbrowse
 
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.CatalogSource
-import tachiyomi.domain.source.model.FilterList
+import tachiyomi.source.CatalogSource
+import tachiyomi.source.model.FilterList
 
 data class CatalogBrowseViewState(
   val source: CatalogSource? = null,

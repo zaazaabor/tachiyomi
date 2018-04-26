@@ -4,7 +4,7 @@ import android.support.v7.util.DiffUtil
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import tachiyomi.app.R
-import tachiyomi.domain.source.CatalogSource
+import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogsAdapter(

@@ -16,7 +16,6 @@ import org.mockito.junit.MockitoJUnitRunner
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.MangaMeta
 import toothpick.testing.ToothPickRule
 import javax.inject.Inject
 

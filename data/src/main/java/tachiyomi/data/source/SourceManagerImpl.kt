@@ -2,10 +2,10 @@ package tachiyomi.data.source
 
 import android.app.Application
 import tachiyomi.core.BuildConfig
-import tachiyomi.domain.source.CatalogSource
-import tachiyomi.domain.source.Source
 import tachiyomi.domain.source.SourceManager
-import tachiyomi.domain.source.TestSource
+import tachiyomi.source.CatalogSource
+import tachiyomi.source.Source
+import tachiyomi.source.TestSource
 import javax.inject.Inject
 
 class SourceManagerImpl @Inject constructor(
