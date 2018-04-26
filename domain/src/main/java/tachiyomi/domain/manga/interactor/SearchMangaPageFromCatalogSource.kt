@@ -4,15 +4,25 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.domain.source.CatalogSource
+import tachiyomi.domain.source.model.FilterList
 import javax.inject.Inject
 
-class GetMangaPageFromCatalogSource @Inject internal constructor(
+class SearchMangaPageFromCatalogSource @Inject internal constructor(
   private val getOrAddMangaFromSource: GetOrAddMangaFromSource
 ) {
 
-  fun interact(source: CatalogSource, page: Int): Single<MangasPage> {
+  fun interact(
+    source: CatalogSource,
+    page: Int,
+    query: String,
+    filters: FilterList = emptyList()
+  ): Single<MangasPage> {
     return Single.defer {
-      val sourcePage = source.fetchMangaList(page)
+      val sourcePage = if (query.isEmpty() && filters.isEmpty()) {
+        source.fetchMangaList(page)
+      } else {
+        source.searchMangaList(page, query, filters)
+      }
 
       Flowable.fromIterable(sourcePage.mangas)
         .concatMapSingle { getOrAddMangaFromSource.interact(it, source.id) }

@@ -125,11 +125,10 @@ class CatalogBrowseController(
     if (state.isLoading != prevState?.isLoading) {
       renderLoading(state.isLoading, state.mangas)
     }
-    if (state.hasMorePages != prevState?.hasMorePages) {
-      renderHasMorePages(state.hasMorePages)
-    }
-    if (state.mangas !== prevState?.mangas) {
-      renderMangas(state.mangas)
+    if (state.mangas !== prevState?.mangas || state.isLoading != prevState.isLoading
+        || state.hasMorePages != prevState.hasMorePages) {
+
+      renderList(state.mangas, state.isLoading, state.hasMorePages)
     }
   }
 
@@ -177,15 +176,10 @@ class CatalogBrowseController(
 
   private fun renderLoading(loading: Boolean, mangas: List<Manga>) {
     catalogbrowse_progress.visibleIf { loading && mangas.isEmpty() }
-    adapter?.setLoading(loading && mangas.isNotEmpty())
   }
 
-  private fun renderHasMorePages(hasMorePages: Boolean) {
-    adapter?.setEndReached(!hasMorePages)
-  }
-
-  private fun renderMangas(mangas: List<Manga>) {
-    adapter?.submitList(mangas)
+  private fun renderList(mangas: List<Manga>, isLoading: Boolean, hasMorePages: Boolean) {
+    adapter?.submitList(mangas, isLoading, !hasMorePages)
   }
 
   //===========================================================================

@@ -1,6 +1,8 @@
 package tachiyomi.domain.source
 
 import tachiyomi.domain.source.model.ChapterMeta
+import tachiyomi.domain.source.model.Filter
+import tachiyomi.domain.source.model.FilterList
 import tachiyomi.domain.source.model.MangaMeta
 import tachiyomi.domain.source.model.MangasPageMeta
 import tachiyomi.domain.source.model.PageMeta
@@ -23,6 +25,16 @@ class TestSource : CatalogSource {
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
+  override fun searchMangaList(
+    page: Int,
+    query: String,
+    filters: FilterList
+  ): MangasPageMeta {
+    Thread.sleep(1500)
+    val filteredMangas = getTestManga(page).filter { query in it.title }
+    return MangasPageMeta(filteredMangas, false)
+  }
+
   override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
     Thread.sleep(1000)
     return getTestChapters()
@@ -31,6 +43,21 @@ class TestSource : CatalogSource {
   override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
     Thread.sleep(1000)
     return getTestPages()
+  }
+
+  private class Status : Filter.TriState("Completed")
+  private class Author : Filter.Text("Author")
+  private class Genre(name: String) : Filter.TriState(name)
+  private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+
+  private fun getGenreList() = listOf(
+    Genre("Action"),
+    Genre("Adventure"),
+    Genre("Comedy")
+  )
+
+  override fun getFilterList(): FilterList {
+    return listOf(Status(), Author(), GenreList(getGenreList()))
   }
 
   private fun getTestManga(page: Int): List<MangaMeta> {

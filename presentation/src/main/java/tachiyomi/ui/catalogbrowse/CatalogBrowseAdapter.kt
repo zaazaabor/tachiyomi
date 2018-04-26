@@ -19,53 +19,35 @@ class CatalogBrowseAdapter(
   private val listener = controller as? Listener
 
   private val differ = AsyncListDiffer(AdapterListUpdateCallback(this),
-    AsyncDifferConfig.Builder(Diff()).build())
-
-  private var showProgress = false
-
-  private var showEndReached = false
+    AsyncDifferConfig.Builder(ItemDiff()).build())
 
   override fun getItemCount(): Int {
-    return differ.currentList.size + if (showProgress || showEndReached) 1 else 0
+    return differ.currentList.size
   }
 
-  fun getItem(position: Int): Manga {
+  fun getItem(position: Int): Any {
     return differ.currentList[position]
   }
 
-  fun getItemOrNull(position: Int): Manga? {
+  fun getItemOrNull(position: Int): Any? {
     return differ.currentList.getOrNull(position)
   }
 
-  fun submitList(mangas: List<Manga>) {
-    differ.submitList(mangas)
-  }
+  fun submitList(mangas: List<Manga>, isLoading: Boolean, endReached: Boolean) {
+    val items = mutableListOf<Any>()
+    items.addAll(mangas)
 
-  fun setLoading(visible: Boolean) {
-    if (showProgress == visible) return
-
-    showProgress = visible
-    setFooterVisibility(visible)
-  }
-
-  fun setEndReached(endReached: Boolean) {
-    if (showEndReached == endReached) return
-
-    showEndReached = endReached
-    setFooterVisibility(endReached)
-  }
-
-  private fun setFooterVisibility(visible: Boolean) {
-    val footerPosition = differ.currentList.size
-    if (visible) {
-      notifyItemInserted(footerPosition)
-    } else {
-      notifyItemRemoved(footerPosition)
+    if (isLoading && mangas.isNotEmpty()) {
+      items += LoadingMore
+    } else if (endReached) {
+      items += EndReached
     }
+
+    differ.submitList(items)
   }
 
   override fun getItemViewType(position: Int): Int {
-    return when (getItemOrNull(position)) {
+    return when (getItem(position)) {
       is Manga -> MANGA_VIEWTYPE
       else -> FOOTER_VIEWTYPE
     }
@@ -104,7 +86,7 @@ class CatalogBrowseAdapter(
   ) {
     when (holder) {
       is MangaHolder -> {
-        val manga = getItem(position)
+        val manga = getItem(position) as Manga
         if (payloads.isEmpty()) {
           holder.bind(manga)
         } else if (CoverChange in payloads) {
@@ -112,14 +94,15 @@ class CatalogBrowseAdapter(
         }
       }
       is FooterHolder -> {
-        holder.bind(showProgress, showEndReached)
+        val item = getItem(position)
+        holder.bind(item === LoadingMore, item === EndReached)
       }
     }
   }
 
   fun handleClick(position: Int) {
-    val item = getItemOrNull(position) ?: return
-    listener?.onMangaClick(item)
+    val manga = getItemOrNull(position) as? Manga ?: return
+    listener?.onMangaClick(manga)
   }
 
   fun getSpanSize(position: Int): Int? {
@@ -133,23 +116,30 @@ class CatalogBrowseAdapter(
     fun onMangaClick(manga: Manga)
   }
 
-  private class Diff : DiffUtil.ItemCallback<Manga>() {
-    override fun areItemsTheSame(oldItem: Manga, newItem: Manga): Boolean {
-      return oldItem.id == newItem.id
+  private class ItemDiff : DiffUtil.ItemCallback<Any>() {
+    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+      return when {
+        oldItem === newItem -> true
+        oldItem is Manga && newItem is Manga -> oldItem.id == newItem.id
+        else -> false
+      }
     }
 
-    override fun areContentsTheSame(oldItem: Manga, newItem: Manga): Boolean {
+    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
       return oldItem == newItem
     }
 
-    override fun getChangePayload(oldItem: Manga, newItem: Manga): Any? {
-      return if (oldItem.cover != newItem.cover) {
+    override fun getChangePayload(oldItem: Any, newItem: Any): Any? {
+      return if (oldItem is Manga && newItem is Manga && oldItem.cover != newItem.cover) {
         CoverChange
       } else {
         null
       }
     }
   }
+
+  private object LoadingMore
+  private object EndReached
 
   private object CoverChange
 
