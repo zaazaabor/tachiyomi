@@ -19,7 +19,7 @@ import java.security.MessageDigest
  * A simple implementation for sources from a website.
  */
 @Suppress("unused", "unused_parameter")
-abstract class HttpSource(private val component: Component) : CatalogSource {
+abstract class HttpSource(private val dependencies: Dependencies) : CatalogSource {
 
   /**
    * Base url of the website without the trailing slash, like: http://mysite.com
@@ -52,7 +52,7 @@ abstract class HttpSource(private val component: Component) : CatalogSource {
    * Default network client for doing requests.
    */
   open val client: OkHttpClient
-    get() = component.http.defaultClient
+    get() = dependencies.http.defaultClient
 
   /**
    * Headers builder for requests. Implementations can override this method for custom headers.

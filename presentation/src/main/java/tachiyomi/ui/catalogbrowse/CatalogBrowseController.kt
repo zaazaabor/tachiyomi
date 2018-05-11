@@ -266,7 +266,7 @@ class CatalogBrowseController(
   }
 
   override fun onMangaClick(manga: Manga) {
-    router.pushController(MangaController().withFadeTransaction())
+    router.pushController(MangaController(manga.id).withFadeTransaction())
   }
 
   private companion object {

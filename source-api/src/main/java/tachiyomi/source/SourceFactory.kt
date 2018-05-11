@@ -1,6 +1,6 @@
 package tachiyomi.source
 
-abstract class SourceFactory(private val component: Component) {
+abstract class SourceFactory(private val dependencies: Dependencies) {
 
   abstract fun createSources(): List<Source>
 

@@ -37,4 +37,5 @@ class SourceManagerImpl @Inject constructor(
   override fun unregisterSource(source: Source) {
     sources.remove(source.id)
   }
+
 }

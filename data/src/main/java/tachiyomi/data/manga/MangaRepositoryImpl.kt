@@ -32,6 +32,7 @@ internal class MangaRepositoryImpl @Inject constructor(
         .build())
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .distinctUntilChanged()
       .map { it.toRxOptional() }
   }
 
@@ -45,6 +46,7 @@ internal class MangaRepositoryImpl @Inject constructor(
         .build())
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .distinctUntilChanged()
       .map { it.toRxOptional() }
   }
 

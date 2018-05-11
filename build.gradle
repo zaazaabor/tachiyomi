@@ -9,7 +9,7 @@ buildscript {
     ]
   ]
   ext.versions = [
-    'kotlin'        : '1.2.40',
+    'kotlin'        : '1.2.41',
     'coroutines'    : '0.21.2',
     'supportLibrary': '27.1.1',
     'constraint'    : '1.1.0',

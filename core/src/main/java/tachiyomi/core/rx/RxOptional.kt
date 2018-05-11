@@ -15,6 +15,11 @@ sealed class RxOptional<out T> {
    */
   object None : RxOptional<Nothing>()
 
+  /**
+   * Returns the value or null.
+   */
+  fun get() = (this as? Some)?.value
+
   companion object {
     /**
      * Returns a [Some] if the given [value] is not null, otherwise [None].
