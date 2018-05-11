@@ -11,12 +11,6 @@ class SourceHolder(view: View, adapter: CatalogsAdapter) : BaseViewHolder(view) 
     view.setOnClickListener {
       adapter.handleRowClick(adapterPosition)
     }
-    source_browse.setOnClickListener {
-      adapter.handleBrowseClick(adapterPosition)
-    }
-    source_latest.setOnClickListener {
-      adapter.handleLatestClick(adapterPosition)
-    }
   }
 
   fun bind(item: CatalogSource) {

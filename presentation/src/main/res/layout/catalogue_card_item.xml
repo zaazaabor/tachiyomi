@@ -21,42 +21,21 @@
       app:layout_constraintDimensionRatio="1:1"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintTop_toTopOf="parent"
-      tools:src="@mipmap/ic_launcher_round" />
+      android:src="@mipmap/ic_launcher_round" />
 
     <TextView
       android:id="@+id/title"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:maxLines="1"
-      android:paddingStart="0dp"
-      android:paddingEnd="8dp"
+      android:layout_marginEnd="8dp"
       android:ellipsize="end"
+      android:maxLines="1"
       android:textAppearance="@style/TextAppearance.Regular.SubHeading"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintLeft_toRightOf="@+id/image"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@+id/image"
       app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintRight_toLeftOf="@+id/source_latest"
-      tools:text="Source title"/>
-
-    <Button
-      android:id="@+id/source_latest"
-      style="@style/Theme.Widget.Button.Borderless.Small"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Latest"
-      app:layout_constraintRight_toLeftOf="@+id/source_browse"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintTop_toTopOf="parent"/>
-
-    <Button
-      android:id="@+id/source_browse"
-      style="@style/Theme.Widget.Button.Borderless.Small"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Browse"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintTop_toTopOf="parent"/>
+      tools:text="Source title" />
 
   </android.support.constraint.ConstraintLayout>
 

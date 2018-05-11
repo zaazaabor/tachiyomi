@@ -1,1 +1,1 @@
-include ':presentation', ':data', ':domain', ':core', ':core-android', ':source-api'
+include ':presentation', ':data', ':domain', ':core', ':core-android', ':source-api', ':mangadex'

@@ -9,7 +9,7 @@ import tachiyomi.data.extension.prefs.ExtensionPreferences
 import tachiyomi.data.extension.prefs.ExtensionPreferencesProvider
 import tachiyomi.data.library.LibraryRepositoryImpl
 import tachiyomi.data.manga.MangaRepositoryImpl
-import tachiyomi.data.source.SourceManagerImpl
+import tachiyomi.data.source.SourceManagerProvider
 import tachiyomi.domain.category.repository.CategoryRepository
 import tachiyomi.domain.library.repository.LibraryRepository
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -23,7 +23,8 @@ object DataModule : Module() {
     bind(MangaRepository::class.java).to(MangaRepositoryImpl::class.java).singletonInScope()
     bind(LibraryRepository::class.java).to(LibraryRepositoryImpl::class.java).singletonInScope()
     bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
-    bind(SourceManager::class.java).to(SourceManagerImpl::class.java).singletonInScope()
+    bind(SourceManager::class.java).toProvider(SourceManagerProvider::class.java)
+      .providesSingletonInScope()
     bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
       .providesSingletonInScope()
     bind(ExtensionManager::class.java).singletonInScope()

@@ -18,11 +18,7 @@ class SearchMangaPageFromCatalogSource @Inject internal constructor(
     filters: FilterList = emptyList()
   ): Single<MangasPage> {
     return Single.defer {
-      val sourcePage = if (query.isEmpty() && filters.isEmpty()) {
-        source.fetchMangaList(page)
-      } else {
-        source.searchMangaList(page, query, filters)
-      }
+      val sourcePage = source.fetchMangaList(page, query, filters)
 
       Flowable.fromIterable(sourcePage.mangas)
         .concatMapSingle { getOrAddMangaFromSource.interact(it, source.id) }

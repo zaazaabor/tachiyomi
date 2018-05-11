@@ -71,11 +71,13 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    * override this method.
    *
    * @param page the page number to retrieve.
+   * @param query the search query.
+   * @param filters the list of filters to apply.
    */
-  override fun fetchMangaList(page: Int): MangasPageMeta {
-    return client.newCall(popularMangaRequest(page))
+  override fun fetchMangaList(page: Int, query: String, filters: FilterList): MangasPageMeta {
+    return client.newCall(getMangaListRequest(page, query, filters))
       .execute()
-      .let(::popularMangaParse)
+      .let(::parseMangaListResponse)
   }
 
   /**
@@ -83,44 +85,14 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param page the page number to retrieve.
    */
-  protected abstract fun popularMangaRequest(page: Int): Request
+  protected abstract fun getMangaListRequest(page: Int, query: String, filters: FilterList): Request
 
   /**
    * Parses the response from the site and returns a [MangasPageMeta] object.
    *
    * @param response the response from the site.
    */
-  protected abstract fun popularMangaParse(response: Response): MangasPageMeta
-
-  /**
-   * Returns an observable containing a page with a list of manga. Normally it's not needed to
-   * override this method.
-   *
-   * @param page the page number to retrieve.
-   * @param query the search query.
-   * @param filters the list of filters to apply.
-   */
-  override fun searchMangaList(page: Int, query: String, filters: FilterList): MangasPageMeta {
-    return client.newCall(searchMangaRequest(page, query, filters))
-      .execute()
-      .let(::searchMangaParse)
-  }
-
-  /**
-   * Returns the request for the search manga given the page.
-   *
-   * @param page the page number to retrieve.
-   * @param query the search query.
-   * @param filters the list of filters to apply.
-   */
-  protected abstract fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request
-
-  /**
-   * Parses the response from the site and returns a [MangasPageMeta] object.
-   *
-   * @param response the response from the site.
-   */
-  protected abstract fun searchMangaParse(response: Response): MangasPageMeta
+  protected abstract fun parseMangaListResponse(response: Response): MangasPageMeta
 
   /**
    * Returns an observable with the updated details for a manga. Normally it's not needed to
@@ -129,9 +101,9 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    * @param manga the manga to be updated.
    */
   override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
-    return client.newCall(mangaDetailsRequest(manga))
+    return client.newCall(getMangaDetailsRequest(manga))
       .execute()
-      .let(::mangaDetailsParse)
+      .let(::parseMangaDetailsResponse)
   }
 
   /**
@@ -140,7 +112,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param manga the manga to be updated.
    */
-  open fun mangaDetailsRequest(manga: MangaMeta): Request {
+  open fun getMangaDetailsRequest(manga: MangaMeta): Request {
     return GET(baseUrl + manga.key, headers)
   }
 
@@ -149,7 +121,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param response the response from the site.
    */
-  protected abstract fun mangaDetailsParse(response: Response): MangaMeta
+  protected abstract fun parseMangaDetailsResponse(response: Response): MangaMeta
 
   /**
    * Returns an observable with the updated chapter list for a manga. Normally it's not needed to
@@ -159,9 +131,9 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    */
   override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
     if (manga.status != MangaMeta.LICENSED) {
-      return client.newCall(chapterListRequest(manga))
+      return client.newCall(getChapterListRequest(manga))
         .execute()
-        .let(::chapterListParse)
+        .let(::parseChapterResponse)
     } else {
       throw Exception("Licensed - No chapters to show")
     }
@@ -173,7 +145,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param manga the manga to look for chapters.
    */
-  protected open fun chapterListRequest(manga: MangaMeta): Request {
+  protected open fun getChapterListRequest(manga: MangaMeta): Request {
     return GET(baseUrl + manga.key, headers)
   }
 
@@ -182,7 +154,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param response the response from the site.
    */
-  protected abstract fun chapterListParse(response: Response): List<ChapterMeta>
+  protected abstract fun parseChapterResponse(response: Response): List<ChapterMeta>
 
   /**
    * Returns an observable with the page list for a chapter.
@@ -190,9 +162,9 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    * @param chapter the chapter whose page list has to be fetched.
    */
   override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
-    return client.newCall(pageListRequest(chapter))
+    return client.newCall(getPageListRequest(chapter))
       .execute()
-      .let(::pageListParse)
+      .let(::parsePageList)
   }
 
   /**
@@ -201,7 +173,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param chapter the chapter whose page list has to be fetched.
    */
-  protected open fun pageListRequest(chapter: ChapterMeta): Request {
+  protected open fun getPageListRequest(chapter: ChapterMeta): Request {
     return GET(baseUrl + chapter.key, headers)
   }
 
@@ -210,7 +182,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param response the response from the site.
    */
-  protected abstract fun pageListParse(response: Response): List<PageMeta>
+  protected abstract fun parsePageList(response: Response): List<PageMeta>
 
   /**
    * Returns an observable with the page containing the source url of the image. If there's any
@@ -219,9 +191,9 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    * @param page the page whose source image has to be fetched.
    */
   open fun fetchImageUrl(page: PageMeta): String {
-    return client.newCall(imageUrlRequest(page))
+    return client.newCall(getImageUrlRequest(page))
       .execute()
-      .let(::imageUrlParse)
+      .let(::parseImageUrlResponse)
   }
 
   /**
@@ -230,7 +202,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param page the chapter whose page list has to be fetched
    */
-  protected open fun imageUrlRequest(page: PageMeta): Request {
+  protected open fun getImageUrlRequest(page: PageMeta): Request {
     return GET(page.url, headers)
   }
 
@@ -239,7 +211,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
    *
    * @param response the response from the site.
    */
-  protected abstract fun imageUrlParse(response: Response): String
+  protected abstract fun parseImageUrlResponse(response: Response): String
 
   /**
    * Returns an observable with the response of the source image.
@@ -303,19 +275,10 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
   }
 
   /**
-   * Called before inserting a new chapter into database. Use it if you need to override chapter
-   * fields, like the title or the chapter number. Do not change anything to [manga].
-   *
-   * @param chapter the chapter to be added.
-   * @param manga the manga of the chapter.
-   */
-  open fun prepareNewChapter(chapter: ChapterMeta, manga: MangaMeta) {
-  }
-
-  /**
    * Returns the list of filters for the source.
    */
   override fun getFilterList(): FilterList {
     return emptyList()
   }
+
 }

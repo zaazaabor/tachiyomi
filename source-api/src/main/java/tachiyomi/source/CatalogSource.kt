@@ -7,9 +7,7 @@ interface CatalogSource : Source {
 
   val lang: String
 
-  fun fetchMangaList(page: Int): MangasPageMeta
-
-  fun searchMangaList(page: Int, query: String, filters: FilterList): MangasPageMeta
+  fun fetchMangaList(page: Int, query: String, filters: FilterList): MangasPageMeta
 
   fun getFilterList(): FilterList
 

@@ -13,11 +13,6 @@ class TestSource : CatalogSource {
   override val name = "Test source"
   override val lang get() = "en"
 
-  override fun fetchMangaList(page: Int): MangasPageMeta {
-    Thread.sleep(1500)
-    return MangasPageMeta(getTestManga(page), page < 3)
-  }
-
   override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
     Thread.sleep(1000)
     val noHipstersOffset = 10
@@ -25,7 +20,7 @@ class TestSource : CatalogSource {
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
-  override fun searchMangaList(
+  override fun fetchMangaList(
     page: Int,
     query: String,
     filters: FilterList

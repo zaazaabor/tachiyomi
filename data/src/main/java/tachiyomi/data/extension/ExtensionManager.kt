@@ -29,7 +29,7 @@ import javax.inject.Inject
  * @param context The application context.
  * @param preferences The application preferences.
  */
-class ExtensionManager @Inject constructor(
+class ExtensionManager @Inject internal constructor(
   private val context: Application,
   private val http: Http,
   private val preferences: ExtensionPreferences

@@ -8,11 +8,14 @@ import dalvik.system.PathClassLoader
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
 import tachiyomi.core.di.AppScope
+import tachiyomi.core.http.Http
+import tachiyomi.core.prefs.LazySharedPreferencesStore
 import tachiyomi.core.util.Hash
 import tachiyomi.data.extension.model.Extension
 import tachiyomi.data.extension.model.LoadResult
 import tachiyomi.data.extension.prefs.ExtensionPreferences
 import tachiyomi.source.CatalogSource
+import tachiyomi.source.Dependencies
 import tachiyomi.source.Source
 import tachiyomi.source.SourceFactory
 import timber.log.Timber
@@ -37,7 +40,8 @@ internal object ExtensionLoader {
   var trustedSignatures =
     mutableSetOf<String>() +
     AppScope.root().getInstance(ExtensionPreferences::class.java).trustedSignatures().get() +
-    "7ce04da7773d41b489f4693a366c36bcd0a11fc39b547168553c285bd7348e23" // inorichi's key
+    "7ce04da7773d41b489f4693a366c36bcd0a11fc39b547168553c285bd7348e23" + // inorichi's key
+    "8d9c1b4e4c093bc5b50f045bb283b41c547f6ba0932265241e40ccb27e329095" // debug key
 
   /**
    * Return a list of all the installed extensions initialized concurrently.
@@ -104,7 +108,7 @@ internal object ExtensionLoader {
     if (majorLibVersion < LIB_VERSION_MIN || majorLibVersion > LIB_VERSION_MAX) {
       val exception = Exception("Lib version is $majorLibVersion, while only versions " +
                                 "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed")
-      Timber.w(exception)
+      //Timber.w(exception) // TODO
       return LoadResult.Error(exception)
     }
 
@@ -127,8 +131,20 @@ internal object ExtensionLoader {
       sourceClassName
     }
 
+    // TODO better approach. Maybe extension loader should be a class.
+    val scope = AppScope.root()
+    val dependencies = Dependencies(
+      scope.getInstance(Http::class.java),
+      LazySharedPreferencesStore(lazy {
+        context.getSharedPreferences(pkgName, Context.MODE_PRIVATE)
+      })
+    )
+
     val sources = try {
-      val obj = Class.forName(fullSourceClassName, false, classLoader).newInstance()
+      val obj = Class.forName(fullSourceClassName, false, classLoader)
+        .getConstructor(Dependencies::class.java)
+        .newInstance(dependencies)
+
       when (obj) {
         is Source -> listOf(obj)
         is SourceFactory -> obj.createSources()

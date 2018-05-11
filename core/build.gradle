@@ -9,6 +9,7 @@ dependencies {
   api deps.kotlin.stdlib
   api deps.rxjava
   api deps.okhttp
+  api deps.jsoup
 
   implementation deps.toothpick.runtime
 }
