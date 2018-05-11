@@ -4,6 +4,9 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.data.catalog.prefs.CatalogPreferencesProvider
 import tachiyomi.data.category.CategoryRepositoryImpl
+import tachiyomi.data.extension.ExtensionManager
+import tachiyomi.data.extension.prefs.ExtensionPreferences
+import tachiyomi.data.extension.prefs.ExtensionPreferencesProvider
 import tachiyomi.data.library.LibraryRepositoryImpl
 import tachiyomi.data.manga.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerImpl
@@ -22,6 +25,9 @@ object DataModule : Module() {
     bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
     bind(SourceManager::class.java).to(SourceManagerImpl::class.java).singletonInScope()
     bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
+      .providesSingletonInScope()
+    bind(ExtensionManager::class.java).singletonInScope()
+    bind(ExtensionPreferences::class.java).toProvider(ExtensionPreferencesProvider::class.java)
       .providesSingletonInScope()
   }
 

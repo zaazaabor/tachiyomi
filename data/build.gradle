@@ -25,7 +25,12 @@ dependencies {
 
   implementation deps.storio
   implementation deps.rxjava
+  implementation deps.rxandroid
   implementation deps.kotlin.stdlib
+  implementation deps.kotlin.coroutines.core
+  implementation deps.kotlin.coroutines.android
+  implementation deps.gson
+  implementation deps.kotson
 
   implementation deps.toothpick.runtime
   implementation deps.toothpick.smoothie
@@ -38,5 +43,11 @@ kapt {
   generateStubs = true
   arguments {
     arg("toothpick_registry_package_name", "tachiyomi.data")
+  }
+}
+
+kotlin {
+  experimental {
+    coroutines "enable"
   }
 }

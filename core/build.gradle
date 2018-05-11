@@ -9,6 +9,8 @@ dependencies {
   api deps.kotlin.stdlib
   api deps.rxjava
   api deps.okhttp
+
+  implementation deps.toothpick.runtime
 }
 
 kapt {

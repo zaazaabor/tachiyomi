@@ -4,10 +4,10 @@ import android.app.Application
 import tachiyomi.app.BuildConfig
 import tachiyomi.app.FactoryRegistry
 import tachiyomi.app.MemberInjectorRegistry
+import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.HttpModule
 import tachiyomi.data.di.DataModule
 import timber.log.Timber
-import toothpick.Scope
 import toothpick.Toothpick
 import toothpick.configuration.Configuration
 import toothpick.registries.FactoryRegistryLocator
@@ -31,10 +31,4 @@ class App : Application() {
     scope.installModules(SmoothieApplicationModule(this), HttpModule, DataModule)
   }
 
-}
-
-object AppScope
-
-fun openApplicationScope(vararg any: Any): Scope {
-  return Toothpick.openScopes(AppScope, any)
 }

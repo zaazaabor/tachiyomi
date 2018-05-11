@@ -8,9 +8,6 @@ android {
     minSdkVersion buildConfig.minSdk
     targetSdkVersion buildConfig.targetSdk
   }
-  libraryVariants.all {
-    it.generateBuildConfig.enabled = false
-  }
 }
 
 dependencies {
@@ -18,6 +15,9 @@ dependencies {
   implementation deps.duktape
   implementation deps.rxpreferences
   implementation deps.storio
+  implementation deps.support.coreutils
+  implementation deps.kotlin.coroutines.core
+  implementation deps.kotlin.coroutines.android
 
   implementation deps.toothpick.runtime
   kapt deps.toothpick.compiler
@@ -27,5 +27,11 @@ kapt {
   generateStubs = true
   arguments {
     arg("toothpick_registry_package_name", "tachiyomi.core")
+  }
+}
+
+kotlin {
+  experimental {
+    coroutines "enable"
   }
 }

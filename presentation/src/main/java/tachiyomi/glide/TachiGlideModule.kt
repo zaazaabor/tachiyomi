@@ -13,7 +13,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
-import tachiyomi.AppScope
+import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.Http
 import toothpick.Toothpick
 import java.io.InputStream
@@ -29,7 +29,7 @@ class TachiGlideModule : AppGlideModule() {
   lateinit var http: Http
 
   init {
-    Toothpick.inject(this, Toothpick.openScope(AppScope))
+    Toothpick.inject(this, AppScope.root())
   }
 
   override fun applyOptions(context: Context, builder: GlideBuilder) {
