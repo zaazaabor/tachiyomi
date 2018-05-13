@@ -6,13 +6,15 @@ import io.reactivex.processors.BehaviorProcessor
 import tachiyomi.core.rx.addTo
 import tachiyomi.core.rx.mapNullable
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class MangaPresenter @Inject constructor(
   private val mangaId: Long?,
-  private val getManga: GetManga
+  private val getManga: GetManga,
+  private val mangaInitializer: MangaInitializer
 ) : BasePresenter() {
 
   private val stateRelay = BehaviorProcessor.create<MangaViewState>()
@@ -22,7 +24,9 @@ class MangaPresenter @Inject constructor(
   init {
     val initialState = MangaViewState()
 
-    val mangaIntent = getManga.interact(mangaId!!)
+    val sharedManga = getManga.interact(mangaId!!).share()
+
+    val mangaIntent = sharedManga
       .mapNullable { it.get() }
       .map(Change::MangaUpdate)
 
@@ -34,6 +38,13 @@ class MangaPresenter @Inject constructor(
       .observeOn(AndroidSchedulers.mainThread())
       .subscribe(stateRelay::onNext)
       .addTo(disposables)
+
+    // Initialize manga if needed
+    sharedManga.mapNullable { it.get() }
+      .take(1)
+      .flatMapMaybe { mangaInitializer.interact(it) }
+      .ignoreElements()
+      .subscribe()
   }
 
 }

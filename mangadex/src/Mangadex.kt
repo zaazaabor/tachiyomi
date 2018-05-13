@@ -1,6 +1,7 @@
 package tachiyomi.ext.all.mangadex
 
 import com.github.salomonbrys.kotson.forEach
+import com.github.salomonbrys.kotson.int
 import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -103,7 +104,7 @@ open class Mangadex(
   private fun popularMangaNextPageSelector() =
     ".pagination li:not(.disabled) span[title*=last page]:not(disabled)"
 
-  private fun apiRequest(manga: MangaMeta): Request {
+  override fun getMangaDetailsRequest(manga: MangaMeta): Request {
     return GET(baseUrl + URL + getMangaId(manga.key), headers)
   }
 
@@ -118,25 +119,34 @@ open class Mangadex(
   }
 
   override fun parseMangaDetailsResponse(response: Response): MangaMeta {
-//    val manga = MangaMeta.create()
-//    var jsonData = response.body()!!.string()
-//    val json = JsonParser().parse(jsonData).asJsonObject
-//    val mangaJson = json.getAsJsonObject("manga")
-//    manga.thumbnail_url = baseUrl + mangaJson.get("cover_url").string
-//    manga.description = cleanString(mangaJson.get("description").string)
-//    manga.author = mangaJson.get("author").string
-//    manga.artist = mangaJson.get("artist").string
-//    manga.status = parseStatus(mangaJson.get("status").int)
-//    var genres = mutableListOf<String>()
-//
-//    mangaJson.get("genres").asJsonArray.forEach { id ->
-//      getGenreList().find { it -> it.id == id.string }?.let { genre ->
-//        genres.add(genre.name)
-//      }
-//    }
-//    manga.genre = genres.joinToString(", ")
-//    return manga
-    TODO()
+    var jsonData = response.body()!!.string()
+    val json = JsonParser().parse(jsonData).asJsonObject
+    val mangaJson = json.getAsJsonObject("manga")
+    val cover = baseUrl + mangaJson.get("cover_url").string
+    val description = cleanString(mangaJson.get("description").string)
+    val author = mangaJson.get("author").string
+    val artist = mangaJson.get("artist").string
+    val status = parseStatus(mangaJson.get("status").int)
+    var genres = mutableListOf<String>()
+
+    mangaJson.get("genres").asJsonArray.forEach { id ->
+      getGenreList().find { it -> it.id == id.string }?.let { genre ->
+        genres.add(genre.name)
+      }
+    }
+    val genre = genres.joinToString(", ")
+
+    return MangaMeta(
+      key = "",
+      title = "",
+      artist = artist,
+      author = author,
+      description = description,
+      genres = genre,
+      status = status,
+      cover = cover,
+      initialized = true
+    )
   }
 
   //remove bbcode as well as parses any html characters in description or chapter name to actual characters for example &hearts will show a heart
@@ -304,6 +314,15 @@ open class Mangadex(
     Genre("40", "Game"),
     Genre("41", "Isekai")
   )
+
+  override fun handlesLink(url: String): DeepLink? {
+    return when {
+      "/chapter/" in url -> DeepLink.Chapter(url.substringAfter("mangadex.org"))
+      "/manga/" in url -> DeepLink.Manga(url.substringAfter("mangadex.org")
+        .substringBeforeLast("/") + "/")
+      else -> null
+    }
+  }
 
   companion object {
     //this number matches to the cookie

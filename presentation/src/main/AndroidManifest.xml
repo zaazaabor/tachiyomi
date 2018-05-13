@@ -28,5 +28,20 @@
       </intent-filter>
     </activity>
 
+    <activity
+      android:name="tachiyomi.ui.reader.ReaderActivity" />
+
+    <activity
+      android:name="tachiyomi.ui.deeplink.DeepLinkHandlerActivity"
+      android:label="Extension"
+      android:theme="@android:style/Theme.NoDisplay">
+      <intent-filter>
+        <action android:name="tachiyomi.action.HANDLE_LINK" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="http" />
+        <data android:scheme="https" />
+      </intent-filter>
+    </activity>
+
   </application>
 </manifest>

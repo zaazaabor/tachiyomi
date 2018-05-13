@@ -36,7 +36,7 @@ class MangaController(
 
   override fun getModule() = MangaModule(this)
 
-  fun getMangaId() = args.getLong(MANGA_KEY)
+  fun getMangaId() = args.getLong(MANGA_KEY, -1)
 
   //===========================================================================
   // ~ Lifecycle
@@ -98,7 +98,7 @@ class MangaController(
     inflater.inflate(R.menu.manga, menu)
   }
 
-  private companion object {
+  companion object {
     const val MANGA_KEY = "manga_id"
   }
 
