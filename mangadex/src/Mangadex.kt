@@ -2,6 +2,8 @@ package tachiyomi.ext.all.mangadex
 
 import com.github.salomonbrys.kotson.forEach
 import com.github.salomonbrys.kotson.int
+import com.github.salomonbrys.kotson.long
+import com.github.salomonbrys.kotson.nullString
 import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -11,6 +13,8 @@ import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import tachiyomi.core.http.GET
+import tachiyomi.source.DeepLink
+import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Dependencies
 import tachiyomi.source.HttpSource
 import tachiyomi.source.model.ChapterMeta
@@ -26,13 +30,13 @@ import kotlin.collections.set
 
 open class Mangadex(
   private val deps: Dependencies
-) : HttpSource(deps) {
+) : HttpSource(deps), DeepLinkSource {
 
   override val name = "MangaDex"
 
   override val baseUrl = "https://mangadex.org"
 
-  override val client = clientBuilder(ALL)
+  override val client = clientBuilder(NO_R18)
 
   override val lang: String
     get() = "en"
@@ -122,6 +126,7 @@ open class Mangadex(
     var jsonData = response.body()!!.string()
     val json = JsonParser().parse(jsonData).asJsonObject
     val mangaJson = json.getAsJsonObject("manga")
+    val title = mangaJson.get("title").string
     val cover = baseUrl + mangaJson.get("cover_url").string
     val description = cleanString(mangaJson.get("description").string)
     val author = mangaJson.get("author").string
@@ -138,7 +143,7 @@ open class Mangadex(
 
     return MangaMeta(
       key = "",
-      title = "",
+      title = title,
       artist = artist,
       author = author,
       description = description,
@@ -163,6 +168,14 @@ open class Mangadex(
     TODO()
   }
 
+  private fun apiRequest(manga: MangaMeta): Request {
+    return GET(baseUrl + URL + getMangaId(manga.key), headers)
+  }
+
+  override fun getChapterListRequest(manga: MangaMeta): Request {
+    return apiRequest(manga)
+  }
+
   override fun parseChapterResponse(response: Response): List<ChapterMeta> {
     val now = Date().time
     var jsonData = response.body()!!.string()
@@ -173,7 +186,7 @@ open class Mangadex(
     //skip chapters that dont match the desired language, or are future releases
     chapterJson?.forEach { key, jsonElement ->
       val chapterElement = jsonElement.asJsonObject
-      if (chapterElement.get("lang_code").string == "en" &&
+      if (chapterElement.get("lang_code").string == "gb" &&
           (chapterElement.get("timestamp").asLong * 1000) <= now) {
 
         chapterElement.toString()
@@ -184,38 +197,41 @@ open class Mangadex(
   }
 
   private fun chapterFromJson(chapterId: String, chapterJson: JsonObject): ChapterMeta {
-//    val chapter = ChapterMeta.create()
-//    chapter.url = BASE_CHAPTER + chapterId
-//    var chapterName = mutableListOf<String>()
-//    //build chapter name
-//    if (chapterJson.get("volume").string.isNotBlank()) {
-//      chapterName.add("Vol." + chapterJson.get("volume").string)
-//    }
-//    if (chapterJson.get("chapter").string.isNotBlank()) {
-//      chapterName.add("Ch." + chapterJson.get("chapter").string)
-//    }
-//    if (chapterJson.get("title").string.isNotBlank()) {
-//      chapterName.add("-")
-//      chapterName.add(chapterJson.get("title").string)
-//    }
-//
-//    chapter.name = cleanString(chapterName.joinToString(" "))
-//    //convert from unix time
-//    chapter.date_upload = chapterJson.get("timestamp").long * 1000
-//    var scanlatorName = mutableListOf<String>()
-//    if (!chapterJson.get("group_name").nullString.isNullOrBlank()) {
-//      scanlatorName.add(chapterJson.get("group_name").string)
-//    }
-//    if (!chapterJson.get("group_name_2").nullString.isNullOrBlank()) {
-//      scanlatorName.add(chapterJson.get("group_name_2").string)
-//    }
-//    if (!chapterJson.get("group_name_3").nullString.isNullOrBlank()) {
-//      scanlatorName.add(chapterJson.get("group_name_3").string)
-//    }
-//    chapter.scanlator = scanlatorName.joinToString(" & ")
-//
-//    return chapter
-    TODO()
+    val key = BASE_CHAPTER + chapterId
+    var chapterName = mutableListOf<String>()
+    //build chapter name
+    if (chapterJson.get("volume").string.isNotBlank()) {
+      chapterName.add("Vol." + chapterJson.get("volume").string)
+    }
+    if (chapterJson.get("chapter").string.isNotBlank()) {
+      chapterName.add("Ch." + chapterJson.get("chapter").string)
+    }
+    if (chapterJson.get("title").string.isNotBlank()) {
+      chapterName.add("-")
+      chapterName.add(chapterJson.get("title").string)
+    }
+
+    val name = cleanString(chapterName.joinToString(" "))
+    //convert from unix time
+    val dateUpload = chapterJson.get("timestamp").long * 1000
+    var scanlatorName = mutableListOf<String>()
+    if (!chapterJson.get("group_name").nullString.isNullOrBlank()) {
+      scanlatorName.add(chapterJson.get("group_name").string)
+    }
+    if (!chapterJson.get("group_name_2").nullString.isNullOrBlank()) {
+      scanlatorName.add(chapterJson.get("group_name_2").string)
+    }
+    if (!chapterJson.get("group_name_3").nullString.isNullOrBlank()) {
+      scanlatorName.add(chapterJson.get("group_name_3").string)
+    }
+    val scanlator = scanlatorName.joinToString(" & ")
+
+    return ChapterMeta(
+      key = key,
+      name = name,
+      dateUpload = dateUpload,
+      scanlator = scanlator
+    )
   }
 
 //  override fun chapterFromElement(element: Element) = throw Exception("Not used")
@@ -322,6 +338,15 @@ open class Mangadex(
         .substringBeforeLast("/") + "/")
       else -> null
     }
+  }
+
+  override fun findMangaKey(chapterKey: String): String? {
+    val request = GET(baseUrl + chapterKey, headers)
+    val response = client.newCall(request).execute()
+    val body = response.body()?.string() ?: return null
+
+    val document = Jsoup.parse(body)
+    return removeMangaNameFromUrl(document.select(".panel-heading a").attr("href"))
   }
 
   companion object {

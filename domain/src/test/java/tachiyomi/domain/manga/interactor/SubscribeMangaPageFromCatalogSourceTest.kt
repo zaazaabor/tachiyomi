@@ -21,7 +21,7 @@ import toothpick.testing.ToothPickRule
 import javax.inject.Inject
 
 @RunWith(MockitoJUnitRunner::class)
-class GetMangaPageFromCatalogSourceTest {
+class SubscribeMangaPageFromCatalogSourceTest {
 
   @Rule @JvmField
   val toothpickRule = ToothPickRule(this, "GetMangaPageFromCatalogSource")
@@ -51,13 +51,13 @@ class GetMangaPageFromCatalogSourceTest {
     `when`(source.id).thenReturn(1)
     `when`(source.fetchMangaList(anyInt())).thenReturn(sourceMangaPage)
 
-    `when`(mangaRepository.getManga(eq("url1"), anyLong()))
+    `when`(mangaRepository.subscribeManga(eq("url1"), anyLong()))
       .thenReturn(Flowable.just(RxOptional.of(dbManga1)))
 
-    `when`(mangaRepository.getManga(eq("url2"), anyLong()))
+    `when`(mangaRepository.subscribeManga(eq("url2"), anyLong()))
       .thenReturn(Flowable.just(RxOptional.None))
 
-    `when`(mangaRepository.getManga(eq("url3"), anyLong()))
+    `when`(mangaRepository.subscribeManga(eq("url3"), anyLong()))
       .thenReturn(Flowable.just(RxOptional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga1), anyLong()))

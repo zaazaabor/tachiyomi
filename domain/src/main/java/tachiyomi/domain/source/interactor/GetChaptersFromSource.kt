@@ -5,8 +5,9 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.Source
 import tachiyomi.source.model.ChapterMeta
 import tachiyomi.source.model.MangaMeta
+import javax.inject.Inject
 
-class GetChaptersFromSource {
+class GetChaptersFromSource @Inject constructor() {
 
   fun interact(source: Source, manga: Manga): Single<List<ChapterMeta>> {
     return Single.fromCallable {

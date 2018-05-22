@@ -127,7 +127,7 @@ class CatalogBrowsePresenter @Inject constructor(
     return mangaInitializerSubject
       .observeOn(Schedulers.io())
       .flatMapIterable { it }
-      .concatMapMaybe { mangaInitializer.interact(source, it) }
+      .concatMapMaybe { mangaInitializer.interact(source, it).onErrorComplete() }
       .map(Change::MangaInitialized)
   }
 

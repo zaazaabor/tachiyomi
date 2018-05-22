@@ -6,6 +6,7 @@ import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import tachiyomi.core.db.toRxOptional
 import tachiyomi.core.rx.RxOptional
@@ -22,7 +23,7 @@ internal class MangaRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : MangaRepository {
 
-  override fun getManga(mangaId: Long): Flowable<RxOptional<Manga>> {
+  override fun subscribeManga(mangaId: Long): Flowable<RxOptional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -36,7 +37,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .map { it.toRxOptional() }
   }
 
-  override fun getManga(key: String, sourceId: Long): Flowable<RxOptional<Manga>> {
+  override fun subscribeManga(key: String, sourceId: Long): Flowable<RxOptional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -48,6 +49,30 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
       .map { it.toRxOptional() }
+  }
+
+  override fun getManga(mangaId: Long): Maybe<Manga> {
+    return storio.get()
+      .`object`(Manga::class.java)
+      .withQuery(Query.builder()
+        .table(MangaTable.TABLE)
+        .where("${MangaTable.COL_ID} = ?")
+        .whereArgs(mangaId)
+        .build())
+      .prepare()
+      .asRxMaybe()
+  }
+
+  override fun getManga(key: String, sourceId: Long): Maybe<Manga> {
+    return storio.get()
+      .`object`(Manga::class.java)
+      .withQuery(Query.builder()
+        .table(MangaTable.TABLE)
+        .where("${MangaTable.COL_KEY} = ? AND ${MangaTable.COL_SOURCE} = ?")
+        .whereArgs(key, sourceId)
+        .build())
+      .prepare()
+      .asRxMaybe()
   }
 
   override fun updateMangaDetails(manga: Manga): Completable {

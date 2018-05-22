@@ -4,7 +4,7 @@ import toothpick.Scope
 import toothpick.Toothpick
 
 /**
- * The global scope that will provide all the application level components.
+ * The global scope for dependency injection that will provide all the application level components.
  */
 object AppScope {
 

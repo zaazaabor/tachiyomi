@@ -43,7 +43,6 @@ class MangaInitializer @Inject internal constructor(
         mangaRepository.updateMangaDetails(updatedManga)
           .andThen(Maybe.just(updatedManga))
       }
-      .onErrorComplete()
   }
 
   fun interact(manga: Manga, force: Boolean = false): Maybe<Manga> {

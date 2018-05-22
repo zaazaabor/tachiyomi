@@ -62,7 +62,7 @@ class MangaDeepLinkController(
     val stateObserver: Flowable<ViewState> = stateRelay
 
     init {
-      val initialState = ViewState()
+      val initialState = ViewState(loading = true)
 
       bindChanges()
         .scan(initialState, ::reduce)

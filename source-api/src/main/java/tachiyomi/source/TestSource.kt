@@ -84,8 +84,8 @@ class TestSource : CatalogSource {
       "Chapter 1",
       System.currentTimeMillis()
     )
-    val chapter2 = chapter1.copy(key = "2", name = "Manga2")
-    val chapter3 = chapter1.copy(key = "3", name = "Manga3")
+    val chapter2 = chapter1.copy(key = "2", name = "Chapter2")
+    val chapter3 = chapter1.copy(key = "3", name = "Chapter3")
 
     return listOf(chapter1, chapter2, chapter3)
   }

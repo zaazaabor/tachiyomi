@@ -7,12 +7,12 @@ import tachiyomi.core.db.DbOpenHelper
 import tachiyomi.data.category.resolver.CategoryTypeMapping
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
-import tachiyomi.data.chapter.model.Chapter
 import tachiyomi.data.chapter.resolver.ChapterTypeMapping
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.manga.resolver.MangaTypeMapping
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 import javax.inject.Provider

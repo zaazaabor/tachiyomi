@@ -5,13 +5,21 @@ import android.content.Intent
 import android.os.Bundle
 import tachiyomi.core.di.AppScope
 import tachiyomi.data.extension.ExtensionManager
-import tachiyomi.source.HttpSource
+import tachiyomi.domain.source.SourceManager
+import tachiyomi.source.DeepLink
+import tachiyomi.source.DeepLinkSource
+import tachiyomi.source.Source
 import tachiyomi.ui.MainActivity
 import timber.log.Timber
 import toothpick.Toothpick
 import javax.inject.Inject
 
 class DeepLinkHandlerActivity : Activity() {
+
+  // This is unused but still required to initialize the extensions
+  @Suppress("unused")
+  @Inject
+  internal lateinit var sourceManager: SourceManager
 
   @Inject
   internal lateinit var extensionManager: ExtensionManager
@@ -44,7 +52,7 @@ class DeepLinkHandlerActivity : Activity() {
 
     val handlingSources = extension.sources
       .mapNotNull { source ->
-        if (source is HttpSource) {
+        if (source is DeepLinkSource) {
           source.handlesLink(sourceUrl)?.let {
             SourceHandler(source, it)
           }
@@ -64,7 +72,7 @@ class DeepLinkHandlerActivity : Activity() {
     val receiver = handlingSources.first() // TODO intermediary UI to select a receiver?
 
     when (receiver.link) {
-      is HttpSource.DeepLink.Manga -> {
+      is DeepLink.Manga -> {
         val intent = Intent(this, MainActivity::class.java).apply {
           action = MainActivity.SHORTCUT_DEEPLINK_MANGA
           putExtra(MangaDeepLinkController.MANGA_KEY, receiver.link.key)
@@ -73,7 +81,7 @@ class DeepLinkHandlerActivity : Activity() {
         }
         startActivity(intent)
       }
-      is HttpSource.DeepLink.Chapter -> {
+      is DeepLink.Chapter -> {
         val intent = Intent(this, MainActivity::class.java).apply {
           action = MainActivity.SHORTCUT_DEEPLINK_CHAPTER
           putExtra(ChapterDeepLinkController.CHAPTER_KEY, receiver.link.key)
@@ -87,6 +95,6 @@ class DeepLinkHandlerActivity : Activity() {
     finish()
   }
 
-  private data class SourceHandler(val source: HttpSource, val link: HttpSource.DeepLink)
+  private data class SourceHandler(val source: Source, val link: DeepLink)
 
 }

@@ -18,6 +18,17 @@ inline fun StorIOSQLite.inTransaction(block: () -> Unit) {
   }
 }
 
+inline fun <T> StorIOSQLite.inTransactionReturn(block: () -> T): T {
+  lowLevel().beginTransaction()
+  try {
+    val result = block()
+    lowLevel().setTransactionSuccessful()
+    return result
+  } finally {
+    lowLevel().endTransaction()
+  }
+}
+
 fun PreparedDelete.Builder.withId(
   table: String,
   columnName: String,
