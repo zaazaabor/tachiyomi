@@ -18,18 +18,22 @@ buildscript {
     'rxjava'        : '2.1.12',
     'rxandroid'     : '2.0.1',
     'rxbinding'     : '2.1.1',
+    'rxkotlin'      : '2.2.0',
+    'rxrelay'       : '2.0.0',
     'rxpreferences' : '2.0.0-RC3',
     'storio'        : '3.0.0',
     'gson'          : '2.8.4',
     'kotson'        : '2.5.0',
     'jsoup'         : '1.11.3',
+    'duktape'       : '1.2.0',
     'conductor'     : '2.1.4',
     'timber'        : '4.6.1',
     'materialDimens': '1.4',
     'materialDialog': '0.9.6.0',
     'glide'         : '4.6.1',
     'junit'         : '4.12',
-    'mockito'       : '2.16.0'
+    'mockito'       : '2.16.0',
+    'mockitokotlin' : '1.5.0'
   ]
   ext.deps = [
     'kotlin'   : [
@@ -50,7 +54,8 @@ buildscript {
     'storio'   : "com.pushtorefresh.storio3:sqlite:${versions.storio}",
     'rxjava'   : "io.reactivex.rxjava2:rxjava:${versions.rxjava}",
     'rxandroid': "io.reactivex.rxjava2:rxandroid:${versions.rxandroid}",
-    'rxkotlin': "io.reactivex.rxjava2:rxkotlin:2.2.0",
+    'rxkotlin': "io.reactivex.rxjava2:rxkotlin:${versions.rxkotlin}",
+    'rxrelay': "com.jakewharton.rxrelay2:rxrelay:${versions.rxrelay}",
     'rxpreferences': "com.f2prateek.rx.preferences2:rx-preferences:${versions.rxpreferences}",
     'rxbinding': [
       'platform': "com.jakewharton.rxbinding2:rxbinding-kotlin:${versions.rxbinding}",
@@ -69,7 +74,7 @@ buildscript {
     'conductor': "com.bluelinelabs:conductor:${versions.conductor}",
     'okhttp': "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     'timber': "com.jakewharton.timber:timber:${versions.timber}",
-    'duktape': "com.squareup.duktape:duktape-android:1.2.0",
+    'duktape': "com.squareup.duktape:duktape-android:${versions.duktape}",
     'materialDimens': "com.dmitrymalkovich.android:material-design-dimens:${versions.materialDimens}",
     'materialDialog': "com.afollestad.material-dialogs:core:${versions.materialDialog}",
     'glide'  : [
@@ -80,7 +85,7 @@ buildscript {
     'junit'  : "junit:junit:${versions.junit}",
     'mockito': [
       'core': "org.mockito:mockito-core:${versions.mockito}",
-      'kotlin': "com.nhaarman:mockito-kotlin:1.5.0"
+      'kotlin': "com.nhaarman:mockito-kotlin:${versions.mockitokotlin}"
     ]
   ]
   repositories {

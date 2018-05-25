@@ -36,9 +36,7 @@ class CatalogBrowsePresenter @Inject constructor(
 
   private var currentState: CatalogBrowseViewState
 
-  private val actionsRelay = PublishProcessor.create<Action>()
-
-  private val actionsObserver = actionsRelay.onBackpressureBuffer().share()
+  private val actions = ActionsPublisher<Action>()
 
   init {
     val gridPreference = catalogPreferences.gridMode()
@@ -79,7 +77,7 @@ class CatalogBrowsePresenter @Inject constructor(
     source: CatalogSource,
     mangaInitializerSubject: FlowableProcessor<List<Manga>>
   ): Flowable<Change> {
-    return actionsObserver.ofType(Action.PerformSearch::class.java)
+    return actions.ofType(Action.PerformSearch::class)
       // Always perform initial search
       .startWith(Action.PerformSearch(currentState.query, currentState.activeFilters))
       .distinctUntilChanged()
@@ -88,7 +86,7 @@ class CatalogBrowsePresenter @Inject constructor(
         val currentPage = AtomicInteger(1)
         val hasNextPage = AtomicBoolean(true)
 
-        actionsObserver.ofType(Action.LoadMore::class.java)
+        actions.ofType(Action.LoadMore::class)
           .startWith(Action.LoadMore) // Always load the initial page
           .map { currentPage.get() }
           .concatMap f@{ requestedPage ->
@@ -111,7 +109,7 @@ class CatalogBrowsePresenter @Inject constructor(
   }
 
   private fun bindQueryChange(): Flowable<Change.QueryUpdate> {
-    return actionsObserver.ofType(Action.Query::class.java)
+    return actions.ofType(Action.Query::class)
       .debounce { if (it.submit) Flowable.empty() else Flowable.timer(1250, MILLISECONDS) }
       .flatMap { action ->
         Flowable.just(Change.QueryUpdate(action.query))
@@ -132,7 +130,7 @@ class CatalogBrowsePresenter @Inject constructor(
   }
 
   private fun bindDisplayMode(gridPreference: Preference<Boolean>): Flowable<Change> {
-    return actionsObserver.ofType(Action.SwapDisplayMode::class.java)
+    return actions.ofType(Action.SwapDisplayMode::class)
       .map {
         val newValue = !gridPreference.get()
         gridPreference.set(newValue)
@@ -142,26 +140,26 @@ class CatalogBrowsePresenter @Inject constructor(
   }
 
   private fun bindErrorDelivered(): Flowable<Change> {
-    return actionsObserver.ofType(Action.ErrorDelivered::class.java)
+    return actions.ofType(Action.ErrorDelivered::class)
       .map { Change.LoadingError(null) }
   }
 
   fun performSearch(query: String? = null, filters: FilterList? = null) {
     val actionQuery = query ?: currentState.query
     val actionFilters = filters ?: currentState.activeFilters
-    actionsRelay.onNext(Action.PerformSearch(actionQuery, actionFilters))
+    actions.emit(Action.PerformSearch(actionQuery, actionFilters))
   }
 
   fun swapDisplayMode() {
-    actionsRelay.onNext(Action.SwapDisplayMode)
+    actions.emit(Action.SwapDisplayMode)
   }
 
   fun setQuery(query: String, submit: Boolean) {
-    actionsRelay.onNext(Action.Query(query, submit))
+    actions.emit(Action.Query(query, submit))
   }
 
   fun loadMore() {
-    actionsRelay.onNext(Action.LoadMore)
+    actions.emit(Action.LoadMore)
   }
 
 }
