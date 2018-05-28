@@ -25,7 +25,7 @@ class TestSource : CatalogSource {
     query: String,
     filters: FilterList
   ): MangasPageMeta {
-    Thread.sleep(1500)
+//    Thread.sleep(1500)
     val filteredMangas = getTestManga(page).filter { query in it.title }
     return MangasPageMeta(filteredMangas, false)
   }

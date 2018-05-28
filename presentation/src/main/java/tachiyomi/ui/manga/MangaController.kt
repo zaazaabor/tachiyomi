@@ -2,6 +2,7 @@ package tachiyomi.ui.manga
 
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
+import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
 import kotlinx.android.synthetic.main.manga_controller.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
@@ -55,11 +57,15 @@ class MangaController(
     container: ViewGroup,
     savedViewState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.manga_controller, container, false)
+    val th = LayoutInflater.from(ContextThemeWrapper(container.context, R.style.Theme_Reader))
+    return th.inflate(R.layout.manga_controller, container, false)
   }
 
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
+
+    manga_toolbar.navigationClicks()
+      .subscribeWithView { router.handleBack() }
 
     adapter = MangaAdapter()
     manga_recycler.adapter = adapter
@@ -86,7 +92,7 @@ class MangaController(
   }
 
   private fun renderHeader(header: MangaHeader?) {
-    requestTitle(header?.manga?.title.orEmpty())
+    manga_toolbar.title = header?.manga?.title.orEmpty()
     adapter?.submitList(listOf(header))
   }
 

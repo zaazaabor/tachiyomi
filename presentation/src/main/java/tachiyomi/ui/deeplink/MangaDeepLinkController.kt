@@ -14,7 +14,7 @@ import tachiyomi.domain.manga.interactor.GetOrAddMangaFromSource
 import tachiyomi.source.model.MangaMeta
 import tachiyomi.ui.base.BasePresenter
 import tachiyomi.ui.base.MvpScopedController
-import tachiyomi.ui.base.withFadeTransaction
+import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
 import javax.inject.Inject
 
@@ -47,7 +47,7 @@ class MangaDeepLinkController(
   // TODO complete all renderizable components
   private fun render(state: ViewState) {
     if (state.mangaId != null) {
-      router.setRoot(MangaController(state.mangaId).withFadeTransaction())
+      router.setRoot(MangaController(state.mangaId).withFadeTransition())
     }
   }
 

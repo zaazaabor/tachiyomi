@@ -35,8 +35,9 @@
   <!--==============-->
   <style name="Theme.Reader" parent="Theme.Base.Reader">
     <!-- Attributes specific for SDK 21 and up  -->
-    <item name="android:statusBarColor">?colorPrimaryDark</item>
-    <item name="android:navigationBarColor">?colorPrimaryDark</item>
+    <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@color/colorDarkPrimaryDark</item>
   </style>
 
 </resources>

@@ -15,7 +15,7 @@ class CatalogsAdapter(
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SourceHolder {
     val inflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.catalogue_card_item, parent, false)
+    val view = inflater.inflate(R.layout.catalogs_card_item, parent, false)
     return SourceHolder(view, this)
   }
 

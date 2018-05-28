@@ -71,7 +71,7 @@ buildscript {
     'gson': "com.google.code.gson:gson:${versions.gson}",
     'kotson': "com.github.salomonbrys.kotson:kotson:${versions.kotson}",
     'jsoup': "org.jsoup:jsoup:${versions.jsoup}",
-    'conductor': "com.bluelinelabs:conductor:${versions.conductor}",
+    'conductor': "com.github.inorichi.Conductor:conductor:be8b3c5",
     'okhttp': "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     'timber': "com.jakewharton.timber:timber:${versions.timber}",
     'duktape': "com.squareup.duktape:duktape-android:${versions.duktape}",

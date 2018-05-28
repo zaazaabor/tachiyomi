@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
+import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
 import com.jakewharton.rxbinding2.support.v7.widget.queryTextChangeEvents
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -25,7 +26,7 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
-import tachiyomi.ui.base.withFadeTransaction
+import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.util.visibleIf
 import tachiyomi.widget.EndlessRecyclerViewScrollListener
@@ -95,6 +96,9 @@ class CatalogBrowseController(
 
     catalogbrowse_recycler.setHasFixedSize(true)
 
+    catalogbrowse_toolbar.navigationClicks()
+      .subscribeWithView { router.handleBack() }
+
     presenter.stateRelay
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
@@ -133,7 +137,8 @@ class CatalogBrowseController(
   }
 
   private fun renderSource(source: CatalogSource) {
-    requestTitle(source.name)
+    catalogbrowse_toolbar.title = source.name
+    catalogbrowse_toolbar.subtitle = "Latest"
   }
 
   private fun renderLayoutManager(isGridMode: Boolean) {
@@ -266,7 +271,7 @@ class CatalogBrowseController(
   }
 
   override fun onMangaClick(manga: Manga) {
-    router.pushController(MangaController(manga.id).withFadeTransaction())
+    findRootRouter().pushController(MangaController(manga.id).withFadeTransition())
   }
 
   private companion object {

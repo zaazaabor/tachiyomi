@@ -5,13 +5,15 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.catalogue_controller.*
+import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.app.R
 import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.MvpScopedController
-import tachiyomi.ui.base.withFadeTransaction
+import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
+import tachiyomi.ui.home.HomeController
 
 class CatalogsController : MvpScopedController<CatalogsPresenter>(),
   CatalogsAdapter.Listener {
@@ -19,8 +21,6 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
   private var adapter: CatalogsAdapter? = null
 
   override fun getPresenterClass() = CatalogsPresenter::class.java
-
-  override fun getTitle() = resources?.getString(R.string.label_catalogues)
 
   //===========================================================================
   // ~ Lifecycle
@@ -31,14 +31,17 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
     container: ViewGroup,
     savedViewState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.catalogue_controller, container, false)
+    return inflater.inflate(R.layout.catalogs_controller, container, false)
   }
 
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
     adapter = CatalogsAdapter(this)
-    catalogue_recycler.layoutManager = LinearLayoutManager(view.context)
-    catalogue_recycler.adapter = adapter
+    catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
+    catalogs_recycler.adapter = adapter
+
+    catalogs_toolbar.navigationClicks()
+      .subscribeWithView { (parentController as? HomeController)?.openDrawer() }
 
     presenter.stateRelay
       .map { it.catalogs }
@@ -65,7 +68,7 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
   //===========================================================================
 
   override fun onRowClick(catalog: CatalogSource) {
-    router.pushController(CatalogBrowseController(catalog.id).withFadeTransaction())
+    router.pushController(CatalogBrowseController(catalog.id).withFadeTransition())
   }
 
   override fun onBrowseClick(catalog: CatalogSource) {
