@@ -2,10 +2,11 @@ package tachiyomi.source
 
 import tachiyomi.source.model.ChapterMeta
 import tachiyomi.source.model.Filter
-import tachiyomi.source.model.FilterList
 import tachiyomi.source.model.MangaMeta
 import tachiyomi.source.model.MangasPageMeta
 import tachiyomi.source.model.PageMeta
+import tachiyomi.source.model.SearchQuery
+import tachiyomi.source.model.Sorting
 
 class TestSource : CatalogSource {
 
@@ -20,13 +21,8 @@ class TestSource : CatalogSource {
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
-  override fun fetchMangaList(
-    page: Int,
-    query: String,
-    filters: FilterList
-  ): MangasPageMeta {
-//    Thread.sleep(1500)
-    val filteredMangas = getTestManga(page).filter { query in it.title }
+  override fun fetchMangaList(query: SearchQuery, page: Int): MangasPageMeta {
+    val filteredMangas = getTestManga(page).filter { query.query in it.title }
     return MangasPageMeta(filteredMangas, false)
   }
 
@@ -40,6 +36,20 @@ class TestSource : CatalogSource {
     return getTestPages()
   }
 
+  inner class Alphabetically : Sorting {
+    override val name = "Alphabetically"
+    override fun getFilters() = listOf(Status(), Author(), GenreList(getGenreList()))
+  }
+
+  inner class Latest : Sorting {
+    override val name = "Latest"
+    override fun getFilters() = listOf(Status(), GenreList(getGenreList()))
+  }
+
+  override fun getSortings(): List<Sorting> {
+    return listOf(Alphabetically(), Latest())
+  }
+
   private class Status : Filter.TriState("Completed")
   private class Author : Filter.Text("Author")
   private class Genre(name: String) : Filter.TriState(name)
@@ -50,10 +60,6 @@ class TestSource : CatalogSource {
     Genre("Adventure"),
     Genre("Comedy")
   )
-
-  override fun getFilterList(): FilterList {
-    return listOf(Status(), Author(), GenreList(getGenreList()))
-  }
 
   private fun getTestManga(page: Int): List<MangaMeta> {
     val list = mutableListOf<MangaMeta>()

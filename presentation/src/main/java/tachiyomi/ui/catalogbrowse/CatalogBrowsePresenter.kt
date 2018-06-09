@@ -1,7 +1,6 @@
 package tachiyomi.ui.catalogbrowse
 
 import io.reactivex.Flowable
-import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.FlowableProcessor
@@ -18,8 +17,9 @@ import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.FilterList
+import tachiyomi.source.model.SearchQuery
+import tachiyomi.source.model.Sorting
 import tachiyomi.ui.base.BasePresenter
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -34,24 +34,12 @@ class CatalogBrowsePresenter @Inject constructor(
 
   val stateRelay = BehaviorProcessor.create<CatalogBrowseViewState>()
 
-  private var currentState: CatalogBrowseViewState
+  private var currentState = CatalogBrowseViewState()
 
   private val actions = ActionsPublisher<Action>()
 
   init {
-    val gridPreference = catalogPreferences.gridMode()
-
-    currentState = CatalogBrowseViewState(isGridMode = gridPreference.get())
-
-    val sourceIntents = Maybe.fromCallable { sourceManager.get(sourceId!!) as? CatalogSource }
-      .flatMapPublisher(::bindIntentsToSource)
-
-    val displayMode = bindDisplayMode(gridPreference)
-    val errorDelivered = bindErrorDelivered()
-
-    val intents = listOf(sourceIntents, displayMode, errorDelivered)
-
-    Flowable.merge(intents)
+    bindChanges()
       .scan(currentState, ::reduce)
       .logOnNext()
       .observeOn(AndroidSchedulers.mainThread())
@@ -60,31 +48,57 @@ class CatalogBrowsePresenter @Inject constructor(
       .addTo(disposables)
   }
 
-  private fun bindIntentsToSource(source: CatalogSource): Flowable<Change> {
+  private fun bindChanges(): Flowable<Change> {
+    val source = sourceManager.get(sourceId!!) as? CatalogSource
+      ?: return Flowable.just(Change.SourceNotFound)
+
+    val sortings = source.getSortings()
+
+    val gridPreference = catalogPreferences.gridMode()
+    val lastSortingUsedPreference = catalogPreferences.lastSortingUsed(sourceId)
+
+    currentState = CatalogBrowseViewState(
+      source = source,
+      sortings = sortings,
+      activeSorting = sortings.getOrNull(lastSortingUsedPreference.get()),
+      isGridMode = gridPreference.get()
+    )
+
     val mangaInitializerSubject = PublishProcessor.create<List<Manga>>().toSerialized()
 
-    val activeSource = Flowable.just(Change.SourceUpdate(source))
     val queryChange = bindQueryChange()
-    val pageLoader = bindPageLoader(source, mangaInitializerSubject)
+    val sortingChange = bindSortingChange(sortings, lastSortingUsedPreference)
+      .startWith(Change.SortingUpdate(currentState.activeSorting))
+      .switchMap {
+        Flowable.merge(
+          Flowable.just(it),
+          bindPageLoader(source, it.sorting, mangaInitializerSubject)
+        )
+      }
     val mangaInitialized = bindMangaInitialized(source, mangaInitializerSubject)
+    val displayMode = bindDisplayMode(gridPreference)
+    val errorDelivered = bindErrorDelivered()
 
-    val intents = listOf(activeSource, queryChange, pageLoader, mangaInitialized)
+    val changes = listOf(queryChange, sortingChange, mangaInitialized, displayMode,
+      errorDelivered)
 
-    return Flowable.merge(intents)
+    return Flowable.merge(changes)
   }
 
   private fun bindPageLoader(
     source: CatalogSource,
+    sorting: Sorting?,
     mangaInitializerSubject: FlowableProcessor<List<Manga>>
   ): Flowable<Change> {
     return actions.ofType(Action.PerformSearch::class)
       // Always perform initial search
-      .startWith(Action.PerformSearch(currentState.query, currentState.activeFilters))
+      .startWith(Action.PerformSearch("", emptyList()))
       .distinctUntilChanged()
-      .logOnNext()
-      .switchMap { (query, activeFilters) ->
+      .switchMap { action ->
         val currentPage = AtomicInteger(1)
         val hasNextPage = AtomicBoolean(true)
+
+        val query = SearchQuery(sorting, action.query, action.filters)
 
         actions.ofType(Action.LoadMore::class)
           .startWith(Action.LoadMore) // Always load the initial page
@@ -93,7 +107,7 @@ class CatalogBrowsePresenter @Inject constructor(
             val page = currentPage.get()
             if (!hasNextPage.get() || requestedPage < page) return@f Flowable.empty<Change>()
 
-            getMangaPageFromCatalogSource.interact(source, page, query, activeFilters)
+            getMangaPageFromCatalogSource.interact(source, query, page)
               .subscribeOn(Schedulers.io())
               .doOnSuccess { mangasPage ->
                 mangaInitializerSubject.onNext(mangasPage.mangas)
@@ -110,12 +124,27 @@ class CatalogBrowsePresenter @Inject constructor(
 
   private fun bindQueryChange(): Flowable<Change.QueryUpdate> {
     return actions.ofType(Action.Query::class)
-      .debounce { if (it.submit) Flowable.empty() else Flowable.timer(1250, MILLISECONDS) }
       .flatMap { action ->
         Flowable.just(Change.QueryUpdate(action.query))
           .doOnNext { performSearch(it.query) }
       }
       .map { Change.QueryUpdate(it.query) }
+  }
+
+  private fun bindSortingChange(
+    types: List<Sorting>,
+    lastSortingUsedPreference: Preference<Int>
+  ): Flowable<Change.SortingUpdate> {
+    return actions.ofType(Action.Sorting::class)
+      .flatMap { action ->
+        val type = types.getOrNull(action.index)
+        if (type == null) {
+          Flowable.empty()
+        } else {
+          lastSortingUsedPreference.set(action.index)
+          Flowable.just(Change.SortingUpdate(type))
+        }
+      }
   }
 
   private fun bindMangaInitialized(
@@ -146,7 +175,7 @@ class CatalogBrowsePresenter @Inject constructor(
 
   fun performSearch(query: String? = null, filters: FilterList? = null) {
     val actionQuery = query ?: currentState.query
-    val actionFilters = filters ?: currentState.activeFilters
+    val actionFilters = filters ?: currentState.filters
     actions.emit(Action.PerformSearch(actionQuery, actionFilters))
   }
 
@@ -154,12 +183,16 @@ class CatalogBrowsePresenter @Inject constructor(
     actions.emit(Action.SwapDisplayMode)
   }
 
-  fun setQuery(query: String, submit: Boolean) {
-    actions.emit(Action.Query(query, submit))
+  fun setQuery(query: String) {
+    actions.emit(Action.Query(query))
   }
 
   fun loadMore() {
     actions.emit(Action.LoadMore)
+  }
+
+  fun setSorting(index: Int) {
+    actions.emit(Action.Sorting(index))
   }
 
 }
@@ -167,35 +200,46 @@ class CatalogBrowsePresenter @Inject constructor(
 private sealed class Action {
   object SwapDisplayMode : Action()
   object LoadMore : Action()
-  data class Query(val query: String, val submit: Boolean) : Action()
+  data class Sorting(val index: Int) : Action()
+  data class Query(val query: String) : Action()
   data class PerformSearch(val query: String, val filters: FilterList) : Action()
   object ErrorDelivered : Action()
 }
 
 private sealed class Change {
-  data class SourceUpdate(val source: CatalogSource) : Change()
+  data class SortingUpdate(val sorting: Sorting?) : Change()
   data class PageReceived(val page: MangasPage) : Change()
   data class DisplayModeUpdate(val isGridMode: Boolean) : Change()
   data class MangaInitialized(val manga: Manga) : Change()
   data class QueryUpdate(val query: String) : Change()
   data class Loading(val isLoading: Boolean, val page: Int) : Change()
   data class LoadingError(val error: Throwable?) : Change()
+  object SourceNotFound : Change()
 }
 
 private fun reduce(state: CatalogBrowseViewState, change: Change): CatalogBrowseViewState {
   return when (change) {
-    is Change.SourceUpdate -> state.copy(source = change.source, mangas = emptyList(),
-      sourceFilters = change.source.getFilterList(), activeFilters = emptyList(),
-      hasMorePages = true)
-    is Change.PageReceived -> state.copy(mangas = state.mangas + change.page.mangas,
-      isLoading = false, hasMorePages = change.page.hasNextPage)
+    is Change.SortingUpdate -> state.copy(
+      activeSorting = change.sorting,
+      query = "",
+      filters = emptyList()
+    )
+    is Change.PageReceived -> state.copy(
+      mangas = state.mangas + change.page.mangas,
+      isLoading = false,
+      hasMorePages = change.page.hasNextPage
+    )
     is Change.DisplayModeUpdate -> state.copy(isGridMode = change.isGridMode)
     is Change.MangaInitialized -> state.copy(mangas = state.mangas
       .replaceFirst({ it.id == change.manga.id }, change.manga)
     )
-    is Change.QueryUpdate -> state.copy(query = change.query)
-    is Change.Loading -> state.copy(isLoading = change.isLoading, hasMorePages = true,
-      mangas = if (change.isLoading && change.page == 1) emptyList() else state.mangas)
+    is Change.QueryUpdate -> state.copy(query = state.query)
+    is Change.Loading -> state.copy(
+      isLoading = change.isLoading,
+      hasMorePages = true,
+      mangas = if (change.isLoading && change.page == 1) emptyList() else state.mangas
+    )
     is Change.LoadingError -> state.copy(error = change.error, isLoading = false)
+    is Change.SourceNotFound -> state.copy(error = Exception("Source not found"))
   }
 }

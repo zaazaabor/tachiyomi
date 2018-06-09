@@ -1,14 +1,15 @@
 package tachiyomi.source
 
-import tachiyomi.source.model.FilterList
 import tachiyomi.source.model.MangasPageMeta
+import tachiyomi.source.model.SearchQuery
+import tachiyomi.source.model.Sorting
 
 interface CatalogSource : Source {
 
   val lang: String
 
-  fun fetchMangaList(page: Int, query: String, filters: FilterList): MangasPageMeta
+  fun fetchMangaList(query: SearchQuery, page: Int): MangasPageMeta
 
-  fun getFilterList(): FilterList
+  fun getSortings(): List<Sorting>
 
 }

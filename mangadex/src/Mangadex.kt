@@ -8,10 +8,7 @@ import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import tachiyomi.core.http.GET
 import tachiyomi.source.DeepLink
 import tachiyomi.source.DeepLinkSource
@@ -19,10 +16,12 @@ import tachiyomi.source.Dependencies
 import tachiyomi.source.HttpSource
 import tachiyomi.source.model.ChapterMeta
 import tachiyomi.source.model.Filter
-import tachiyomi.source.model.FilterList
 import tachiyomi.source.model.MangaMeta
 import tachiyomi.source.model.MangasPageMeta
 import tachiyomi.source.model.PageMeta
+import tachiyomi.source.model.SearchQuery
+import tachiyomi.source.model.Sorting
+import tachiyomi.source.util.asJsoup
 import java.net.URLEncoder
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -68,62 +67,33 @@ open class Mangadex(
       "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
     }
 
-  private fun popularMangaSelector() = "div.col-sm-6"
+  override fun fetchMangaList(query: SearchQuery, page: Int): MangasPageMeta {
+    val request = GET("$baseUrl/titles/0/$page", headers)
+    val document = client.newCall(request).execute().asJsoup()
 
-  override fun getMangaListRequest(
-    page: Int,
-    query: String,
-    filters: FilterList
-  ): Request {
-    return GET("$baseUrl/titles/0/$page", headers)
-  }
+    val mangas = document.select("div.col-sm-6").map { element ->
+      val titleElement = element.select("a.manga_title").first()
+      val coverElement = element.select("div.large_logo img").first()
 
-  override fun parseMangaListResponse(response: Response): MangasPageMeta {
-    val document = Jsoup.parse(response.body()!!.string(), response.request().url().toString())
-
-    val mangas = document.select(popularMangaSelector()).map { element ->
-      popularMangaFromElement(element)
+      MangaMeta(
+        key = removeMangaNameFromUrl(titleElement.attr("href")),
+        title = titleElement.text().trim(),
+        cover = baseUrl + coverElement.attr("src")
+      )
     }
 
-    val hasNextPage = popularMangaNextPageSelector().let { selector ->
-      document.select(selector).first()
-    } != null
+    val hasNextPage = document
+      .select(".pagination li:not(.disabled) span[title*=last page]:not(disabled)")
+      .first() != null
 
     return MangasPageMeta(mangas, hasNextPage)
   }
 
-  private fun popularMangaFromElement(element: Element): MangaMeta {
-    val titleElement = element.select("a.manga_title").first()
-    val coverElement = element.select("div.large_logo img").first()
+  override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
+    val request = GET(baseUrl + URL + getMangaId(manga.key), headers)
+    val response = client.newCall(request).execute()
 
-    return MangaMeta(
-      key = removeMangaNameFromUrl(titleElement.attr("href")),
-      title = titleElement.text().trim(),
-      cover = baseUrl + coverElement.attr("src")
-    )
-  }
-
-  private fun removeMangaNameFromUrl(url: String): String = url.substringBeforeLast("/") + "/"
-
-  private fun popularMangaNextPageSelector() =
-    ".pagination li:not(.disabled) span[title*=last page]:not(disabled)"
-
-  override fun getMangaDetailsRequest(manga: MangaMeta): Request {
-    return GET(baseUrl + URL + getMangaId(manga.key), headers)
-  }
-
-  private fun getMangaId(url: String): String {
-    val lastSection = url.trimEnd('/').substringAfterLast("/")
-    return if (lastSection.toIntOrNull() != null) {
-      lastSection
-    } else {
-      //this occurs if person has manga from before that had the id/name/
-      url.trimEnd('/').substringBeforeLast("/").substringAfterLast("/")
-    }
-  }
-
-  override fun parseMangaDetailsResponse(response: Response): MangaMeta {
-    var jsonData = response.body()!!.string()
+    val jsonData = response.body()!!.string()
     val json = JsonParser().parse(jsonData).asJsonObject
     val mangaJson = json.getAsJsonObject("manga")
     val title = mangaJson.get("title").string
@@ -132,7 +102,7 @@ open class Mangadex(
     val author = mangaJson.get("author").string
     val artist = mangaJson.get("artist").string
     val status = parseStatus(mangaJson.get("status").int)
-    var genres = mutableListOf<String>()
+    val genres = mutableListOf<String>()
 
     mangaJson.get("genres").asJsonArray.forEach { id ->
       getGenreList().find { it -> it.id == id.string }?.let { genre ->
@@ -154,29 +124,10 @@ open class Mangadex(
     )
   }
 
-  //remove bbcode as well as parses any html characters in description or chapter name to actual characters for example &hearts will show a heart
-  private fun cleanString(description: String): String {
-    return Jsoup.parseBodyFragment(description.replace("[list]", "").replace("[/list]", "").replace("[*]", "").replace("""\[(\w+)[^\]]*](.*?)\[/\1]""".toRegex(), "$2")).text()
-  }
+  override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
+    val request = GET(baseUrl + URL + getMangaId(manga.key), headers)
+    val response = client.newCall(request).execute()
 
-  /**
-   * Parses the response from the site and returns the absolute url to the source image.
-   *
-   * @param response the response from the site.
-   */
-  override fun parseImageUrlResponse(response: Response): String {
-    TODO()
-  }
-
-  private fun apiRequest(manga: MangaMeta): Request {
-    return GET(baseUrl + URL + getMangaId(manga.key), headers)
-  }
-
-  override fun getChapterListRequest(manga: MangaMeta): Request {
-    return apiRequest(manga)
-  }
-
-  override fun parseChapterResponse(response: Response): List<ChapterMeta> {
     val now = Date().time
     var jsonData = response.body()!!.string()
     val json = JsonParser().parse(jsonData).asJsonObject
@@ -187,13 +138,34 @@ open class Mangadex(
     chapterJson?.forEach { key, jsonElement ->
       val chapterElement = jsonElement.asJsonObject
       if (chapterElement.get("lang_code").string == "gb" &&
-          (chapterElement.get("timestamp").asLong * 1000) <= now) {
+        (chapterElement.get("timestamp").asLong * 1000) <= now) {
 
         chapterElement.toString()
         chapters.add(chapterFromJson(key, chapterElement))
       }
     }
     return chapters
+  }
+
+  override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
+    TODO()
+  }
+
+  private fun removeMangaNameFromUrl(url: String): String = url.substringBeforeLast("/") + "/"
+
+  private fun getMangaId(url: String): String {
+    val lastSection = url.trimEnd('/').substringAfterLast("/")
+    return if (lastSection.toIntOrNull() != null) {
+      lastSection
+    } else {
+      //this occurs if person has manga from before that had the id/name/
+      url.trimEnd('/').substringBeforeLast("/").substringAfterLast("/")
+    }
+  }
+
+  //remove bbcode as well as parses any html characters in description or chapter name to actual characters for example &hearts will show a heart
+  private fun cleanString(description: String): String {
+    return Jsoup.parseBodyFragment(description.replace("[list]", "").replace("[/list]", "").replace("[*]", "").replace("""\[(\w+)[^\]]*](.*?)\[/\1]""".toRegex(), "$2")).text()
   }
 
   private fun chapterFromJson(chapterId: String, chapterJson: JsonObject): ChapterMeta {
@@ -234,31 +206,6 @@ open class Mangadex(
     )
   }
 
-//  override fun chapterFromElement(element: Element) = throw Exception("Not used")
-
-  /**
-   * Parses the response from the site and returns a list of pages.
-   *
-   * @param response the response from the site.
-   */
-  override fun parsePageList(response: Response): List<PageMeta> {
-    TODO()
-//    val pages = mutableListOf<PageMeta>()
-//    val url = document.baseUri()
-//
-//    val dataUrl = document.select("script").last().html().substringAfter("dataurl = '").substringBefore("';")
-//    val imageUrl = document.select("script").last().html().substringAfter("page_array = [").substringBefore("];")
-//    val listImageUrls = imageUrl.replace("'", "").split(",")
-//    val server = document.select("script").last().html().substringAfter("server = '").substringBefore("';")
-//
-//    listImageUrls.filter { it.isNotBlank() }.forEach {
-//      val url = "$server$dataUrl/$it"
-//      pages.add(PageMeta("", getImageUrl(url)))
-//    }
-//
-//    return pages
-  }
-
 //  override fun imageUrlParse(document: Document): String = ""
 
   private fun parseStatus(status: Int) = when (status) {
@@ -275,12 +222,21 @@ open class Mangadex(
     return baseUrl + attr
   }
 
+  override fun getSortings(): List<Sorting> {
+    return listOf(Latest())
+  }
+
+  inner class Latest : Sorting {
+    override val name = "Latest"
+    override fun getFilters() = getFilterList()
+  }
+
   private class TextField(name: String, val key: String) : Filter.Text(name)
   private class Genre(val id: String, name: String) : Filter.CheckBox(name)
   private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
   private class R18 : Filter.Select<String>("R18+", arrayOf("Show all", "Show only", "Show none"))
 
-  override fun getFilterList() = listOf(
+  private fun getFilterList() = listOf(
     TextField("Author", "author"),
     TextField("Artist", "artist"),
     R18(),

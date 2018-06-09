@@ -5,18 +5,22 @@
   xmlns:tools="http://schemas.android.com/tools"
   tools:context=".CatalogueListActivity">
 
-  <item
-    android:id="@+id/action_search"
-    android:title="Search"
-    android:icon="@drawable/ic_search_white_24dp"
-    app:showAsAction="collapseActionView|always"
-    app:actionViewClass="android.support.v7.widget.SearchView"/>
+  <!--<item-->
+    <!--android:id="@+id/action_search"-->
+    <!--android:title="Search"-->
+    <!--android:icon="@drawable/ic_search_white_24dp"-->
+    <!--app:showAsAction="collapseActionView|always"-->
+    <!--app:actionViewClass="android.support.v7.widget.SearchView"/>-->
 
   <item
-    android:id="@+id/action_set_filter"
-    android:title="Filters"
-    android:icon="@drawable/ic_filter_list_white_24dp"
-    app:showAsAction="collapseActionView|ifRoom"/>
+    android:id="@+id/action_sort"
+    android:title="Sort"
+    android:icon="@drawable/ic_sort_white_24dp"
+    app:showAsAction="collapseActionView|ifRoom">
+
+    <menu/>
+
+  </item>
 
   <item
     android:id="@+id/action_display_mode"

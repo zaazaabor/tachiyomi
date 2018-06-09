@@ -13,6 +13,7 @@ buildscript {
     'coroutines'    : '0.21.2',
     'supportLibrary': '27.1.1',
     'constraint'    : '1.1.0',
+    'androidktx'    : '0.3',
     'okhttp'        : '3.10.0',
     'toothpick'     : '1.1.3',
     'rxjava'        : '2.1.12',
@@ -51,6 +52,7 @@ buildscript {
       'coreutils': "com.android.support:support-core-utils:${versions.supportLibrary}"
     ],
     'constraint': "com.android.support.constraint:constraint-layout:${versions.constraint}",
+    'androidktx': "androidx.core:core-ktx:${versions.androidktx}",
     'storio'   : "com.pushtorefresh.storio3:sqlite:${versions.storio}",
     'rxjava'   : "io.reactivex.rxjava2:rxjava:${versions.rxjava}",
     'rxandroid': "io.reactivex.rxjava2:rxandroid:${versions.rxandroid}",
@@ -93,7 +95,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.1.2'
+    classpath 'com.android.tools.build:gradle:3.1.3'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
   }

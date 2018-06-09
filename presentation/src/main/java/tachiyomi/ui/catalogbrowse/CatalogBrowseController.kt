@@ -6,25 +6,21 @@ import android.support.v7.widget.DividerItemDecoration.VERTICAL
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.SearchView
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import com.bluelinelabs.conductor.ControllerChangeHandler
-import com.bluelinelabs.conductor.ControllerChangeType
+import com.google.android.flexbox.FlexboxLayoutManager
+import com.jakewharton.rxbinding2.support.v7.widget.itemClicks
 import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
-import com.jakewharton.rxbinding2.support.v7.widget.queryTextChangeEvents
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
-import io.reactivex.subjects.BehaviorSubject
+import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.catalogbrowse_controller.*
+import kotlinx.android.synthetic.main.catalogbrowse_filters_sheet.view.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
+import tachiyomi.source.model.Sorting
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
@@ -39,17 +35,11 @@ class CatalogBrowseController(
 
   private var adapter: CatalogBrowseAdapter? = null
 
-  private var menuSubscription: Disposable? = null
-  private var querySubject = BehaviorSubject.create<String>()
-  private var gridModeSubject = BehaviorSubject.create<Boolean>()
+  private var filtersAdapter: RecyclerView.Adapter<*>? = null
 
   constructor(sourceId: Long) : this(Bundle().apply {
     putLong(SOURCE_KEY, sourceId)
   })
-
-  init {
-    setHasOptionsMenu(true)
-  }
 
   //===========================================================================
   // ~ Presenter
@@ -64,22 +54,6 @@ class CatalogBrowseController(
   //===========================================================================
   // ~ Lifecycle
   //===========================================================================
-
-  override fun onChangeStarted(
-    changeHandler: ControllerChangeHandler,
-    changeType: ControllerChangeType
-  ) {
-    super.onChangeStarted(changeHandler, changeType)
-
-    if (changeType.isEnter) {
-
-    } else {
-      menuSubscription?.dispose()
-      menuSubscription = null
-    }
-
-    setOptionsMenuHidden(!changeType.isEnter)
-  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -99,6 +73,69 @@ class CatalogBrowseController(
     catalogbrowse_toolbar.navigationClicks()
       .subscribeWithView { router.handleBack() }
 
+    catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
+    catalogbrowse_toolbar.itemClicks()
+      .subscribeWithView { item ->
+        if (item.groupId == GROUP_SORT) {
+          setSorting(item.order)
+        } else when (item.itemId) {
+          R.id.action_display_mode -> swapDisplayMode()
+          else -> super.onOptionsItemSelected(item)
+        }
+      }
+
+    // Initialize search menu
+//    val searchItem = catalogbrowse_toolbar.menu.findItem(R.id.action_search)
+//    val searchView = searchItem.actionView as SearchView
+//    searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+//      override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+//        for (i in 0 until menu.size()) {
+//          menu.getItem(i).isVisible = false
+//        }
+//        return true
+//      }
+//
+//      override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+//        setQuery("", true)
+//        // Ugly solution, but items are lost when the view is collapsed
+//        //activity?.invalidateOptionsMenu()
+//        return true
+//      }
+//    })
+//
+//    val initialText = querySubject
+//      .take(1)
+//      .doOnNext { query ->
+//        if (query.isNotBlank()) {
+//          searchItem.expandActionView()
+//          searchView.clearFocus()
+//          searchView.setQuery(query, true)
+//        }
+//      }
+//
+
+    filtersAdapter = FiltersAdapter()
+
+//    searchView.queryTextChangeEvents()
+//      .skipInitialValue()
+//      .filter { it.isSubmitted }
+//      .subscribeWithView { setQuery(it.queryText().toString()) }
+
+    catalogbrowse_fab.clicks()
+      .subscribeWithView {
+        val dialog = FiltersBottomSheetDialog(view.context)
+
+        val filtersView = LayoutInflater.from(view.context)
+          .inflate(R.layout.catalogbrowse_filters_sheet, null)
+
+        val recycler = filtersView.catalogbrowse_filters_recycler
+
+        recycler.layoutManager = FlexboxLayoutManager(view.context)
+        recycler.adapter = filtersAdapter
+        dialog.setContentView(filtersView)
+        dialog.show()
+      }
+
     presenter.stateRelay
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
@@ -106,8 +143,7 @@ class CatalogBrowseController(
 
   override fun onDestroyView(view: View) {
     adapter = null
-    menuSubscription?.dispose()
-    menuSubscription = null
+    filtersAdapter = null
     super.onDestroyView(view)
   }
 
@@ -123,14 +159,20 @@ class CatalogBrowseController(
       renderLayoutManager(state.isGridMode)
       renderDisplayMode(state.isGridMode)
     }
-    if (state.query != prevState?.query) {
-      renderQuery(state.query)
+    if (state.sortings != prevState?.sortings) {
+      renderSortings(state.sortings)
     }
+    if (state.activeSorting != prevState?.activeSorting) {
+      renderActiveSorting(state.activeSorting)
+    }
+//    if (state.query != prevState?.query) {
+//      renderQuery(state.query)
+//    }
     if (state.isLoading != prevState?.isLoading) {
       renderLoading(state.isLoading, state.mangas)
     }
     if (state.mangas !== prevState?.mangas || state.isLoading != prevState.isLoading
-        || state.hasMorePages != prevState.hasMorePages) {
+      || state.hasMorePages != prevState.hasMorePages) {
 
       renderList(state.mangas, state.isLoading, state.hasMorePages)
     }
@@ -138,7 +180,28 @@ class CatalogBrowseController(
 
   private fun renderSource(source: CatalogSource) {
     catalogbrowse_toolbar.title = source.name
-    catalogbrowse_toolbar.subtitle = "Latest"
+  }
+
+  private fun renderSortings(sortings: List<Sorting>) {
+    val sortItem = catalogbrowse_toolbar.menu.findItem(R.id.action_sort)
+    val sortMenu = sortItem.subMenu
+    sortItem.isVisible = sortings.isNotEmpty()
+    sortMenu.clear()
+    sortings.forEachIndexed { index, type ->
+      sortMenu.add(GROUP_SORT, Menu.NONE, index, type.name)
+    }
+    sortMenu.setGroupCheckable(GROUP_SORT, true, true)
+  }
+
+  private fun renderActiveSorting(sorting: Sorting?) {
+    catalogbrowse_toolbar.subtitle = sorting?.name ?: ""
+    val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
+    for (i in 0 until sortMenu.size()) {
+      val subItem = sortMenu.getItem(i)
+      if (subItem.title == sorting?.name) {
+        subItem.isChecked = true
+      }
+    }
   }
 
   private fun renderLayoutManager(isGridMode: Boolean) {
@@ -172,11 +235,16 @@ class CatalogBrowseController(
   }
 
   private fun renderDisplayMode(isGridMode: Boolean) {
-    gridModeSubject.onNext(isGridMode)
+    val icon = if (isGridMode) {
+      R.drawable.ic_view_list_white_24dp
+    } else {
+      R.drawable.ic_view_module_white_24dp
+    }
+    catalogbrowse_toolbar.menu.findItem(R.id.action_display_mode).setIcon(icon)
   }
 
   private fun renderQuery(query: String) {
-    querySubject.onNext(query)
+    // TODO
   }
 
   private fun renderLoading(loading: Boolean, mangas: List<Manga>) {
@@ -188,73 +256,6 @@ class CatalogBrowseController(
   }
 
   //===========================================================================
-  // ~ Options menu
-  //===========================================================================
-
-  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-    inflater.inflate(R.menu.catalogbrowse_menu, menu)
-
-    // Dispose of previous subscription if needed
-    menuSubscription?.dispose()
-
-    // Initialize search menu
-    val searchItem = menu.findItem(R.id.action_search)
-    val searchView = searchItem.actionView as SearchView
-    val displayItem = menu.findItem(R.id.action_display_mode)
-
-    searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-      override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-        for (i in 0 until menu.size()) {
-          menu.getItem(i).isVisible = false
-        }
-        return true
-      }
-
-      override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-        setQuery("", true)
-        // Ugly solution, but items are lost when the view is collapsed
-        activity?.invalidateOptionsMenu()
-        return true
-      }
-    })
-
-    val listModeUpdates = gridModeSubject
-      .doOnNext { isGridMode ->
-        val icon = if (isGridMode) {
-          R.drawable.ic_view_list_white_24dp
-        } else {
-          R.drawable.ic_view_module_white_24dp
-        }
-        displayItem.setIcon(icon)
-      }
-
-    val initialText = querySubject
-      .take(1)
-      .doOnNext { query ->
-        if (query.isNotBlank()) {
-          searchItem.expandActionView()
-          searchView.clearFocus()
-          searchView.setQuery(query, true)
-        }
-      }
-
-    val textChanges = searchView.queryTextChangeEvents()
-      .skipInitialValue()
-      .doOnNext { setQuery(it.queryText().toString(), it.isSubmitted) }
-
-    menuSubscription = Observable.merge(initialText, textChanges, listModeUpdates)
-      .subscribe()
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-      R.id.action_display_mode -> swapDisplayMode()
-      else -> return super.onOptionsItemSelected(item)
-    }
-    return true
-  }
-
-  //===========================================================================
   // ~ User actions
   //===========================================================================
 
@@ -262,8 +263,12 @@ class CatalogBrowseController(
     presenter.swapDisplayMode()
   }
 
-  private fun setQuery(query: String, submit: Boolean) {
-    presenter.setQuery(query, submit)
+  private fun setSorting(index: Int) {
+    presenter.setSorting(index)
+  }
+
+  private fun setQuery(query: String) {
+    presenter.setQuery(query)
   }
 
   override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
@@ -276,6 +281,7 @@ class CatalogBrowseController(
 
   private companion object {
     const val SOURCE_KEY = "source_id"
+    const val GROUP_SORT = 1
   }
 
 }
