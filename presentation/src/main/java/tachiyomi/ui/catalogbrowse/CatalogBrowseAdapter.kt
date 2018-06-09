@@ -1,13 +1,13 @@
 package tachiyomi.ui.catalogbrowse
 
-import android.support.v7.recyclerview.extensions.AsyncDifferConfig
-import android.support.v7.recyclerview.extensions.AsyncListDiffer
-import android.support.v7.util.AdapterListUpdateCallback
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AdapterListUpdateCallback
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.app.R
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.widget.AutofitRecyclerView

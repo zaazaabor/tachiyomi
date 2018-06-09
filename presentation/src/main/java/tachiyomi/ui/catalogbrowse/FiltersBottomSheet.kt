@@ -1,11 +1,11 @@
 package tachiyomi.ui.catalogbrowse
 
 import android.content.Context
-import android.support.design.widget.BottomSheetBehavior
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.doOnPreDraw
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class FiltersBottomSheet @JvmOverloads constructor(
   context: Context,
@@ -64,7 +64,7 @@ class FiltersBottomSheet @JvmOverloads constructor(
   }
 
   private companion object {
-    val maxOffsetField = BottomSheetBehavior::class.java.getDeclaredField("mMaxOffset").apply {
+    val maxOffsetField = BottomSheetBehavior::class.java.getDeclaredField("collapsedOffset").apply {
       isAccessible = true
     }
   }

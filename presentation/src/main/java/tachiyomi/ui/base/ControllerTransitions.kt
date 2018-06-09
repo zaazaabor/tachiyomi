@@ -1,10 +1,10 @@
 package tachiyomi.ui.base
 
-import android.support.v7.widget.Toolbar
 import android.transition.Fade
 import android.transition.Transition
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler

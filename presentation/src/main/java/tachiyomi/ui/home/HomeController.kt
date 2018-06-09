@@ -1,11 +1,11 @@
 package tachiyomi.ui.home
 
 import android.os.Bundle
-import android.support.v4.view.GravityCompat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.GravityCompat
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.Router
 import kotlinx.android.synthetic.main.home_controller.*

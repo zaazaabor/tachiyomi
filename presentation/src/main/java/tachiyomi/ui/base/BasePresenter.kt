@@ -1,6 +1,6 @@
 package tachiyomi.ui.base
 
-import android.support.annotation.CallSuper
+import androidx.annotation.CallSuper
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable

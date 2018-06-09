@@ -1,11 +1,11 @@
 package tachiyomi.ui.catalogs
 
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.app.R
@@ -40,7 +40,7 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
     catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
     catalogs_recycler.adapter = adapter
 
-    catalogs_toolbar.navigationClicks()
+    RxToolbar.navigationClicks(catalogs_toolbar)
       .subscribeWithView { (parentController as? HomeController)?.openDrawer() }
 
     presenter.stateRelay

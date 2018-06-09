@@ -11,7 +11,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
       android:id="@+id/manga_toolbar"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
       android:theme="?attr/actionBarTheme"
       app:navigationIcon="?attr/homeAsUpIndicator" />
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/manga_recycler"
       android:layout_width="match_parent"
       android:layout_height="match_parent"/>

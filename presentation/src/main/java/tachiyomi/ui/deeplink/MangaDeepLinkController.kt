@@ -41,7 +41,7 @@ class MangaDeepLinkController(
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
     presenter.stateObserver
-      .subscribe(::render)
+      .subscribeWithView(::render)
   }
 
   // TODO complete all renderizable components

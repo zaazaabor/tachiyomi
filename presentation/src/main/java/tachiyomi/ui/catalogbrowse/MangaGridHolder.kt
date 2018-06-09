@@ -1,10 +1,9 @@
 package tachiyomi.ui.catalogbrowse
 
 import android.view.View
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.manga_grid_item.*
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.glide.GlideApp
 import tachiyomi.widget.StateImageViewTarget
 
 class MangaGridHolder(
@@ -29,13 +28,13 @@ class MangaGridHolder(
   }
 
   override fun bindImage(manga: Manga) {
-    GlideApp.with(view.context).clear(thumbnail)
+    Glide.with(view.context).clear(thumbnail)
     if (!manga.cover.isEmpty()) {
-      GlideApp.with(view.context)
+      Glide.with(view.context)
         .load(manga.cover)
-        .diskCacheStrategy(DiskCacheStrategy.DATA)
-        .centerCrop()
-        .placeholder(android.R.color.transparent)
+        //.diskCacheStrategy(DiskCacheStrategy.DATA)
+        //.centerCrop()
+        //.placeholder(android.R.color.transparent)
         .into(StateImageViewTarget(thumbnail, progress))
     }
   }

@@ -1,7 +1,5 @@
 package tachiyomi.ui.base;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.transition.Transition;
 import android.transition.TransitionSet;
 import android.view.View;
@@ -13,6 +11,9 @@ import com.bluelinelabs.conductor.internal.TransitionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A TransitionChangeHandler that facilitates using different Transitions for the entering view, the exiting view,

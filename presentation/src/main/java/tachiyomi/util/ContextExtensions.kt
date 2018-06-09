@@ -1,7 +1,7 @@
 package tachiyomi.util
 
 import android.content.Context
-import android.support.annotation.AttrRes
+import androidx.annotation.AttrRes
 
 /**
  * Returns the color for the given attribute.

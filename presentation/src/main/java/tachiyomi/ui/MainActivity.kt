@@ -2,7 +2,7 @@ package tachiyomi.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import kotlinx.android.synthetic.main.main_activity.*

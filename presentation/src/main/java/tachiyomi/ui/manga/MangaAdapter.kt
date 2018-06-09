@@ -1,9 +1,9 @@
 package tachiyomi.ui.manga
 
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.app.R
 import tachiyomi.ui.base.BaseListAdapter
 
@@ -35,11 +35,11 @@ class MangaAdapter : BaseListAdapter<Any, RecyclerView.ViewHolder>(Diff()) {
   }
 
   private class Diff : DiffUtil.ItemCallback<Any>() {
-    override fun areItemsTheSame(oldItem: Any?, newItem: Any?): Boolean {
+    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
       return oldItem == newItem
     }
 
-    override fun areContentsTheSame(oldItem: Any?, newItem: Any?): Boolean {
+    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
       return true // TODO
     }
   }

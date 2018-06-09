@@ -1,8 +1,8 @@
 package tachiyomi.ui.base
 
 import android.os.Bundle
-import android.support.annotation.CallSuper
 import android.view.View
+import androidx.annotation.CallSuper
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType

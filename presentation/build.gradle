@@ -58,7 +58,7 @@ dependencies {
 
   implementation deps.glide.core
   implementation deps.glide.okhttp
-  kapt deps.glide.compiler
+  //kapt deps.glide.compiler
 
   implementation 'com.google.android:flexbox:1.0.0'
 }

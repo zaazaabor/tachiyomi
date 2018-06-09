@@ -1,18 +1,17 @@
 package tachiyomi.ui.catalogbrowse
 
 import android.os.Bundle
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.DividerItemDecoration.VERTICAL
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
-import com.jakewharton.rxbinding2.support.v7.widget.itemClicks
-import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
+import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import kotlinx.android.synthetic.main.catalogbrowse_filters_sheet.view.*
@@ -70,11 +69,11 @@ class CatalogBrowseController(
 
     catalogbrowse_recycler.setHasFixedSize(true)
 
-    catalogbrowse_toolbar.navigationClicks()
+    RxToolbar.navigationClicks(catalogbrowse_toolbar)
       .subscribeWithView { router.handleBack() }
 
     catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
-    catalogbrowse_toolbar.itemClicks()
+    RxToolbar.itemClicks(catalogbrowse_toolbar)
       .subscribeWithView { item ->
         if (item.groupId == GROUP_SORT) {
           setSorting(item.order)
