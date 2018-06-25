@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.forEach
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,7 +20,7 @@ import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
-import tachiyomi.source.model.Sorting
+import tachiyomi.source.model.Listing
 import tachiyomi.ui.base.MvpScopedController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
@@ -34,7 +35,7 @@ class CatalogBrowseController(
 
   private var adapter: CatalogBrowseAdapter? = null
 
-  private var filtersAdapter: RecyclerView.Adapter<*>? = null
+  private var filtersAdapter: FiltersAdapter? = null
 
   constructor(sourceId: Long) : this(Bundle().apply {
     putLong(SOURCE_KEY, sourceId)
@@ -75,7 +76,7 @@ class CatalogBrowseController(
     catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
     RxToolbar.itemClicks(catalogbrowse_toolbar)
       .subscribeWithView { item ->
-        if (item.groupId == GROUP_SORT) {
+        if (item.groupId == GROUP_SORT && item.isVisible) {
           setSorting(item.order)
         } else when (item.itemId) {
           R.id.action_display_mode -> swapDisplayMode()
@@ -83,42 +84,7 @@ class CatalogBrowseController(
         }
       }
 
-    // Initialize search menu
-//    val searchItem = catalogbrowse_toolbar.menu.findItem(R.id.action_search)
-//    val searchView = searchItem.actionView as SearchView
-//    searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-//      override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-//        for (i in 0 until menu.size()) {
-//          menu.getItem(i).isVisible = false
-//        }
-//        return true
-//      }
-//
-//      override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-//        setQuery("", true)
-//        // Ugly solution, but items are lost when the view is collapsed
-//        //activity?.invalidateOptionsMenu()
-//        return true
-//      }
-//    })
-//
-//    val initialText = querySubject
-//      .take(1)
-//      .doOnNext { query ->
-//        if (query.isNotBlank()) {
-//          searchItem.expandActionView()
-//          searchView.clearFocus()
-//          searchView.setQuery(query, true)
-//        }
-//      }
-//
-
     filtersAdapter = FiltersAdapter()
-
-//    searchView.queryTextChangeEvents()
-//      .skipInitialValue()
-//      .filter { it.isSubmitted }
-//      .subscribeWithView { setQuery(it.queryText().toString()) }
 
     catalogbrowse_fab.clicks()
       .subscribeWithView {
@@ -126,6 +92,10 @@ class CatalogBrowseController(
 
         val filtersView = LayoutInflater.from(view.context)
           .inflate(R.layout.catalogbrowse_filters_sheet, null)
+
+        filtersView.filter_button_close.setOnClickListener { dialog.cancel() }
+        filtersView.filter_button_reset.setOnClickListener { onResetClick() }
+        filtersView.filter_button_search.setOnClickListener { onSearchClick() }
 
         val recycler = filtersView.catalogbrowse_filters_recycler
 
@@ -158,11 +128,11 @@ class CatalogBrowseController(
       renderLayoutManager(state.isGridMode)
       renderDisplayMode(state.isGridMode)
     }
-    if (state.sortings != prevState?.sortings) {
-      renderSortings(state.sortings)
+    if (state.listings != prevState?.listings) {
+      renderSortings(state.listings)
     }
-    if (state.activeSorting != prevState?.activeSorting) {
-      renderActiveSorting(state.activeSorting)
+    if (state.queryMode != prevState?.queryMode) {
+      renderQueryMode(state.queryMode)
     }
 //    if (state.query != prevState?.query) {
 //      renderQuery(state.query)
@@ -179,26 +149,38 @@ class CatalogBrowseController(
 
   private fun renderSource(source: CatalogSource) {
     catalogbrowse_toolbar.title = source.name
+    filtersAdapter?.updateItems(source.getFilters())
   }
 
-  private fun renderSortings(sortings: List<Sorting>) {
+  private fun renderSortings(listings: List<Listing>) {
     val sortItem = catalogbrowse_toolbar.menu.findItem(R.id.action_sort)
     val sortMenu = sortItem.subMenu
-    sortItem.isVisible = sortings.isNotEmpty()
+    sortItem.isVisible = listings.isNotEmpty()
     sortMenu.clear()
-    sortings.forEachIndexed { index, type ->
+    listings.forEachIndexed { index, type ->
       sortMenu.add(GROUP_SORT, Menu.NONE, index, type.name)
     }
+    val searchItem = sortMenu.add(GROUP_SORT, Menu.NONE, listings.size, "Advanced search")
+    searchItem.isVisible = false
+
     sortMenu.setGroupCheckable(GROUP_SORT, true, true)
   }
 
-  private fun renderActiveSorting(sorting: Sorting?) {
-    catalogbrowse_toolbar.subtitle = sorting?.name ?: ""
-    val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
-    for (i in 0 until sortMenu.size()) {
-      val subItem = sortMenu.getItem(i)
-      if (subItem.title == sorting?.name) {
-        subItem.isChecked = true
+  private fun renderQueryMode(queryMode: QueryMode?) {
+    when (queryMode) {
+      is QueryMode.List -> {
+        catalogbrowse_toolbar.subtitle = queryMode.listing?.name ?: ""
+        val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
+        sortMenu.forEach { item ->
+          if (item.title == queryMode.listing?.name) {
+            item.isChecked = true
+          }
+        }
+      }
+      is QueryMode.Filter -> {
+        catalogbrowse_toolbar.subtitle = "Advanced search"
+        val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
+        sortMenu.getItem(sortMenu.size() - 1).isChecked = true
       }
     }
   }
@@ -242,10 +224,6 @@ class CatalogBrowseController(
     catalogbrowse_toolbar.menu.findItem(R.id.action_display_mode).setIcon(icon)
   }
 
-  private fun renderQuery(query: String) {
-    // TODO
-  }
-
   private fun renderLoading(loading: Boolean, mangas: List<Manga>) {
     catalogbrowse_progress.visibleIf { loading && mangas.isEmpty() }
   }
@@ -263,11 +241,17 @@ class CatalogBrowseController(
   }
 
   private fun setSorting(index: Int) {
-    presenter.setSorting(index)
+    presenter.setListing(index)
   }
 
-  private fun setQuery(query: String) {
-    presenter.setQuery(query)
+  private fun onResetClick() {
+    val source = presenter.stateRelay.value?.source ?: return
+    filtersAdapter?.updateItems(source.getFilters())
+  }
+
+  private fun onSearchClick() {
+    val adapter = filtersAdapter ?: return
+    presenter.setFilters(adapter.items)
   }
 
   override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {

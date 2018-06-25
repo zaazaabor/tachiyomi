@@ -20,7 +20,7 @@ import tachiyomi.source.model.MangaMeta
 import tachiyomi.source.model.MangasPageMeta
 import tachiyomi.source.model.PageMeta
 import tachiyomi.source.model.SearchQuery
-import tachiyomi.source.model.Sorting
+import tachiyomi.source.model.Listing
 import tachiyomi.source.util.asJsoup
 import java.net.URLEncoder
 import java.util.Date
@@ -222,11 +222,11 @@ open class Mangadex(
     return baseUrl + attr
   }
 
-  override fun getSortings(): List<Sorting> {
+  override fun getListings(): List<Listing> {
     return listOf(Latest())
   }
 
-  inner class Latest : Sorting {
+  inner class Latest : Listing {
     override val name = "Latest"
     override fun getFilters() = getFilterList()
   }

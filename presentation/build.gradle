@@ -29,10 +29,10 @@ dependencies {
   implementation project(':domain')
   implementation project(':data')
 
-  implementation deps.support.design
-  implementation deps.support.appcompat
-  implementation deps.support.recyclerview
-  implementation deps.support.card
+  implementation deps.androidx.design
+  implementation deps.androidx.appcompat
+  implementation deps.androidx.recyclerview
+  implementation deps.androidx.card
   implementation deps.constraint
 
   implementation deps.androidktx

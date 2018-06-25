@@ -9,8 +9,8 @@ class CatalogPreferences internal constructor(private val preferenceStore: Prefe
     return preferenceStore.getBoolean("grid_mode", true)
   }
 
-  fun lastSortingUsed(sourceId: Long): Preference<Int> {
-    return preferenceStore.getInt("last_sorting_$sourceId", 0)
+  fun lastListingUsed(sourceId: Long): Preference<Int> {
+    return preferenceStore.getInt("last_listing_$sourceId", 0)
   }
 
 }

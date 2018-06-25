@@ -3,24 +3,42 @@ package tachiyomi.source.model
 @Suppress("unused")
 sealed class Filter<T>(val name: String, var state: T) {
 
-  open class Header(name: String) : Filter<Any>(name, 0)
+  abstract fun isDefaultValue(): Boolean
 
-  open class Separator(name: String = "") : Filter<Any>(name, 0)
+  /**
+   * Base filters.
+   */
+
+  class Message(name: String) : Filter<Any>(name, Unit) {
+
+    override fun isDefaultValue() = true
+  }
 
   abstract class Select<V>(
     name: String,
     val values: Array<V>,
     state: Int = 0
-  ) : Filter<Int>(name, state)
+  ) : Filter<Int>(name, state) {
 
-  abstract class Text(name: String, state: String = "") : Filter<String>(name, state)
+    override fun isDefaultValue() = state == 0
+  }
 
-  abstract class CheckBox(name: String, state: Boolean = false) : Filter<Boolean>(name, state)
+  abstract class Text(name: String, state: String = "") : Filter<String>(name, state) {
+
+    override fun isDefaultValue() = state.isBlank()
+  }
+
+  abstract class CheckBox(name: String, state: Boolean = false) : Filter<Boolean>(name, state) {
+
+    override fun isDefaultValue() = !state
+  }
 
   abstract class TriState(name: String, state: Int = STATE_IGNORE) : Filter<Int>(name, state) {
     fun isIgnored() = state == STATE_IGNORE
     fun isIncluded() = state == STATE_INCLUDE
     fun isExcluded() = state == STATE_EXCLUDE
+
+    override fun isDefaultValue() = state == STATE_IGNORE
 
     companion object {
       const val STATE_IGNORE = 0
@@ -29,12 +47,13 @@ sealed class Filter<T>(val name: String, var state: T) {
     }
   }
 
-  abstract class Group<V>(name: String, state: List<V>) : Filter<List<V>>(name, state)
+  abstract class Group<V>(name: String, state: List<V>) : Filter<List<V>>(name, state) {
+
+    override fun isDefaultValue() = true
+  }
 
   abstract class Sort(
-    name: String,
-    val values: Array<String>,
-    state: Selection? = null
+    name: String, val values: Array<String>, state: Selection? = null
   ) : Filter<Sort.Selection?>(name, state) {
 
     data class Selection(val index: Int, val ascending: Boolean)
@@ -42,7 +61,9 @@ sealed class Filter<T>(val name: String, var state: T) {
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is Filter<*>) return false
+    if (javaClass != other?.javaClass) return false
+
+    other as Filter<*>
 
     return name == other.name && state == other.state
   }
@@ -52,5 +73,25 @@ sealed class Filter<T>(val name: String, var state: T) {
     result = 31 * result + (state?.hashCode() ?: 0)
     return result
   }
+
+  /**
+   * Common filters.
+   */
+
+  class Title(name: String = "Title") : Text(name, "")
+
+  class Author(name: String = "Author") : Text(name, "")
+
+  class Artist(name: String = "Artist") : Text(name, "")
+
+  interface Genre {
+    val name: String
+  }
+
+  class GenreImpl(override val name: String) : Genre // Don't use this from extensions
+
+  class GenreCheckBox(name: String) : CheckBox(name), Genre
+
+  class GenreTriState(name: String) : TriState(name), Genre
 
 }

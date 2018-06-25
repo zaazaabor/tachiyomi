@@ -2,7 +2,7 @@ package tachiyomi.source
 
 import okhttp3.Headers
 import okhttp3.OkHttpClient
-import tachiyomi.source.model.Sorting
+import tachiyomi.source.model.Listing
 import java.security.MessageDigest
 
 /**
@@ -87,7 +87,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
 //    }
 //  }
 
-  override fun getSortings(): List<Sorting> {
+  override fun getListings(): List<Listing> {
     return emptyList()
   }
 

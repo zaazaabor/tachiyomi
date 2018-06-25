@@ -41,12 +41,14 @@ class FiltersBottomSheet @JvmOverloads constructor(
 
     val footer = footer!! // Can't be null since it was retrieved when measuring
 
-    val behavior = BottomSheetBehavior.from(parent as View)
+    val frame = parent as View
+    val coordinator = frame.parent as View
+    val behavior = BottomSheetBehavior.from(frame)
 
     // Since the max offset is measured after layout, wait for the first draw event to retrieve
     // the value and set the initial state
-    (parent as View).doOnPreDraw {
-      maxOffset = (maxOffsetField.get(behavior) as Int).toFloat()
+    frame.doOnPreDraw {
+      maxOffset = (maxOffsetField.get(behavior) as Int).toFloat() - (coordinator.height - height)
 
       when (behavior.state) {
         BottomSheetBehavior.STATE_EXPANDED -> footer.translationY = 0f

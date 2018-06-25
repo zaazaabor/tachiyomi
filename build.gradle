@@ -9,9 +9,8 @@ buildscript {
     ]
   ]
   ext.versions = [
-    'kotlin'        : '1.2.41',
+    'kotlin'        : '1.2.50',
     'coroutines'    : '0.21.2',
-    'supportLibrary': '27.1.1',
     'androidx'      : '1.0.0-alpha3',
     'constraint'    : '1.1.0',
     'androidktx'    : '1.0.0-alpha3',
@@ -45,12 +44,12 @@ buildscript {
         'android': "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
       ]
     ],
-    'support'  : [
+    'androidx'  : [
+      'core': "androidx.core:core:${versions.androidx}",
       'design': "com.google.android.material:material:${versions.androidx}",
-      'appcompat': "com.android.support:appcompat-v7:${versions.supportLibrary}",
+      'appcompat': "androidx.appcompat:appcompat:${versions.androidx}",
       'recyclerview' : "androidx.recyclerview:recyclerview:${versions.androidx}",
-      'card': "androidx.cardview:cardview:${versions.androidx}",
-      'coreutils': "com.android.support:support-core-utils:${versions.supportLibrary}"
+      'card': "androidx.cardview:cardview:${versions.androidx}"
     ],
     'constraint': "com.android.support.constraint:constraint-layout:${versions.constraint}",
     'androidktx': "androidx.core:core-ktx:${versions.androidktx}",
@@ -96,7 +95,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.2.0-alpha17'
+    classpath 'com.android.tools.build:gradle:3.2.0-beta01'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
   }

@@ -15,7 +15,7 @@ dependencies {
   implementation deps.duktape
   implementation deps.rxpreferences
   implementation deps.storio
-  implementation deps.support.coreutils
+  implementation deps.androidx.core
   implementation deps.kotlin.coroutines.core
   implementation deps.kotlin.coroutines.android
 

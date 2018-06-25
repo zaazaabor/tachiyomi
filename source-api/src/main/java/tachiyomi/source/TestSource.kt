@@ -2,18 +2,17 @@ package tachiyomi.source
 
 import tachiyomi.source.model.ChapterMeta
 import tachiyomi.source.model.Filter
+import tachiyomi.source.model.FilterList
+import tachiyomi.source.model.Listing
 import tachiyomi.source.model.MangaMeta
 import tachiyomi.source.model.MangasPageMeta
 import tachiyomi.source.model.PageMeta
-import tachiyomi.source.model.SearchQuery
-import tachiyomi.source.model.Sorting
 
 class TestSource : CatalogSource {
-
   override val id = 1L
+
   override val name = "Test source"
   override val lang get() = "en"
-
   override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
     Thread.sleep(1000)
     val noHipstersOffset = 10
@@ -21,9 +20,13 @@ class TestSource : CatalogSource {
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
-  override fun fetchMangaList(query: SearchQuery, page: Int): MangasPageMeta {
-    val filteredMangas = getTestManga(page).filter { query.query in it.title }
-    return MangasPageMeta(filteredMangas, false)
+  override fun fetchMangaList(sort: Listing?, page: Int): MangasPageMeta {
+    return MangasPageMeta(getTestManga(1), true)
+  }
+
+  override fun fetchMangaList(filters: FilterList, page: Int): MangasPageMeta {
+    //.filter { query.query in it.title }
+    return MangasPageMeta(getTestManga(1), true)
   }
 
   override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
@@ -36,29 +39,70 @@ class TestSource : CatalogSource {
     return getTestPages()
   }
 
-  inner class Alphabetically : Sorting {
-    override val name = "Alphabetically"
-    override fun getFilters() = listOf(Status(), Author(), GenreList(getGenreList()))
-  }
+  class Alphabetically : Listing("Alphabetically")
 
-  inner class Latest : Sorting {
-    override val name = "Latest"
-    override fun getFilters() = listOf(Status(), GenreList(getGenreList()))
-  }
+  class Latest : Listing("Latest")
 
-  override fun getSortings(): List<Sorting> {
+  override fun getListings(): List<Listing> {
     return listOf(Alphabetically(), Latest())
   }
 
-  private class Status : Filter.TriState("Completed")
-  private class Author : Filter.Text("Author")
-  private class Genre(name: String) : Filter.TriState(name)
-  private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+  override fun getFilters(): FilterList {
+    return listOf(
+      Filter.Title(),
+      Filter.Author(),
+      Filter.Artist(),
+      GenreList(getGenreList())
+    )
+  }
+
+//  private class Status : Filter.TriState("Completed")
+//  private class Author : Filter.Text("Author")
+//  private class Genre(name: String) : Filter.TriState(name)
+  private class GenreList(genres: List<Filter.Genre>) : Filter.Group<Filter.Genre>("Genres", genres)
 
   private fun getGenreList() = listOf(
-    Genre("Action"),
-    Genre("Adventure"),
-    Genre("Comedy")
+    Filter.GenreCheckBox("4-koma"),
+    Filter.GenreCheckBox("Action"),
+    Filter.GenreCheckBox("Adventure"),
+    Filter.GenreCheckBox("Award Winning"),
+    Filter.GenreCheckBox("Comedy"),
+    Filter.GenreCheckBox("Cooking"),
+    Filter.GenreCheckBox("Doujinshi"),
+    Filter.GenreCheckBox("Drama"),
+    Filter.GenreCheckBox("Ecchi"),
+    Filter.GenreCheckBox("Fantasy"),
+    Filter.GenreCheckBox("Gender Bender"),
+    Filter.GenreCheckBox("Harem"),
+    Filter.GenreCheckBox("Historical"),
+    Filter.GenreCheckBox("Horror"),
+    Filter.GenreCheckBox("Josei"),
+    Filter.GenreCheckBox("Martial Arts"),
+    Filter.GenreCheckBox("Mecha"),
+    Filter.GenreCheckBox("Medical"),
+    Filter.GenreCheckBox("Music"),
+    Filter.GenreCheckBox("Mystery"),
+    Filter.GenreCheckBox("Oneshot"),
+    Filter.GenreCheckBox("Psychological"),
+    Filter.GenreCheckBox("Romance"),
+    Filter.GenreCheckBox("School Life"),
+    Filter.GenreCheckBox("Sci-Fi"),
+    Filter.GenreCheckBox("Seinen"),
+    Filter.GenreCheckBox("Shoujo"),
+    Filter.GenreCheckBox("Shoujo Ai"),
+    Filter.GenreCheckBox("Shounen"),
+    Filter.GenreCheckBox("Shounen Ai"),
+    Filter.GenreCheckBox("Slice of Life"),
+    Filter.GenreCheckBox("Smut"),
+    Filter.GenreCheckBox("Sports"),
+    Filter.GenreCheckBox("Supernatural"),
+    Filter.GenreCheckBox("Tragedy"),
+    Filter.GenreCheckBox("Webtoon"),
+    Filter.GenreCheckBox("Yaoi"),
+    Filter.GenreCheckBox("Yuri"),
+    Filter.GenreCheckBox("[no chapters]"),
+    Filter.GenreCheckBox("Game"),
+    Filter.GenreCheckBox("Isekai")
   )
 
   private fun getTestManga(page: Int): List<MangaMeta> {
