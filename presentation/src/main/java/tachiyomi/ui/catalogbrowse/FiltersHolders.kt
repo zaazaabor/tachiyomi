@@ -15,7 +15,7 @@ import tachiyomi.util.inflate
 
 class TextHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.filter_text)) {
 
-  private var filter: Filter.Text? = null
+  private var filter: FilterWrapper.Text? = null
 
   init {
     filter_text.addTextChangedListener(object : TextWatcher {
@@ -24,16 +24,16 @@ class TextHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.fil
       override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
       override fun onTextChanged(sequence: CharSequence, p1: Int, p2: Int, p3: Int) {
-        filter?.state = sequence.toString()
+        filter?.value = sequence.toString()
       }
     })
   }
 
-  fun bind(item: Filter<*>) {
-    item as Filter.Text
-    filter = item
-    filter_text_wrapper.hint = item.name
-    filter_text.setText(item.state)
+  fun bind(wrapper: FilterWrapper<*>) {
+    wrapper as FilterWrapper.Text
+    filter = wrapper
+    filter_text_wrapper.hint = wrapper.filter.name
+    filter_text.setText(wrapper.value)
   }
 
 }
@@ -44,47 +44,43 @@ class ChipHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.fil
   private val includeColor = ColorStateList.valueOf(Color.parseColor("#4caf50"))
   private val excludeColor = ColorStateList.valueOf(Color.parseColor("#ff6f60"))
 
-  fun bind(filter: Filter<*>) {
+  fun bind(wrapper: FilterWrapper<*>) {
+    wrapper as FilterWrapper.Check
+    val filter = wrapper.filter as Filter.Check
+
     filter_chip.chipText = filter.name
-    setBackground(filter)
+    setBackground(wrapper)
 
     filter_chip.setOnClickListener {
-      when (filter) {
-        is Filter.CheckBox -> {
-          filter.state = !filter.state
-          setBackground(filter)
+      wrapper.value = if (filter.allowsExclusion) {
+        when (wrapper.value) {
+          true -> false
+          false -> null
+          null -> true
         }
-        is Filter.TriState -> {
-          filter.state = (filter.state + 1) % 3
-          setBackground(filter)
+      } else {
+        if (wrapper.value == null) {
+          true
+        } else {
+          null
         }
       }
+      setBackground(wrapper)
     }
   }
 
-  private fun setBackground(filter: Filter<*>) {
-    when (filter) {
-      is Filter.CheckBox -> {
-        filter_chip.chipBackgroundColor = if (filter.state) {
-          includeColor
-        } else {
-          unsetColor
-        }
-      }
-      is Filter.TriState -> {
-        filter_chip.chipBackgroundColor = when (filter.state) {
-          Filter.TriState.STATE_INCLUDE -> includeColor
-          Filter.TriState.STATE_EXCLUDE -> excludeColor
-          else -> unsetColor
-        }
-      }
+  private fun setBackground(filter: FilterWrapper.Check) {
+    filter_chip.chipBackgroundColor = when (filter.value) {
+      true -> includeColor
+      false -> excludeColor
+      null -> unsetColor
     }
   }
 
 }
 
 class GroupHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.filter_group)) {
-  fun bind(item: Filter<*>) {
-    filter_group.text = item.name
+  fun bind(wrapper: FilterWrapper<*>) {
+    filter_group.text = wrapper.filter.name
   }
 }

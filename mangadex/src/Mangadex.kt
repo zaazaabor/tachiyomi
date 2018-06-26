@@ -232,7 +232,7 @@ open class Mangadex(
   }
 
   private class TextField(name: String, val key: String) : Filter.Text(name)
-  private class Genre(val id: String, name: String) : Filter.CheckBox(name)
+  private class Genre(val id: String, name: String) : Filter.Check(name)
   private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
   private class R18 : Filter.Select<String>("R18+", arrayOf("Show all", "Show only", "Show none"))
 

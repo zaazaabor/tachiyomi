@@ -1,5 +1,6 @@
 package tachiyomi.source
 
+import okhttp3.HttpUrl
 import tachiyomi.source.model.ChapterMeta
 import tachiyomi.source.model.Filter
 import tachiyomi.source.model.FilterList
@@ -21,10 +22,16 @@ class TestSource : CatalogSource {
   }
 
   override fun fetchMangaList(sort: Listing?, page: Int): MangasPageMeta {
-    return MangasPageMeta(getTestManga(1), true)
+    return MangasPageMeta(getTestManga(page), true)
   }
 
   override fun fetchMangaList(filters: FilterList, page: Int): MangasPageMeta {
+    val url = HttpUrl.Builder()
+
+    filters.forEach { filter ->
+
+    }
+
     //.filter { query.query in it.title }
     return MangasPageMeta(getTestManga(1), true)
   }
@@ -56,53 +63,54 @@ class TestSource : CatalogSource {
     )
   }
 
-//  private class Status : Filter.TriState("Completed")
+//  private class Status : Filter.Check("Completed")
+//  private class StatusValue(filter: Status) : Filter.Check(filter, null)
 //  private class Author : Filter.Text("Author")
 //  private class Genre(name: String) : Filter.TriState(name)
-  private class GenreList(genres: List<Filter.Genre>) : Filter.Group<Filter.Genre>("Genres", genres)
+  private class GenreList(genres: List<Filter.Genre>) : Filter.Group("Genres", genres)
 
   private fun getGenreList() = listOf(
-    Filter.GenreCheckBox("4-koma"),
-    Filter.GenreCheckBox("Action"),
-    Filter.GenreCheckBox("Adventure"),
-    Filter.GenreCheckBox("Award Winning"),
-    Filter.GenreCheckBox("Comedy"),
-    Filter.GenreCheckBox("Cooking"),
-    Filter.GenreCheckBox("Doujinshi"),
-    Filter.GenreCheckBox("Drama"),
-    Filter.GenreCheckBox("Ecchi"),
-    Filter.GenreCheckBox("Fantasy"),
-    Filter.GenreCheckBox("Gender Bender"),
-    Filter.GenreCheckBox("Harem"),
-    Filter.GenreCheckBox("Historical"),
-    Filter.GenreCheckBox("Horror"),
-    Filter.GenreCheckBox("Josei"),
-    Filter.GenreCheckBox("Martial Arts"),
-    Filter.GenreCheckBox("Mecha"),
-    Filter.GenreCheckBox("Medical"),
-    Filter.GenreCheckBox("Music"),
-    Filter.GenreCheckBox("Mystery"),
-    Filter.GenreCheckBox("Oneshot"),
-    Filter.GenreCheckBox("Psychological"),
-    Filter.GenreCheckBox("Romance"),
-    Filter.GenreCheckBox("School Life"),
-    Filter.GenreCheckBox("Sci-Fi"),
-    Filter.GenreCheckBox("Seinen"),
-    Filter.GenreCheckBox("Shoujo"),
-    Filter.GenreCheckBox("Shoujo Ai"),
-    Filter.GenreCheckBox("Shounen"),
-    Filter.GenreCheckBox("Shounen Ai"),
-    Filter.GenreCheckBox("Slice of Life"),
-    Filter.GenreCheckBox("Smut"),
-    Filter.GenreCheckBox("Sports"),
-    Filter.GenreCheckBox("Supernatural"),
-    Filter.GenreCheckBox("Tragedy"),
-    Filter.GenreCheckBox("Webtoon"),
-    Filter.GenreCheckBox("Yaoi"),
-    Filter.GenreCheckBox("Yuri"),
-    Filter.GenreCheckBox("[no chapters]"),
-    Filter.GenreCheckBox("Game"),
-    Filter.GenreCheckBox("Isekai")
+    Filter.Genre("4-koma"),
+    Filter.Genre("Action"),
+    Filter.Genre("Adventure"),
+    Filter.Genre("Award Winning"),
+    Filter.Genre("Comedy"),
+    Filter.Genre("Cooking"),
+    Filter.Genre("Doujinshi"),
+    Filter.Genre("Drama"),
+    Filter.Genre("Ecchi"),
+    Filter.Genre("Fantasy"),
+    Filter.Genre("Gender Bender"),
+    Filter.Genre("Harem"),
+    Filter.Genre("Historical"),
+    Filter.Genre("Horror"),
+    Filter.Genre("Josei"),
+    Filter.Genre("Martial Arts"),
+    Filter.Genre("Mecha"),
+    Filter.Genre("Medical"),
+    Filter.Genre("Music"),
+    Filter.Genre("Mystery"),
+    Filter.Genre("Oneshot"),
+    Filter.Genre("Psychological"),
+    Filter.Genre("Romance"),
+    Filter.Genre("School Life"),
+    Filter.Genre("Sci-Fi"),
+    Filter.Genre("Seinen"),
+    Filter.Genre("Shoujo"),
+    Filter.Genre("Shoujo Ai"),
+    Filter.Genre("Shounen"),
+    Filter.Genre("Shounen Ai"),
+    Filter.Genre("Slice of Life"),
+    Filter.Genre("Smut"),
+    Filter.Genre("Sports"),
+    Filter.Genre("Supernatural"),
+    Filter.Genre("Tragedy"),
+    Filter.Genre("Webtoon"),
+    Filter.Genre("Yaoi"),
+    Filter.Genre("Yuri"),
+    Filter.Genre("[no chapters]"),
+    Filter.Genre("Game"),
+    Filter.Genre("Isekai")
   )
 
   private fun getTestManga(page: Int): List<MangaMeta> {

@@ -17,7 +17,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
-import tachiyomi.source.model.FilterList
+import tachiyomi.source.model.Filter
 import tachiyomi.source.model.Listing
 import tachiyomi.ui.base.BasePresenter
 import java.util.concurrent.atomic.AtomicBoolean
@@ -63,8 +63,9 @@ class CatalogBrowsePresenter @Inject constructor(
 
     currentState = CatalogBrowseViewState(
       source = source,
-      listings = listings,
       queryMode = initialQueryMode,
+      listings = listings,
+      filters = getWrappedFilters(source),
       isGridMode = gridPreference.get()
     )
 
@@ -106,7 +107,10 @@ class CatalogBrowsePresenter @Inject constructor(
 
     val filterChange = actions.ofType(Action.SetFilters::class)
       .flatMap { action ->
-        val filters = action.filters.filter { !it.isDefaultValue() }
+        val filters = action.filters
+          .onEach { it.updateInnerValue() }
+          .map { it.filter }
+          .filter { !it.isDefaultValue() }
 
         if (filters.isEmpty()) {
           setListing(0) // TODO check
@@ -181,6 +185,18 @@ class CatalogBrowsePresenter @Inject constructor(
       .map { Change.LoadingError(null) }
   }
 
+  private fun getWrappedFilters(source: CatalogSource): List<FilterWrapper<*>> {
+    val filters = mutableListOf<FilterWrapper<*>>()
+    source.getFilters().forEach { filter ->
+      filters.add(FilterWrapper.from(filter))
+      if (filter is Filter.Group) {
+        val childFilters = filter.filters.map { FilterWrapper.from(it) }
+        filters.addAll(childFilters)
+      }
+    }
+    return filters
+  }
+
   fun swapDisplayMode() {
     actions.emit(Action.SwapDisplayMode)
   }
@@ -193,7 +209,7 @@ class CatalogBrowsePresenter @Inject constructor(
     actions.emit(Action.SetListing(index))
   }
 
-  fun setFilters(filters: FilterList) {
+  fun setFilters(filters: List<FilterWrapper<*>>) {
     actions.emit(Action.SetFilters(filters))
   }
 
@@ -203,8 +219,7 @@ private sealed class Action {
   object SwapDisplayMode : Action()
   object LoadMore : Action()
   data class SetListing(val index: Int) : Action()
-  data class SetFilters(val filters: FilterList) : Action()
-  data class PerformSearch(val query: String, val filters: FilterList) : Action()
+  data class SetFilters(val filters: List<FilterWrapper<*>>) : Action()
   object ErrorDelivered : Action()
 }
 

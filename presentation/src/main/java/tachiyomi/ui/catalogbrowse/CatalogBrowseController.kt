@@ -77,7 +77,7 @@ class CatalogBrowseController(
     RxToolbar.itemClicks(catalogbrowse_toolbar)
       .subscribeWithView { item ->
         if (item.groupId == GROUP_SORT && item.isVisible) {
-          setSorting(item.order)
+          setListing(item.order)
         } else when (item.itemId) {
           R.id.action_display_mode -> swapDisplayMode()
           else -> super.onOptionsItemSelected(item)
@@ -128,15 +128,15 @@ class CatalogBrowseController(
       renderLayoutManager(state.isGridMode)
       renderDisplayMode(state.isGridMode)
     }
-    if (state.listings != prevState?.listings) {
-      renderSortings(state.listings)
+    if (state.listings !== prevState?.listings) {
+      renderListings(state.listings)
+    }
+    if (state.filters !== prevState?.filters) {
+      renderFilters(state.filters)
     }
     if (state.queryMode != prevState?.queryMode) {
       renderQueryMode(state.queryMode)
     }
-//    if (state.query != prevState?.query) {
-//      renderQuery(state.query)
-//    }
     if (state.isLoading != prevState?.isLoading) {
       renderLoading(state.isLoading, state.mangas)
     }
@@ -149,10 +149,9 @@ class CatalogBrowseController(
 
   private fun renderSource(source: CatalogSource) {
     catalogbrowse_toolbar.title = source.name
-    filtersAdapter?.updateItems(source.getFilters())
   }
 
-  private fun renderSortings(listings: List<Listing>) {
+  private fun renderListings(listings: List<Listing>) {
     val sortItem = catalogbrowse_toolbar.menu.findItem(R.id.action_sort)
     val sortMenu = sortItem.subMenu
     sortItem.isVisible = listings.isNotEmpty()
@@ -164,6 +163,10 @@ class CatalogBrowseController(
     searchItem.isVisible = false
 
     sortMenu.setGroupCheckable(GROUP_SORT, true, true)
+  }
+
+  private fun renderFilters(filters: List<FilterWrapper<*>>) {
+    filtersAdapter?.updateItems(filters)
   }
 
   private fun renderQueryMode(queryMode: QueryMode?) {
@@ -240,13 +243,14 @@ class CatalogBrowseController(
     presenter.swapDisplayMode()
   }
 
-  private fun setSorting(index: Int) {
+  private fun setListing(index: Int) {
     presenter.setListing(index)
   }
 
   private fun onResetClick() {
-    val source = presenter.stateRelay.value?.source ?: return
-    filtersAdapter?.updateItems(source.getFilters())
+    val filters = presenter.stateRelay.value?.filters ?: return
+    filters.forEach { it.reset() }
+    filtersAdapter?.notifyDataSetChanged()
   }
 
   private fun onSearchClick() {

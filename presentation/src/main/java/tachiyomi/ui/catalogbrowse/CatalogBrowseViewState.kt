@@ -9,6 +9,7 @@ data class CatalogBrowseViewState(
   val mangas: List<Manga> = emptyList(),
   val queryMode: QueryMode? = null,
   val listings: List<Listing> = emptyList(),
+  val filters: List<FilterWrapper<*>> = emptyList(),
   val isGridMode: Boolean = true,
   val isLoading: Boolean = false,
   val hasMorePages: Boolean = true,
