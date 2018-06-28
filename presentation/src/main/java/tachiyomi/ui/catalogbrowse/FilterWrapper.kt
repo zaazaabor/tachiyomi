@@ -2,14 +2,32 @@ package tachiyomi.ui.catalogbrowse
 
 import tachiyomi.source.model.Filter
 
+/**
+ * A wrapper for a [Filter] that allows saving temporary values (in sync with the UI) while keeping
+ * the original filters with their initial (or current query) values.
+ *
+ * Before making a request, [updateInnerValue] should be called on each filter to update the
+ * value of the original filter.
+ *
+ * [reset] can also be used to set the values on the wrapper to their initial value.
+ */
 sealed class FilterWrapper<T>(val filter: Filter<T>) {
 
+  /**
+   * The value of this wrapped filter. It's initially set to the value of the original filter.
+   */
   var value = filter.value
 
+  /**
+   * Resets the value on the wrapped filter.
+   */
   fun reset() {
     value = filter.initialValue
   }
 
+  /**
+   * Updates the value of the original filter with the one from this wrapper.
+   */
   fun updateInnerValue() {
     filter.value = value
   }

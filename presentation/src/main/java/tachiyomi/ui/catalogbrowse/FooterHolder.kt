@@ -5,6 +5,10 @@ import kotlinx.android.synthetic.main.catalogbrowse_footer_item.*
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.visibleIf
 
+/**
+ * Holder to use when displaying a loading more progress bar or an end reached message from a
+ * [CatalogBrowseAdapter].
+ */
 class FooterHolder(view: View) : BaseViewHolder(view) {
 
   fun bind(showProgress: Boolean, showEndReached: Boolean) {

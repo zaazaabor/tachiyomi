@@ -8,12 +8,12 @@ package tachiyomi.source.model
  * when performing a global search.
  */
 @Suppress("unused")
-sealed class Filter<V>(val name: String, var value: V) {
+sealed class Filter<V>(val name: String, val initialValue: V) {
 
   /**
    * The initial value of this filter.
    */
-  val initialValue = value
+  var value = initialValue
 
   /**
    * Whether this filter has been updated. If this method returns true, the catalog won't receive

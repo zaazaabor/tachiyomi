@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.forEach
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
@@ -27,16 +28,33 @@ import tachiyomi.ui.manga.MangaController
 import tachiyomi.util.visibleIf
 import tachiyomi.widget.EndlessRecyclerViewScrollListener
 
+/**
+ * Controller to handle the UI and user events on the catalog. It follows the MVI pattern, using a
+ * dispatcher that renders the updates made to [CatalogBrowseViewState]. User events are usually
+ * delegated to [CatalogBrowsePresenter] which updates the view state and the dispatcher receives
+ * this new state.
+ */
 class CatalogBrowseController(
   bundle: Bundle? = null
 ) : MvpScopedController<CatalogBrowsePresenter>(bundle),
   CatalogBrowseAdapter.Listener,
   EndlessRecyclerViewScrollListener.Callback {
 
+  /**
+   * Adapter containing the list of manga from the catalogue. This field is set to null when the
+   * view is destroyed.
+   */
   private var adapter: CatalogBrowseAdapter? = null
 
+  /**
+   * Adapter containing the list of filters for the selected [CatalogSource]. This field is set to
+   * null when the view is destroyed.
+   */
   private var filtersAdapter: FiltersAdapter? = null
 
+  /**
+   * Constructor that takes a [sourceId] as parameter.
+   */
   constructor(sourceId: Long) : this(Bundle().apply {
     putLong(SOURCE_KEY, sourceId)
   })
@@ -45,16 +63,28 @@ class CatalogBrowseController(
   // ~ Presenter
   //===========================================================================
 
+  /**
+   * Returns the presenter class used by this controller.
+   */
   override fun getPresenterClass() = CatalogBrowsePresenter::class.java
 
+  /**
+   * Returns the module of this controller that provides the dependencies of the presenter.
+   */
   override fun getModule() = CatalogBrowseModule(this)
 
+  /**
+   * Returns the source id stored in the [Bundle] of this controller.
+   */
   fun getSourceId() = args.getLong(SOURCE_KEY)
 
   //===========================================================================
   // ~ Lifecycle
   //===========================================================================
 
+  /**
+   * Called when the view of this controller is being created.
+   */
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup,
@@ -63,20 +93,30 @@ class CatalogBrowseController(
     return inflater.inflate(R.layout.catalogbrowse_controller, container, false)
   }
 
+  /**
+   * Called when the view of this controller is created. It initializes the listeners and the
+   * dispatcher of state updates.
+   */
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
 
-    adapter = CatalogBrowseAdapter(this)
-
     catalogbrowse_recycler.setHasFixedSize(true)
 
+    // Initialize manga adapter
+    adapter = CatalogBrowseAdapter(this)
+
+    // Setup back navigation
     RxToolbar.navigationClicks(catalogbrowse_toolbar)
       .subscribeWithView { router.handleBack() }
 
+    // Initialize toolbar menu
     catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
     RxToolbar.itemClicks(catalogbrowse_toolbar)
       .subscribeWithView { item ->
-        if (item.groupId == GROUP_SORT && item.isVisible) {
+        if (item.groupId == GROUP_LISTING && item.isVisible) {
+          // A listing element was clicked. Visibility is also checked because there's an extra,
+          // hidden element for advanced search mode. It's required in order to unselect all the
+          // visible items of the radio group.
           setListing(item.order)
         } else when (item.itemId) {
           R.id.action_display_mode -> swapDisplayMode()
@@ -84,8 +124,10 @@ class CatalogBrowseController(
         }
       }
 
+    // Initialize filters adapter
     filtersAdapter = FiltersAdapter()
 
+    // Setup search FAB clicks
     catalogbrowse_fab.clicks()
       .subscribeWithView {
         val dialog = FiltersBottomSheetDialog(view.context)
@@ -94,8 +136,8 @@ class CatalogBrowseController(
           .inflate(R.layout.catalogbrowse_filters_sheet, null)
 
         filtersView.filter_button_close.setOnClickListener { dialog.cancel() }
-        filtersView.filter_button_reset.setOnClickListener { onResetClick() }
-        filtersView.filter_button_search.setOnClickListener { onSearchClick() }
+        filtersView.filter_button_reset.setOnClickListener { resetFilters() }
+        filtersView.filter_button_search.setOnClickListener { applyFilters() }
 
         val recycler = filtersView.catalogbrowse_filters_recycler
 
@@ -110,6 +152,10 @@ class CatalogBrowseController(
       .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
   }
 
+  /**
+   * Called when the view of this controller is being destroyed. It frees any view related
+   * component.
+   */
   override fun onDestroyView(view: View) {
     adapter = null
     filtersAdapter = null
@@ -120,6 +166,10 @@ class CatalogBrowseController(
   // ~ Render
   //===========================================================================
 
+  /**
+   * Dispatcher of [state] updates, [prevState] is also provided to compare with the previous
+   * state and render only the components that have changed.
+   */
   private fun dispatch(state: CatalogBrowseViewState, prevState: CatalogBrowseViewState?) {
     if (state.source != null && state.source != prevState?.source) {
       renderSource(state.source)
@@ -147,55 +197,89 @@ class CatalogBrowseController(
     }
   }
 
+  /**
+   * Renders the selected [source].
+   */
   private fun renderSource(source: CatalogSource) {
     catalogbrowse_toolbar.title = source.name
   }
 
+  /**
+   * Renders the [listings] of the selected source.
+   */
   private fun renderListings(listings: List<Listing>) {
     val sortItem = catalogbrowse_toolbar.menu.findItem(R.id.action_sort)
     val sortMenu = sortItem.subMenu
+
+    // Hide the sort item if the source doesn't provide any listing
     sortItem.isVisible = listings.isNotEmpty()
+
+    // Clear any previous items
     sortMenu.clear()
+
+    // Add a new sub item for each listing.
     listings.forEachIndexed { index, type ->
-      sortMenu.add(GROUP_SORT, Menu.NONE, index, type.name)
+      sortMenu.add(GROUP_LISTING, Menu.NONE, index, type.name)
     }
-    val searchItem = sortMenu.add(GROUP_SORT, Menu.NONE, listings.size, "Advanced search")
+
+    // Add a hidden advanced search item to allow to unselect all the listings.
+    val searchItem = sortMenu.add(GROUP_LISTING, Menu.NONE, listings.size, "Advanced search")
     searchItem.isVisible = false
 
-    sortMenu.setGroupCheckable(GROUP_SORT, true, true)
+    // Set checkability as a radio group.
+    sortMenu.setGroupCheckable(GROUP_LISTING, true, true)
   }
 
+  /**
+   * Render the [filters] of the selected source.
+   */
   private fun renderFilters(filters: List<FilterWrapper<*>>) {
     filtersAdapter?.updateItems(filters)
   }
 
+  /**
+   * Render the current [queryMode], which can be of type list or filter.
+   */
   private fun renderQueryMode(queryMode: QueryMode?) {
     when (queryMode) {
       is QueryMode.List -> {
-        catalogbrowse_toolbar.subtitle = queryMode.listing?.name ?: ""
+        // Set toolbar subtitle with the listing's name
         val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
+
+        // Select the item that matches the active listing.
+        catalogbrowse_toolbar.subtitle = queryMode.listing?.name ?: ""
         sortMenu.forEach { item ->
           if (item.title == queryMode.listing?.name) {
             item.isChecked = true
+            return@forEach
           }
         }
       }
       is QueryMode.Filter -> {
-        catalogbrowse_toolbar.subtitle = "Advanced search"
+        // Set toolbar subtitle to advanced search.
+        catalogbrowse_toolbar.subtitle = resources?.getString(R.string.advanced_search)
+
+        // Select the hidden advanced search item.
         val sortMenu = catalogbrowse_toolbar.menu.findItem(R.id.action_sort).subMenu
-        sortMenu.getItem(sortMenu.size() - 1).isChecked = true
+        sortMenu.children.lastOrNull()?.isChecked = true
       }
     }
   }
 
+  /**
+   * Renders the layout manager of the manga list following the value of [isGridMode].
+   */
   private fun renderLayoutManager(isGridMode: Boolean) {
+    // Remove any previous item decorators and scroll listeners.
     while (catalogbrowse_recycler.itemDecorationCount > 0) {
       catalogbrowse_recycler.removeItemDecorationAt(0)
     }
     catalogbrowse_recycler.clearOnScrollListeners()
 
+    // Save the state of the current layout manager, or null if none was set yet.
     val prevLayoutState = catalogbrowse_recycler.layoutManager?.onSaveInstanceState()
 
+    // Create a new list or grid layout manager.
     val layoutManager = if (isGridMode) {
       GridLayoutManager(activity, 2).apply {
         spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -208,16 +292,24 @@ class CatalogBrowseController(
       catalogbrowse_recycler.addItemDecoration(DividerItemDecoration(activity, VERTICAL))
       LinearLayoutManager(activity)
     }
+
+    // Create a new scroll listener.
     val endlessScroll = EndlessRecyclerViewScrollListener(layoutManager, this)
 
+    // Apply the new layout manager, scroll listener and restore the saved state.
     catalogbrowse_recycler.layoutManager = layoutManager
     catalogbrowse_recycler.addOnScrollListener(endlessScroll)
     if (prevLayoutState != null) {
       layoutManager.onRestoreInstanceState(prevLayoutState)
     }
+
+    // Reset the adapter to recreate views and holders.
     catalogbrowse_recycler.adapter = adapter
   }
 
+  /**
+   * Renders the current display mode following the value of [isGridMode].
+   */
   private fun renderDisplayMode(isGridMode: Boolean) {
     val icon = if (isGridMode) {
       R.drawable.ic_view_list_white_24dp
@@ -227,10 +319,16 @@ class CatalogBrowseController(
     catalogbrowse_toolbar.menu.findItem(R.id.action_display_mode).setIcon(icon)
   }
 
+  /**
+   * Renders a [ProgressBar] if it's [loading] and [mangas] is empty.
+   */
   private fun renderLoading(loading: Boolean, mangas: List<Manga>) {
     catalogbrowse_progress.visibleIf { loading && mangas.isEmpty() }
   }
 
+  /**
+   * Renders the list of [mangas] and the [isLoading]/[hasMorePages] footer.
+   */
   private fun renderList(mangas: List<Manga>, isLoading: Boolean, hasMorePages: Boolean) {
     adapter?.submitList(mangas, isLoading, !hasMorePages)
   }
@@ -239,36 +337,62 @@ class CatalogBrowseController(
   // ~ User actions
   //===========================================================================
 
+  /**
+   * Swaps the display mode to list or grid.
+   */
   private fun swapDisplayMode() {
     presenter.swapDisplayMode()
   }
 
+  /**
+   * Selects the source's listing at the given [index].
+   */
   private fun setListing(index: Int) {
     presenter.setListing(index)
   }
 
-  private fun onResetClick() {
-    val filters = presenter.stateRelay.value?.filters ?: return
-    filters.forEach { it.reset() }
-    filtersAdapter?.notifyDataSetChanged()
+  /**
+   * Sets all the filters to their initial value.
+   */
+  private fun resetFilters() {
+    val adapter = filtersAdapter ?: return
+    adapter.items.forEach { it.reset() }
+    adapter.notifyDataSetChanged()
   }
 
-  private fun onSearchClick() {
+  /**
+   * Applies the current filters, also creating a new query mode.
+   */
+  private fun applyFilters() {
     val adapter = filtersAdapter ?: return
     presenter.setFilters(adapter.items)
   }
 
+  /**
+   * Called from the scroll listener when the end of the recycler view is reached. Used to
+   * requests more items.
+   */
   override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
     presenter.loadMore()
   }
 
+  /**
+   * Called from the adapter's listener when a [manga] is clicked.
+   */
   override fun onMangaClick(manga: Manga) {
     findRootRouter().pushController(MangaController(manga.id).withFadeTransition())
   }
 
   private companion object {
+    /**
+     * Key used to store the source id of the selected catalog on a [Bundle].
+     */
     const val SOURCE_KEY = "source_id"
-    const val GROUP_SORT = 1
+
+    /**
+     * Group id used for the listings on the toolbar's menu.
+     */
+    const val GROUP_LISTING = 1
   }
 
 }

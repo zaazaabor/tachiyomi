@@ -6,10 +6,13 @@ import kotlinx.android.synthetic.main.manga_grid_item.*
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.widget.StateImageViewTarget
 
+/**
+ * Holder to use when displaying a [Manga] from a [CatalogBrowseAdapter].
+ */
 class MangaGridHolder(
   private val view: View,
   private val adapter: CatalogBrowseAdapter
-) : MangaHolder(view, adapter) {
+) : MangaHolder(view) {
 
   init {
     view.setOnClickListener {
@@ -17,6 +20,9 @@ class MangaGridHolder(
     }
   }
 
+  /**
+   * Binds the given [manga] with this holder.
+   */
   override fun bind(manga: Manga) {
     // Set manga title
     title.text = manga.title
@@ -27,11 +33,15 @@ class MangaGridHolder(
     bindImage(manga)
   }
 
+  /**
+   * Binds only the cover of the given [manga] with this holder.
+   */
   override fun bindImage(manga: Manga) {
     Glide.with(view.context).clear(thumbnail)
     if (!manga.cover.isEmpty()) {
       Glide.with(view.context)
         .load(manga.cover)
+        // TODO currently Glide's APT doesn't work with Jetifier
         //.diskCacheStrategy(DiskCacheStrategy.DATA)
         //.centerCrop()
         //.placeholder(android.R.color.transparent)

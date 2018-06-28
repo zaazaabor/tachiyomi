@@ -26,7 +26,7 @@ abstract class MvpScopedController<P : BasePresenter>(
 
   override fun onDestroy() {
     super.onDestroy()
-    Toothpick.closeScope(scope)
+    Toothpick.closeScope(this)
   }
 
 }

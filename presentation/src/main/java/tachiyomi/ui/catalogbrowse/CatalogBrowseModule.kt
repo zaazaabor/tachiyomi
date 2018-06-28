@@ -2,10 +2,15 @@ package tachiyomi.ui.catalogbrowse
 
 import toothpick.config.Module
 
-class CatalogBrowseModule(private val controller: CatalogBrowseController) : Module() {
+/**
+ * Module used to inject the dependencies of [CatalogBrowsePresenter] from a
+ * [CatalogBrowseController].
+ */
+class CatalogBrowseModule(controller: CatalogBrowseController) : Module() {
 
   init {
-    bind(Long::class.javaObjectType).toInstance(controller.getSourceId())
+    val params = CatalogBrowseParams(controller.getSourceId())
+    bind(CatalogBrowseParams::class.javaObjectType).toInstance(params)
   }
 
 }

@@ -4,10 +4,13 @@ import android.view.View
 import kotlinx.android.synthetic.main.manga_list_item.*
 import tachiyomi.domain.manga.model.Manga
 
+/**
+ * Holder to use when displaying a [Manga] from a [CatalogBrowseAdapter].
+ */
 class MangaListHolder(
   private val view: View,
   private val adapter: CatalogBrowseAdapter
-) : MangaHolder(view, adapter) {
+) : MangaHolder(view) {
 
   init {
     view.setOnClickListener {
@@ -15,6 +18,9 @@ class MangaListHolder(
     }
   }
 
+  /**
+   * Binds the given [manga] with this holder.
+   */
   override fun bind(manga: Manga) {
     // Set manga title
     title.text = manga.title
@@ -25,6 +31,9 @@ class MangaListHolder(
     bindImage(manga)
   }
 
+  /**
+   * Binds only the cover of the given [manga] with this holder.
+   */
   override fun bindImage(manga: Manga) {
   }
 

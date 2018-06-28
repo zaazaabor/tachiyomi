@@ -13,9 +13,14 @@ import tachiyomi.source.model.Filter
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.inflate
 
+// TODO complete the remaining view holders.
+
+/**
+ * View holder for a [FilterWrapper.Text].
+ */
 class TextHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.filter_text)) {
 
-  private var filter: FilterWrapper.Text? = null
+  private var wrapper: FilterWrapper.Text? = null
 
   init {
     filter_text.addTextChangedListener(object : TextWatcher {
@@ -24,20 +29,23 @@ class TextHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.fil
       override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
       override fun onTextChanged(sequence: CharSequence, p1: Int, p2: Int, p3: Int) {
-        filter?.value = sequence.toString()
+        wrapper?.value = sequence.toString()
       }
     })
   }
 
   fun bind(wrapper: FilterWrapper<*>) {
     wrapper as FilterWrapper.Text
-    filter = wrapper
+    this.wrapper = wrapper
     filter_text_wrapper.hint = wrapper.filter.name
     filter_text.setText(wrapper.value)
   }
 
 }
 
+/**
+ * View holder for a [FilterWrapper.Check].
+ */
 class ChipHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.filter_chip)) {
 
   private val unsetColor = filter_chip.chipBackgroundColor
@@ -79,8 +87,13 @@ class ChipHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.fil
 
 }
 
+/**
+ * View holder for a [FilterWrapper.Group]
+ */
 class GroupHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.filter_group)) {
+
   fun bind(wrapper: FilterWrapper<*>) {
     filter_group.text = wrapper.filter.name
   }
+
 }

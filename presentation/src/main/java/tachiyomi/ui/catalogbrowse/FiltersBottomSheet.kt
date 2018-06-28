@@ -7,17 +7,39 @@ import android.widget.FrameLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
+/**
+ * A custom bottom sheet layout for the list of filters which allows a sticky footer for the set of
+ * actions (close, reset, search). It dynamically sets the translationY property on the footer view
+ * when the sheet is scrolled.
+ *
+ * FIXME with 1.0.0-alpha3, the recycler view's layout manager leaves a small gap when scrolling
+ * back to the top. This behavior wasn't seen on previous  support library versions so it's most
+ * likely a bug. Check this again once a beta or stable version is released.
+ */
 class FiltersBottomSheet @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null
 ) : FrameLayout(context, attributeSet) {
 
+  /**
+   * The footer view. It's the last view of this ViewGroup and it's set on the first [onMeasure].
+   */
   private var footer: View? = null
 
+  /**
+   * The offset of the sheet used to position the [footer].
+   */
   private var maxOffset = 0f
 
+  /**
+   * The original bottom padding of the content (the view before [footer]) set from xml.
+   */
   private var contentPaddingBottom: Int? = null
 
+  /**
+   * Called when the view is being measured. It calls the super method, retrieves the [footer] view
+   * and applies our bottom padding to the content view.
+   */
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
@@ -36,6 +58,10 @@ class FiltersBottomSheet @JvmOverloads constructor(
       footer.measuredHeight + contentPaddingBottom)
   }
 
+  /**
+   * Called when the view is layout. It calculates the offset and applies the footer's translationY
+   * depending on the current sheet state.
+   */
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
     super.onLayout(changed, left, top, right, bottom)
 
@@ -57,6 +83,10 @@ class FiltersBottomSheet @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Called when the bottom sheet is being dragged. It ensures that the footer is attached to the
+   * bottom of the screen.
+   */
   fun onSlide(slideOffset: Float) {
     footer?.translationY = if (slideOffset >= 0) {
       -maxOffset * (1 - slideOffset)
@@ -66,6 +96,9 @@ class FiltersBottomSheet @JvmOverloads constructor(
   }
 
   private companion object {
+    /**
+     * The offset field of the bottom sheet.
+     */
     val maxOffsetField = BottomSheetBehavior::class.java.getDeclaredField("collapsedOffset").apply {
       isAccessible = true
     }
