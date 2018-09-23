@@ -9,29 +9,30 @@ buildscript {
     ]
   ]
   ext.versions = [
-    'kotlin'        : '1.2.50',
-    'coroutines'    : '0.21.2',
-    'androidx'      : '1.0.0-alpha3',
-    'constraint'    : '1.1.0',
-    'androidktx'    : '1.0.0-alpha3',
-    'okhttp'        : '3.10.0',
+    'kotlin'        : '1.2.70',
+    'coroutines'    : '0.26.1',
+    'androidx'      : '1.0.0',
+    'constraint'    : '1.1.3',
+    'androidktx'    : '1.0.0',
+    'okhttp'        : '3.11.0',
     'toothpick'     : '1.1.3',
-    'rxjava'        : '2.1.12',
-    'rxandroid'     : '2.0.1',
+    'rxjava'        : '2.2.2',
+    'rxandroid'     : '2.1.0',
     'rxbinding'     : '2.1.1',
-    'rxkotlin'      : '2.2.0',
-    'rxrelay'       : '2.0.0',
-    'rxpreferences' : '2.0.0-RC3',
+    'rxkotlin'      : '2.3.0',
+    'rxrelay'       : '2.1.0',
+    'rxpreferences' : '2.0.0',
     'storio'        : '3.0.0',
-    'gson'          : '2.8.4',
+    'gson'          : '2.8.5',
     'kotson'        : '2.5.0',
     'jsoup'         : '1.11.3',
-    'duktape'       : '1.2.0',
-    'conductor'     : '2.1.4',
-    'timber'        : '4.6.1',
+    'duktape'       : '1.3.0',
+    'conductor'     : '2.1.5',
+    'timber'        : '4.7.1',
     'materialDimens': '1.4',
     'materialDialog': '0.9.6.0',
-    'glide'         : '4.6.1',
+    'glide'         : '4.8.0',
+    'flexbox'       : '1.0.0',
     'junit'         : '4.12',
     'mockito'       : '2.16.0',
     'mockitokotlin' : '1.5.0'
@@ -84,6 +85,7 @@ buildscript {
       'okhttp': "com.github.bumptech.glide:okhttp3-integration:${versions.glide}",
       'compiler': "com.github.bumptech.glide:compiler:${versions.glide}"
     ],
+    'flexbox': 'com.google.android:flexbox:1.0.0',
     'junit'  : "junit:junit:${versions.junit}",
     'mockito': [
       'core': "org.mockito:mockito-core:${versions.mockito}",
@@ -97,7 +99,7 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:3.2.0-beta01'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
   }
 }
 

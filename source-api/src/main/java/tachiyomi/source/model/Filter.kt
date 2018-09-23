@@ -11,7 +11,7 @@ package tachiyomi.source.model
 sealed class Filter<V>(val name: String, val initialValue: V) {
 
   /**
-   * The initial value of this filter.
+   * The value of this filter, with the initial value set.
    */
   var value = initialValue
 

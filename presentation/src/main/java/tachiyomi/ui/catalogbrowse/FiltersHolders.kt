@@ -56,7 +56,7 @@ class ChipHolder(parent: ViewGroup) : BaseViewHolder(parent.inflate(R.layout.fil
     wrapper as FilterWrapper.Check
     val filter = wrapper.filter as Filter.Check
 
-    filter_chip.chipText = filter.name
+    filter_chip.text = filter.name
     setBackground(wrapper)
 
     filter_chip.setOnClickListener {

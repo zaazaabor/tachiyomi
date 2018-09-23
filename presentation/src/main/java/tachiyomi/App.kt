@@ -1,6 +1,9 @@
 package tachiyomi
 
 import android.app.Application
+import android.os.Looper
+import io.reactivex.android.plugins.RxAndroidPlugins
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 import tachiyomi.app.BuildConfig
@@ -18,6 +21,7 @@ import toothpick.smoothie.module.SmoothieApplicationModule
 import java.io.IOException
 import java.net.SocketException
 
+@Suppress("unused")
 class App : Application() {
 
   override fun onCreate() {
@@ -27,7 +31,7 @@ class App : Application() {
       Timber.plant(Timber.DebugTree())
     }
 
-    installRxJavaErrorHandler()
+    initRxJava()
 
     Toothpick.setConfiguration(Configuration.forDevelopment().disableReflection())
     FactoryRegistryLocator.setRootRegistry(FactoryRegistry())
@@ -37,7 +41,12 @@ class App : Application() {
     scope.installModules(SmoothieApplicationModule(this), HttpModule, DataModule)
   }
 
-  private fun installRxJavaErrorHandler() {
+  private fun initRxJava() {
+    // Init async scheduler
+    val asyncMainThreadScheduler = AndroidSchedulers.from(Looper.getMainLooper(), true)
+    RxAndroidPlugins.setInitMainThreadSchedulerHandler { asyncMainThreadScheduler }
+
+    // Install default error handler
     RxJavaPlugins.setErrorHandler { e ->
       var error = e
       if (error is UndeliverableException) {

@@ -4,7 +4,7 @@
     <!--============-->
     <!-- Base Theme -->
     <!--============-->
-    <style name="Theme" parent="Theme.AppCompat.Light.NoActionBar" />
+    <style name="Theme" parent="Theme.MaterialComponents.Light.NoActionBar" />
 
     <!--==============-->
     <!-- Light Themes -->
@@ -29,7 +29,7 @@
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->
-    <style name="Theme.Dark" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.Dark" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary Colors -->
         <item name="colorPrimary">@color/colorDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorDarkPrimaryDark</item>
