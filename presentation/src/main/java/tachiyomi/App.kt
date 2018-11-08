@@ -11,6 +11,7 @@ import tachiyomi.app.FactoryRegistry
 import tachiyomi.app.MemberInjectorRegistry
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.HttpModule
+import tachiyomi.core.rx.SchedulersModule
 import tachiyomi.data.di.DataModule
 import timber.log.Timber
 import toothpick.Toothpick
@@ -33,12 +34,14 @@ class App : Application() {
 
     initRxJava()
 
-    Toothpick.setConfiguration(Configuration.forDevelopment().disableReflection())
+    val toothpickConfig =
+      if (BuildConfig.DEBUG) Configuration.forDevelopment() else Configuration.forProduction()
+    Toothpick.setConfiguration(toothpickConfig.disableReflection())
     FactoryRegistryLocator.setRootRegistry(FactoryRegistry())
     MemberInjectorRegistryLocator.setRootRegistry(MemberInjectorRegistry())
 
     val scope = Toothpick.openScope(AppScope)
-    scope.installModules(SmoothieApplicationModule(this), HttpModule, DataModule)
+    scope.installModules(SmoothieApplicationModule(this), HttpModule, SchedulersModule, DataModule)
   }
 
   private fun initRxJava() {
@@ -52,21 +55,20 @@ class App : Application() {
       if (error is UndeliverableException) {
         error = error.cause
       }
-      if (error is InterruptedException || error is IOException || error is SocketException) {
-        // fine, irrelevant network problem or API that throws on cancellation or
-        // some blocking code was interrupted by a dispose call
+      when (error) {
+        is InterruptedException, is IOException, is SocketException -> {
+          // fine, irrelevant network problem or API that throws on cancellation or
+          // some blocking code was interrupted by a dispose call
+        }
+        is NullPointerException, is IllegalArgumentException, is IllegalStateException -> {
+          // that's likely a bug in the application or in a custom operator (if IllegalState)
+          Thread.currentThread().uncaughtExceptionHandler.uncaughtException(Thread.currentThread(),
+            error)
+        }
+        else -> {
+          Timber.w(error, "Undeliverable exception received, not sure what to do")
+        }
       }
-      if ((error is NullPointerException) || (error is IllegalArgumentException)) {
-        // that's likely a bug in the application
-        Thread.currentThread().uncaughtExceptionHandler
-          .uncaughtException(Thread.currentThread(), error)
-      }
-      if (error is IllegalStateException) {
-        // that's a bug in RxJava or in a custom operator
-        Thread.currentThread().uncaughtExceptionHandler
-          .uncaughtException(Thread.currentThread(), error)
-      }
-      Timber.w(error, "Undeliverable exception received, not sure what to do")
     }
   }
 

@@ -4,7 +4,7 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.DeepLinkSource
-import tachiyomi.source.model.MangaMeta
+import tachiyomi.source.model.MangaInfo
 import javax.inject.Inject
 
 class FindOrInitMangaFromChapterKey @Inject constructor(
@@ -17,8 +17,8 @@ class FindOrInitMangaFromChapterKey @Inject constructor(
       .defer {
         val mangaKey = source.findMangaKey(chapterKey)
         if (mangaKey != null) {
-          val mangaMeta = MangaMeta(key = mangaKey, title = "")
-          getOrAddMangaFromSource.interact(mangaMeta, source.id)
+          val mangaInfo = MangaInfo(key = mangaKey, title = "")
+          getOrAddMangaFromSource.interact(mangaInfo, source.id)
         } else {
           Single.error(Exception("Manga key not found"))
         }

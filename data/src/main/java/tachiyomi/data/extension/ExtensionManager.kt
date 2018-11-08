@@ -1,12 +1,12 @@
 package tachiyomi.data.extension
 
+import android.annotation.SuppressLint
 import android.app.Application
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.async
 import tachiyomi.core.http.Http
+import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.util.launchNow
 import tachiyomi.data.extension.api.ExtensionGithubApi
 import tachiyomi.data.extension.model.Extension
@@ -32,7 +32,8 @@ import javax.inject.Inject
 class ExtensionManager @Inject internal constructor(
   private val context: Application,
   private val http: Http,
-  private val preferences: ExtensionPreferences
+  private val preferences: ExtensionPreferences,
+  private val schedulers: RxSchedulers
 ) {
 
   /**
@@ -145,11 +146,12 @@ class ExtensionManager @Inject internal constructor(
   /**
    * Finds the available extensions in the [api] and updates [availableExtensions].
    */
+  @SuppressLint("CheckResult")
   fun findAvailableExtensions() {
     api.findExtensions()
       .onErrorReturn { emptyList() }
-      .subscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
+      .subscribeOn(schedulers.io)
+      .observeOn(schedulers.main)
       .doOnSuccess { availableExtensions = it }
   }
 
@@ -197,7 +199,7 @@ class ExtensionManager @Inject internal constructor(
    */
   fun updateExtension(extension: Extension.Installed): Observable<InstallStep> {
     val availableExt = availableExtensions.find { it.pkgName == extension.pkgName }
-                       ?: return Observable.empty()
+      ?: return Observable.empty()
     return installExtension(availableExt)
   }
 

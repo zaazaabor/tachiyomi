@@ -14,13 +14,13 @@ import tachiyomi.source.DeepLink
 import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Dependencies
 import tachiyomi.source.HttpSource
-import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.Filter
-import tachiyomi.source.model.MangaMeta
-import tachiyomi.source.model.MangasPageMeta
-import tachiyomi.source.model.PageMeta
-import tachiyomi.source.model.SearchQuery
+import tachiyomi.source.model.FilterList
 import tachiyomi.source.model.Listing
+import tachiyomi.source.model.MangaInfo
+import tachiyomi.source.model.MangasPageInfo
+import tachiyomi.source.model.PageInfo
 import tachiyomi.source.util.asJsoup
 import java.net.URLEncoder
 import java.util.Date
@@ -67,15 +67,15 @@ open class Mangadex(
       "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
     }
 
-  override fun fetchMangaList(query: SearchQuery, page: Int): MangasPageMeta {
+  override fun fetchMangaList(listing: Listing?, page: Int): MangasPageInfo {
     val request = GET("$baseUrl/titles/0/$page", headers)
     val document = client.newCall(request).execute().asJsoup()
 
-    val mangas = document.select("div.col-sm-6").map { element ->
+    val mangas = document.select("div.col-lg-6.border-bottom.pl-0.my-1").map { element ->
       val titleElement = element.select("a.manga_title").first()
       val coverElement = element.select("div.large_logo img").first()
 
-      MangaMeta(
+      MangaInfo(
         key = removeMangaNameFromUrl(titleElement.attr("href")),
         title = titleElement.text().trim(),
         cover = baseUrl + coverElement.attr("src")
@@ -86,11 +86,15 @@ open class Mangadex(
       .select(".pagination li:not(.disabled) span[title*=last page]:not(disabled)")
       .first() != null
 
-    return MangasPageMeta(mangas, hasNextPage)
+    return MangasPageInfo(mangas, hasNextPage)
   }
 
-  override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
-    val request = GET(baseUrl + URL + getMangaId(manga.key), headers)
+  override fun fetchMangaList(filters: FilterList, page: Int): MangasPageInfo {
+    return fetchMangaList(null, 1)
+  }
+
+  override fun fetchMangaDetails(manga: MangaInfo): MangaInfo {
+    val request = GET(baseUrl + API_MANGA + getMangaId(manga.key), headers)
     val response = client.newCall(request).execute()
 
     val jsonData = response.body()!!.string()
@@ -104,14 +108,14 @@ open class Mangadex(
     val status = parseStatus(mangaJson.get("status").int)
     val genres = mutableListOf<String>()
 
-    mangaJson.get("genres").asJsonArray.forEach { id ->
-      getGenreList().find { it -> it.id == id.string }?.let { genre ->
-        genres.add(genre.name)
-      }
-    }
+//    mangaJson.get("genres").asJsonArray.forEach { id ->
+//      getGenreList().find { it -> it.id == id.string }?.let { genre ->
+//        genres.add(genre.name)
+//      }
+//    }
     val genre = genres.joinToString(", ")
 
-    return MangaMeta(
+    return MangaInfo(
       key = "",
       title = title,
       artist = artist,
@@ -124,15 +128,15 @@ open class Mangadex(
     )
   }
 
-  override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
-    val request = GET(baseUrl + URL + getMangaId(manga.key), headers)
+  override fun fetchChapterList(manga: MangaInfo): List<ChapterInfo> {
+    val request = GET(baseUrl + API_MANGA + getMangaId(manga.key), headers)
     val response = client.newCall(request).execute()
 
     val now = Date().time
     var jsonData = response.body()!!.string()
     val json = JsonParser().parse(jsonData).asJsonObject
     val chapterJson = json.getAsJsonObject("chapter")
-    val chapters = mutableListOf<ChapterMeta>()
+    val chapters = mutableListOf<ChapterInfo>()
 
     //skip chapters that dont match the desired language, or are future releases
     chapterJson?.forEach { key, jsonElement ->
@@ -147,7 +151,7 @@ open class Mangadex(
     return chapters
   }
 
-  override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
+  override fun fetchPageList(chapter: ChapterInfo): List<PageInfo> {
     TODO()
   }
 
@@ -168,7 +172,7 @@ open class Mangadex(
     return Jsoup.parseBodyFragment(description.replace("[list]", "").replace("[/list]", "").replace("[*]", "").replace("""\[(\w+)[^\]]*](.*?)\[/\1]""".toRegex(), "$2")).text()
   }
 
-  private fun chapterFromJson(chapterId: String, chapterJson: JsonObject): ChapterMeta {
+  private fun chapterFromJson(chapterId: String, chapterJson: JsonObject): ChapterInfo {
     val key = BASE_CHAPTER + chapterId
     var chapterName = mutableListOf<String>()
     //build chapter name
@@ -198,7 +202,7 @@ open class Mangadex(
     }
     val scanlator = scanlatorName.joinToString(" & ")
 
-    return ChapterMeta(
+    return ChapterInfo(
       key = key,
       name = name,
       dateUpload = dateUpload,
@@ -209,9 +213,9 @@ open class Mangadex(
 //  override fun imageUrlParse(document: Document): String = ""
 
   private fun parseStatus(status: Int) = when (status) {
-    1 -> MangaMeta.ONGOING
-    2 -> MangaMeta.COMPLETED
-    else -> MangaMeta.UNKNOWN
+    1 -> MangaInfo.ONGOING
+    2 -> MangaInfo.COMPLETED
+    else -> MangaInfo.UNKNOWN
   }
 
   private fun getImageUrl(attr: String): String {
@@ -226,15 +230,22 @@ open class Mangadex(
     return listOf(Latest())
   }
 
-  inner class Latest : Listing {
-    override val name = "Latest"
-    override fun getFilters() = getFilterList()
+  override fun getFilters(): FilterList {
+    return listOf(
+      Filter.Title(),
+      Filter.Author(),
+      Filter.Artist(),
+      R18(),
+      GenreList(getGenreList())
+    )
   }
+
+  inner class Latest : Listing("Latest")
 
   private class TextField(name: String, val key: String) : Filter.Text(name)
   private class Genre(val id: String, name: String) : Filter.Check(name)
-  private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
-  private class R18 : Filter.Select<String>("R18+", arrayOf("Show all", "Show only", "Show none"))
+  private class GenreList(genres: List<Genre>) : Filter.Group("Genres", genres)
+  private class R18 : Filter.Select("R18+", arrayOf("Show all", "Show only", "Show none"))
 
   private fun getFilterList() = listOf(
     TextField("Author", "author"),
@@ -244,52 +255,53 @@ open class Mangadex(
   )
 
   private fun getGenreList() = listOf(
-    Genre("1", "4-koma"),
-    Genre("2", "Action"),
-    Genre("3", "Adventure"),
-    Genre("4", "Award Winning"),
-    Genre("5", "Comedy"),
-    Genre("6", "Cooking"),
-    Genre("7", "Doujinshi"),
-    Genre("8", "Drama"),
-    Genre("9", "Ecchi"),
-    Genre("10", "Fantasy"),
-    Genre("11", "Gender Bender"),
-    Genre("12", "Harem"),
-    Genre("13", "Historical"),
-    Genre("14", "Horror"),
-    Genre("15", "Josei"),
-    Genre("16", "Martial Arts"),
-    Genre("17", "Mecha"),
-    Genre("18", "Medical"),
-    Genre("19", "Music"),
-    Genre("20", "Mystery"),
-    Genre("21", "Oneshot"),
-    Genre("22", "Psychological"),
-    Genre("23", "Romance"),
-    Genre("24", "School Life"),
-    Genre("25", "Sci-Fi"),
-    Genre("26", "Seinen"),
-    Genre("27", "Shoujo"),
-    Genre("28", "Shoujo Ai"),
-    Genre("29", "Shounen"),
-    Genre("30", "Shounen Ai"),
-    Genre("31", "Slice of Life"),
-    Genre("32", "Smut"),
-    Genre("33", "Sports"),
-    Genre("34", "Supernatural"),
-    Genre("35", "Tragedy"),
-    Genre("36", "Webtoon"),
-    Genre("37", "Yaoi"),
-    Genre("38", "Yuri"),
-    Genre("39", "[no chapters]"),
-    Genre("40", "Game"),
-    Genre("41", "Isekai")
+    Filter.Genre("4-koma"),
+    Filter.Genre("Action"),
+    Filter.Genre("Adventure"),
+    Filter.Genre("Award Winning"),
+    Filter.Genre("Comedy"),
+    Filter.Genre("Cooking"),
+    Filter.Genre("Doujinshi"),
+    Filter.Genre("Drama"),
+    Filter.Genre("Ecchi"),
+    Filter.Genre("Fantasy"),
+    Filter.Genre("Gender Bender"),
+    Filter.Genre("Harem"),
+    Filter.Genre("Historical"),
+    Filter.Genre("Horror"),
+    Filter.Genre("Josei"),
+    Filter.Genre("Martial Arts"),
+    Filter.Genre("Mecha"),
+    Filter.Genre("Medical"),
+    Filter.Genre("Music"),
+    Filter.Genre("Mystery"),
+    Filter.Genre("Oneshot"),
+    Filter.Genre("Psychological"),
+    Filter.Genre("Romance"),
+    Filter.Genre("School Life"),
+    Filter.Genre("Sci-Fi"),
+    Filter.Genre("Seinen"),
+    Filter.Genre("Shoujo"),
+    Filter.Genre("Shoujo Ai"),
+    Filter.Genre("Shounen"),
+    Filter.Genre("Shounen Ai"),
+    Filter.Genre("Slice of Life"),
+    Filter.Genre("Smut"),
+    Filter.Genre("Sports"),
+    Filter.Genre("Supernatural"),
+    Filter.Genre("Tragedy"),
+    Filter.Genre("Webtoon"),
+    Filter.Genre("Yaoi"),
+    Filter.Genre("Yuri"),
+    Filter.Genre("[no chapters]"),
+    Filter.Genre("Game"),
+    Filter.Genre("Isekai")
   )
 
   override fun handlesLink(url: String): DeepLink? {
     return when {
-      "/chapter/" in url -> DeepLink.Chapter(url.substringAfter("mangadex.org"))
+      "/chapter/" in url ->
+        DeepLink.Chapter("/chapter/" + url.substringAfter("chapter/").substringBefore("/"))
       "/manga/" in url -> DeepLink.Manga(url.substringAfter("mangadex.org")
         .substringBeforeLast("/") + "/")
       else -> null
@@ -302,7 +314,13 @@ open class Mangadex(
     val body = response.body()?.string() ?: return null
 
     val document = Jsoup.parse(body)
-    return removeMangaNameFromUrl(document.select(".panel-heading a").attr("href"))
+    val mangaId = document.getElementsByTag("meta")
+      .first { it.attr("property") == "og:image" }
+      .attr("content")
+      .substringAfterLast("/")
+      .substringBefore(".")
+
+    return "/title/$mangaId"
   }
 
   companion object {
@@ -310,7 +328,7 @@ open class Mangadex(
     private const val NO_R18 = 0
     private const val ALL = 1
     private const val ONLY_R18 = 2
-    private const val URL = "/api/3640f3fb/"
+    private const val API_MANGA = "/api/manga/"
     private const val BASE_CHAPTER = "/chapter/"
 
   }

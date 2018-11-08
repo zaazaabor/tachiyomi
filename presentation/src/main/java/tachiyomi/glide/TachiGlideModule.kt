@@ -15,7 +15,6 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.Http
-import toothpick.Toothpick
 import java.io.InputStream
 import javax.inject.Inject
 
@@ -29,7 +28,7 @@ class TachiGlideModule : AppGlideModule() {
   lateinit var http: Http
 
   init {
-    Toothpick.inject(this, AppScope.root())
+    AppScope.inject(this)
   }
 
   override fun applyOptions(context: Context, builder: GlideBuilder) {

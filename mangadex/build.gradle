@@ -56,7 +56,7 @@ android {
 dependencies {
   compileOnly project(":core")
   compileOnly project(":source-api")
-  compile project(':source-deeplink')
+  implementation project(':source-deeplink')
   compileOnly deps.jsoup
   compileOnly deps.kotson
 }

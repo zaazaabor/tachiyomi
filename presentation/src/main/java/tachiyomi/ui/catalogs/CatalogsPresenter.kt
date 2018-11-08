@@ -1,7 +1,7 @@
 package tachiyomi.ui.catalogs
 
 import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.schedulers.Schedulers
+import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.domain.source.interactor.GetCatalogSources
 import tachiyomi.source.CatalogSource
@@ -9,7 +9,8 @@ import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val getCatalogSources: GetCatalogSources
+  private val getCatalogSources: GetCatalogSources,
+  private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
   val stateRelay = BehaviorProcessor.create<CatalogsViewState>().toSerialized()
@@ -18,7 +19,7 @@ class CatalogsPresenter @Inject constructor(
     val initialState = CatalogsViewState()
 
     val catalogueChanges = getCatalogSources.interact()
-      .subscribeOn(Schedulers.io())
+      .subscribeOn(schedulers.io)
       .map(Change::CatalogueUpdate)
       .toFlowable() // TODO reactive SourceManager?
 

@@ -5,7 +5,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.chapter.util.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.ChapterInfo
 import javax.inject.Inject
 
 class SyncChaptersFromSource @Inject constructor(
@@ -19,7 +19,7 @@ class SyncChaptersFromSource @Inject constructor(
   )
 
   fun interact(
-    rawSourceChapters: List<ChapterMeta>,
+    rawSourceChapters: List<ChapterInfo>,
     manga: Manga
   ): Single<List<Chapter>> {
 

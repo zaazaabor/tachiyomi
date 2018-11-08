@@ -14,10 +14,12 @@ dependencies {
   api project(':core')
   implementation deps.duktape
   implementation deps.rxpreferences
+  implementation deps.rxandroid
   implementation deps.storio
   implementation deps.androidx.core
   implementation deps.kotlin.coroutines.core
   implementation deps.kotlin.coroutines.android
+  implementation deps.kotlin.coroutines.rx2
 
   implementation deps.toothpick.runtime
   kapt deps.toothpick.compiler

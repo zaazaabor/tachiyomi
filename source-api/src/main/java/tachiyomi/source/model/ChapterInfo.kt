@@ -1,6 +1,6 @@
 package tachiyomi.source.model
 
-data class ChapterMeta(
+data class ChapterInfo(
   var key: String,
   var name: String,
   var dateUpload: Long,

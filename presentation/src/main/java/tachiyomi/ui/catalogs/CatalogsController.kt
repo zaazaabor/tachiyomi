@@ -43,6 +43,7 @@ class CatalogsController : MvpScopedController<CatalogsPresenter>(),
     RxToolbar.navigationClicks(catalogs_toolbar)
       .subscribeWithView { (parentController as? HomeController)?.openDrawer() }
 
+    // TODO no mapping, handle threading from presenter
     presenter.stateRelay
       .map { it.catalogs }
       .distinctUntilChanged()

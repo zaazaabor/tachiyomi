@@ -1,7 +1,7 @@
 package tachiyomi.ui.library
 
 import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.schedulers.Schedulers
+import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.domain.library.LibraryCategory
 import tachiyomi.domain.library.interactor.GetLibraryByCategory
@@ -9,7 +9,8 @@ import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class LibraryPresenter @Inject constructor(
-  private val getLibraryByCategory: GetLibraryByCategory
+  private val getLibraryByCategory: GetLibraryByCategory,
+  private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
   val stateRelay = BehaviorProcessor.create<LibraryViewState>().toSerialized()
@@ -19,7 +20,7 @@ class LibraryPresenter @Inject constructor(
 
     val libraryChanges = getLibraryByCategory.interact()
       .map(Change::LibraryUpdate)
-      .subscribeOn(Schedulers.io())
+      .subscribeOn(schedulers.io)
 
     libraryChanges.scan(initialState, ::reduce)
       .logOnNext()

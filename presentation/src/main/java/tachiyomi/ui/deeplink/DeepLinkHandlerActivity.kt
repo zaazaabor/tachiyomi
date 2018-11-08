@@ -11,7 +11,6 @@ import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Source
 import tachiyomi.ui.MainActivity
 import timber.log.Timber
-import toothpick.Toothpick
 import javax.inject.Inject
 
 class DeepLinkHandlerActivity : Activity() {
@@ -36,7 +35,7 @@ class DeepLinkHandlerActivity : Activity() {
     }
 
     // Inject extensions manager
-    Toothpick.inject(this, AppScope.root())
+    AppScope.inject(this)
 
     // Find caller extension
     val extension = extensionManager.installedExtensions.find { it.pkgName == referrer }

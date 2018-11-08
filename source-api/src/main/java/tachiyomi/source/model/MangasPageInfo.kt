@@ -1,6 +1,6 @@
 package tachiyomi.source.model
 
-data class MangasPageMeta(
-  val mangas: List<MangaMeta>,
+data class MangasPageInfo(
+  val mangas: List<MangaInfo>,
   val hasNextPage: Boolean
 )

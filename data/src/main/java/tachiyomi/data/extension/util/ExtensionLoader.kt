@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import dalvik.system.PathClassLoader
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.Http
 import tachiyomi.core.prefs.LazySharedPreferencesStore

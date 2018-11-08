@@ -43,6 +43,7 @@ dependencies {
   implementation deps.rxandroid
   implementation deps.rxkotlin
   implementation deps.rxrelay
+  implementation deps.rxredux
   implementation deps.rxbinding.platform
   implementation deps.rxbinding.support
   implementation deps.rxbinding.appcompat

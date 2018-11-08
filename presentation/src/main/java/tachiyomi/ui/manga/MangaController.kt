@@ -1,7 +1,11 @@
 package tachiyomi.ui.manga
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -52,8 +56,7 @@ class MangaController(
     container: ViewGroup,
     savedViewState: Bundle?
   ): View {
-    val th = LayoutInflater.from(ContextThemeWrapper(container.context, R.style.Theme_Dark_Reader))
-    return th.inflate(R.layout.manga_controller, container, false)
+    return inflater.inflate(R.layout.manga_controller, container, false)
   }
 
   override fun onViewCreated(view: View) {

@@ -1,8 +1,8 @@
 package tachiyomi.source
 
-import tachiyomi.source.model.ChapterMeta
-import tachiyomi.source.model.MangaMeta
-import tachiyomi.source.model.PageMeta
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
+import tachiyomi.source.model.PageInfo
 
 /**
  * A basic interface for creating a source. It could be an online source, a local source, etc...
@@ -24,20 +24,20 @@ interface Source {
    *
    * @param manga the manga to update.
    */
-  fun fetchMangaDetails(manga: MangaMeta): MangaMeta
+  fun fetchMangaDetails(manga: MangaInfo): MangaInfo
 
   /**
    * Returns an observable with all the available chapters for a manga.
    *
    * @param manga the manga to update.
    */
-  fun fetchChapterList(manga: MangaMeta): List<ChapterMeta>
+  fun fetchChapterList(manga: MangaInfo): List<ChapterInfo>
 
   /**
    * Returns an observable with the list of pages a chapter has.
    *
    * @param chapter the chapter.
    */
-  fun fetchPageList(chapter: ChapterMeta): List<PageMeta>
+  fun fetchPageList(chapter: ChapterInfo): List<PageInfo>
 
 }

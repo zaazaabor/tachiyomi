@@ -1,7 +1,7 @@
 package tachiyomi.domain.chapter.util
 
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.ChapterInfo
 
 /**
  * -R> = regex conversion.
@@ -38,7 +38,7 @@ object ChapterRecognition {
    */
   private val unwantedWhiteSpace = Regex("""(\s)(extra|special|omake)""")
 
-  fun parse(chapter: ChapterMeta, manga: Manga): Float {
+  fun parse(chapter: ChapterInfo, manga: Manga): Float {
 //    // If chapter number is known return.
 //    if (chapter.number == -2f || chapter.number > -1f)
 //      return

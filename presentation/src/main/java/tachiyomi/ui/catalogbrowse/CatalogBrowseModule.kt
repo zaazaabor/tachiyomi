@@ -1,5 +1,6 @@
 package tachiyomi.ui.catalogbrowse
 
+import tachiyomi.core.di.bindInstance
 import toothpick.config.Module
 
 /**
@@ -10,7 +11,7 @@ class CatalogBrowseModule(controller: CatalogBrowseController) : Module() {
 
   init {
     val params = CatalogBrowseParams(controller.getSourceId())
-    bind(CatalogBrowseParams::class.javaObjectType).toInstance(params)
+    bindInstance(params)
   }
 
 }

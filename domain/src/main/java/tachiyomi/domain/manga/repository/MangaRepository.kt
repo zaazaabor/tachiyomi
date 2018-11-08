@@ -6,7 +6,7 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 import tachiyomi.core.rx.RxOptional
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.model.MangaMeta
+import tachiyomi.source.model.MangaInfo
 
 interface MangaRepository {
 
@@ -22,7 +22,7 @@ interface MangaRepository {
 
   fun updateMangaDetails(manga: Manga): Completable
 
-  fun saveAndReturnNewManga(manga: MangaMeta, sourceId: Long): Single<Manga>
+  fun saveAndReturnNewManga(manga: MangaInfo, sourceId: Long): Single<Manga>
 
   fun deleteNonFavorite(): Completable
 }

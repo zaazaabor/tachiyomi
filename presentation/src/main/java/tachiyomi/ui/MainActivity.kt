@@ -7,7 +7,10 @@ import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import kotlinx.android.synthetic.main.main_activity.*
 import tachiyomi.app.R
+import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.base.withoutTransition
+import tachiyomi.ui.deeplink.ChapterDeepLinkController
+import tachiyomi.ui.deeplink.MangaDeepLinkController
 import tachiyomi.ui.home.HomeController
 
 class MainActivity : AppCompatActivity() {
@@ -32,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     if (!router.hasRootController()) {
       // Set start screen
-      router.setRoot(HomeController().withoutTransition())
+      rootToHomeScreen()
     }
   }
 
@@ -43,19 +46,43 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun handleIntentAction(intent: Intent): Boolean {
-    return false
+    when (intent.action) {
+      SHORTCUT_DEEPLINK_CHAPTER -> {
+        router?.setRoot(ChapterDeepLinkController(intent.extras).withFadeTransition())
+      }
+      SHORTCUT_DEEPLINK_MANGA -> {
+        router?.setRoot(MangaDeepLinkController(intent.extras).withFadeTransition())
+      }
+      else -> return false
+    }
+    return true
   }
 
   override fun onBackPressed() {
-    val router = router
-    if (router == null || !router.handleBack()) {
+    val router = router ?: return super.onBackPressed()
+
+    val backstackSize = router.backstackSize
+    if (backstackSize == 1 && router.backstack.first().controller() !is HomeController) {
+      rootToHomeScreen()
+    } else if (backstackSize == 1 || !router.handleBack()) {
       super.onBackPressed()
     }
   }
 
+  private fun rootToHomeScreen() {
+    val router = router ?: return
+    val controller = HomeController()
+    val transaction = if (router.hasRootController()) {
+      controller.withFadeTransition()
+    } else {
+      controller.withoutTransition()
+    }
+    router.setRoot(transaction)
+  }
+
   companion object {
-    val SHORTCUT_DEEPLINK_MANGA = "TODO"
-    val SHORTCUT_DEEPLINK_CHAPTER = "TODO"
+    val SHORTCUT_DEEPLINK_MANGA = "tachiyomi.action.DEEPLINK_MANGA"
+    val SHORTCUT_DEEPLINK_CHAPTER = "tachiyomi.action.DEEPLINK_CHAPTER"
   }
 
 }

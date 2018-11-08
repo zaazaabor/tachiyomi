@@ -10,6 +10,7 @@ dependencies {
   api deps.rxjava
   api deps.okhttp
   api deps.jsoup
+  api deps.kotlin.coroutines.core
 
   implementation deps.toothpick.runtime
 }

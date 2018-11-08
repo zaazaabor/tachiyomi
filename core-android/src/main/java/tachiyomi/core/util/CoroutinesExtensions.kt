@@ -1,15 +1,16 @@
 package tachiyomi.core.util
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.CoroutineStart
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 fun launchUI(block: suspend CoroutineScope.() -> Unit): Job {
-  return launch(UI, CoroutineStart.DEFAULT, null, block)
+  return GlobalScope.launch(Dispatchers.Main, CoroutineStart.DEFAULT, block)
 }
 
 fun launchNow(block: suspend CoroutineScope.() -> Unit): Job {
-  return launch(UI, CoroutineStart.UNDISPATCHED, null, block)
+  return GlobalScope.launch(Dispatchers.Main, CoroutineStart.UNDISPATCHED, block)
 }

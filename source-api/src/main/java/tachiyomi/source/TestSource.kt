@@ -1,47 +1,48 @@
 package tachiyomi.source
 
-import okhttp3.HttpUrl
-import tachiyomi.source.model.ChapterMeta
+import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.Filter
 import tachiyomi.source.model.FilterList
 import tachiyomi.source.model.Listing
-import tachiyomi.source.model.MangaMeta
-import tachiyomi.source.model.MangasPageMeta
-import tachiyomi.source.model.PageMeta
+import tachiyomi.source.model.MangaInfo
+import tachiyomi.source.model.MangasPageInfo
+import tachiyomi.source.model.PageInfo
 
 class TestSource : CatalogSource {
   override val id = 1L
 
   override val name = "Test source"
   override val lang get() = "en"
-  override fun fetchMangaDetails(manga: MangaMeta): MangaMeta {
+  override fun fetchMangaDetails(manga: MangaInfo): MangaInfo {
     Thread.sleep(1000)
     val noHipstersOffset = 10
     val picId = manga.title.split(" ")[1].toInt() + noHipstersOffset
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
   }
 
-  override fun fetchMangaList(sort: Listing?, page: Int): MangasPageMeta {
-    return MangasPageMeta(getTestManga(page), true)
+  override fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo {
+    Thread.sleep(3000)
+    return MangasPageInfo(getTestManga(page), true)
   }
 
-  override fun fetchMangaList(filters: FilterList, page: Int): MangasPageMeta {
-    val url = HttpUrl.Builder()
+  override fun fetchMangaList(filters: FilterList, page: Int): MangasPageInfo {
+    var mangaList = getTestManga(page)
 
     filters.forEach { filter ->
-
+      if (filter is Filter.Title) {
+        mangaList = mangaList.filter { filter.value in it.title }
+      }
     }
 
-    //.filter { query.query in it.title }
-    return MangasPageMeta(getTestManga(1), true)
+    return MangasPageInfo(mangaList, true)
   }
 
-  override fun fetchChapterList(manga: MangaMeta): List<ChapterMeta> {
+  override fun fetchChapterList(manga: MangaInfo): List<ChapterInfo> {
     Thread.sleep(1000)
     return getTestChapters()
   }
 
-  override fun fetchPageList(chapter: ChapterMeta): List<PageMeta> {
+  override fun fetchPageList(chapter: ChapterInfo): List<PageInfo> {
     Thread.sleep(1000)
     return getTestPages()
   }
@@ -113,10 +114,10 @@ class TestSource : CatalogSource {
     Filter.Genre("Isekai")
   )
 
-  private fun getTestManga(page: Int): List<MangaMeta> {
-    val list = mutableListOf<MangaMeta>()
+  private fun getTestManga(page: Int): List<MangaInfo> {
+    val list = mutableListOf<MangaInfo>()
     val id = (page - 1) * 20 + 1
-    val manga1 = MangaMeta(
+    val manga1 = MangaInfo(
       "$id",
       "Manga $id",
       "",
@@ -136,8 +137,8 @@ class TestSource : CatalogSource {
     return list
   }
 
-  private fun getTestChapters(): List<ChapterMeta> {
-    val chapter1 = ChapterMeta(
+  private fun getTestChapters(): List<ChapterInfo> {
+    val chapter1 = ChapterInfo(
       "1",
       "Chapter 1",
       System.currentTimeMillis()
@@ -148,10 +149,10 @@ class TestSource : CatalogSource {
     return listOf(chapter1, chapter2, chapter3)
   }
 
-  private fun getTestPages(): List<PageMeta> {
+  private fun getTestPages(): List<PageInfo> {
     return listOf(
-      PageMeta("url1", "imageUrl1"),
-      PageMeta("url2", "imageUrl2")
+      PageInfo("url1", "imageUrl1"),
+      PageInfo("url2", "imageUrl2")
     )
   }
 

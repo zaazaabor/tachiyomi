@@ -25,6 +25,22 @@ data class CatalogBrowseViewState(
   val filters: List<FilterWrapper<*>> = emptyList(),
   val isGridMode: Boolean = true,
   val isLoading: Boolean = false,
+  val currentPage: Int = 0,
   val hasMorePages: Boolean = true,
   val error: Throwable? = null
-)
+) {
+
+  override fun toString(): String {
+    return "CatalogBrowseViewState(" +
+      "source=$source, " +
+      "mangas=${mangas.size}, " +
+      "queryMode=$queryMode, " +
+      "listings=${listings.size}, " +
+      "filters=${filters.size}, " +
+      "isGridMode=$isGridMode, " +
+      "isLoading=$isLoading, " +
+      "currentPage=$currentPage, " +
+      "hasMorePages=$hasMorePages, " +
+      "error=$error)"
+  }
+}

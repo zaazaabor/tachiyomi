@@ -3,7 +3,7 @@ package tachiyomi.source.model
 /**
  * Model for a manga given by a source
  */
-data class MangaMeta(
+data class MangaInfo(
   val key: String,
   val title: String,
   val artist: String = "",

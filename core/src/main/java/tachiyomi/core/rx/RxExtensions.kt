@@ -1,6 +1,7 @@
 package tachiyomi.core.rx
 
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.internal.disposables.DisposableContainer
 
@@ -18,6 +19,15 @@ fun Disposable.addTo(disposables: DisposableContainer) {
 fun <T> Flowable<T>.scanWithPrevious(): Flowable<Pair<T, T?>> {
   return scan(Pair<T?, T?>(null, null), { prev, newValue -> Pair(newValue, prev.first) })
     .skip(1) as Flowable<Pair<T, T?>>
+}
+
+/**
+ * Returns an observable that emits the current emission paired with the previous one.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T> Observable<T>.scanWithPrevious(): Observable<Pair<T, T?>> {
+  return scan(Pair<T?, T?>(null, null), { prev, newValue -> Pair(newValue, prev.first) })
+    .skip(1) as Observable<Pair<T, T?>>
 }
 
 /**

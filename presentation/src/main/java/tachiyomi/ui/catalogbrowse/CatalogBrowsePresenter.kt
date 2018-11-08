@@ -1,12 +1,11 @@
 package tachiyomi.ui.catalogbrowse
 
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.freeletics.rxredux.StateAccessor
+import com.freeletics.rxredux.reduxStore
+import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.Observable
 import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.processors.FlowableProcessor
-import io.reactivex.processors.PublishProcessor
-import io.reactivex.schedulers.Schedulers
-import tachiyomi.core.prefs.Preference
+import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.data.catalog.prefs.CatalogPreferences
@@ -18,21 +17,17 @@ import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Filter
-import tachiyomi.source.model.Listing
 import tachiyomi.ui.base.BasePresenter
+import tachiyomi.ui.catalogbrowse.Action.DisplayModeUpdated
 import tachiyomi.ui.catalogbrowse.Action.ErrorDelivered
 import tachiyomi.ui.catalogbrowse.Action.LoadMore
-import tachiyomi.ui.catalogbrowse.Action.SetFilters
-import tachiyomi.ui.catalogbrowse.Action.SetListing
+import tachiyomi.ui.catalogbrowse.Action.Loading
+import tachiyomi.ui.catalogbrowse.Action.LoadingError
+import tachiyomi.ui.catalogbrowse.Action.MangaInitialized
+import tachiyomi.ui.catalogbrowse.Action.PageReceived
+import tachiyomi.ui.catalogbrowse.Action.QueryModeUpdated
 import tachiyomi.ui.catalogbrowse.Action.SwapDisplayMode
-import tachiyomi.ui.catalogbrowse.Change.DisplayModeUpdate
-import tachiyomi.ui.catalogbrowse.Change.Loading
-import tachiyomi.ui.catalogbrowse.Change.LoadingError
-import tachiyomi.ui.catalogbrowse.Change.MangaInitialized
-import tachiyomi.ui.catalogbrowse.Change.PageReceived
-import tachiyomi.ui.catalogbrowse.Change.QueryModeUpdate
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -56,7 +51,8 @@ class CatalogBrowsePresenter @Inject constructor(
   private val listMangaPageFromCatalogSource: ListMangaPageFromCatalogSource,
   private val searchMangaPageFromCatalogSource: SearchMangaPageFromCatalogSource,
   private val mangaInitializer: MangaInitializer,
-  private val catalogPreferences: CatalogPreferences
+  private val catalogPreferences: CatalogPreferences,
+  private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
   /**
@@ -68,183 +64,166 @@ class CatalogBrowsePresenter @Inject constructor(
    * Subject which allows emitting actions and subscribing to a specific one while supporting
    * backpressure.
    */
-  private val actions = ActionsPublisher<Action>()
+  private val actions = PublishRelay.create<Action>()
+
+  /**
+   * Last used listing preference.
+   */
+  private val lastListingPreference = catalogPreferences.lastListingUsed(params.sourceId)
+
+  /**
+   * Grid mode preference.
+   */
+  private val gridPreference = catalogPreferences.gridMode()
 
   init {
-    bindViewState()
-      .logOnNext()
-      .observeOn(AndroidSchedulers.mainThread())
+    // Build the initial view state.
+    val initialViewState = getInitialViewState()
+
+    actions
+      .observeOn(schedulers.io)
+      .doOnNext { Timber.d("Input action $it") }
+      .reduxStore(
+        initialState = initialViewState,
+        sideEffects = listOf(
+          ::setListingSideEffect,
+          ::setFiltersSideEffect,
+          ::setDisplayModeSideEffect,
+          ::loadNextSideEffect
+        ),
+        reducer = ::reducer
+      )
+      .distinctUntilChanged()
+      .doOnNext { Timber.d("RxStore state: $it") }
+      .observeOn(schedulers.main)
       .subscribe(stateRelay::onNext)
       .addTo(disposables)
   }
 
-  /**
-   * Returns a [Flowable] containing the incremental updates of a [CatalogBrowseViewState].
-   */
-  private fun bindViewState(): Flowable<CatalogBrowseViewState> {
+  private fun getInitialViewState(): CatalogBrowseViewState {
     // Find the requested source or early return an initial state with a not found error.
     val source = sourceManager.get(params.sourceId) as? CatalogSource
-      ?: return Flowable.just(CatalogBrowseViewState(error = Exception("Source not found")))
-
-    // Retrieve preferences used by this presenter.
-    val gridPreference = catalogPreferences.gridMode()
-    val lastListingPreference = catalogPreferences.lastListingUsed(params.sourceId)
+      ?: return CatalogBrowseViewState(error = Exception("Source not found"))
 
     // Get the listings of the source and the initial listing and query mode to set.
     val listings = source.getListings()
     val initialListing = listings.getOrNull(lastListingPreference.get()) ?: listings.firstOrNull()
     val initialQueryMode = QueryMode.List(initialListing)
 
-    // Build the initial view state.
-    val initialViewState = CatalogBrowseViewState(
+    return CatalogBrowseViewState(
       source = source,
       queryMode = initialQueryMode,
       listings = listings,
       filters = getWrappedFilters(source),
       isGridMode = gridPreference.get()
     )
-
-    // Setup all the partial updates (changes).
-    val mangaInitializerSubject = PublishProcessor.create<List<Manga>>().toSerialized()
-
-    val queryModeChange = bindQueryModeChange(listings, lastListingPreference)
-      .startWith(Change.QueryModeUpdate(initialQueryMode))
-      .switchMap {
-        Flowable.merge(
-          Flowable.just(it),
-          bindPageLoader(source, it.mode, mangaInitializerSubject)
-        )
-      }
-    val mangaInitialized = bindMangaInitialized(source, mangaInitializerSubject)
-    val displayMode = bindDisplayMode(gridPreference)
-    val errorDelivered = bindErrorDelivered()
-
-    val changes = listOf(queryModeChange, mangaInitialized, displayMode,
-      errorDelivered)
-
-    // Finally collect the changes and reduce them into view states.
-    return Flowable.merge(changes)
-      .scan(initialViewState, ::reduce)
   }
 
-  /**
-   * Returns the changes of query mode updates, either when the user requests it or by the initial
-   * query.
-   */
-  private fun bindQueryModeChange(
-    types: List<Listing>,
-    lastSortingUsedPreference: Preference<Int>
-  ): Flowable<Change.QueryModeUpdate> {
-    val listingChange = actions.ofType(Action.SetListing::class)
+  private fun setListingSideEffect(
+    actions: Observable<Action>,
+    state: StateAccessor<CatalogBrowseViewState>
+  ): Observable<Action> {
+    return actions.ofType(Action.SetSearchMode.Listing::class.java)
       .flatMap { action ->
-        val type = types.getOrNull(action.index)
+        val currentState = state()
+        val type = currentState.listings.getOrNull(action.index)
         if (type == null) {
           // Do nothing if the index is out of bounds.
-          Flowable.empty()
+          Observable.empty()
         } else {
           // Save this listing as the last used.
-          lastSortingUsedPreference.set(action.index)
+          lastListingPreference.set(action.index)
 
           // Emit an update to listing mode.
           val queryMode = QueryMode.List(type)
-          Flowable.just(Change.QueryModeUpdate(queryMode))
+          Observable.just(Action.QueryModeUpdated(queryMode))
         }
       }
+  }
 
-    val filterChange = actions.ofType(Action.SetFilters::class)
+  private fun setFiltersSideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<CatalogBrowseViewState>
+  ): Observable<Action> {
+    return actions.ofType(Action.SetSearchMode.Filters::class.java)
       .flatMap { action ->
         // Get the filters to apply, update their inner value and ignore the ones with the default
         // value.
         val filters = action.filters
+          .asSequence()
           .onEach { it.updateInnerValue() }
           .map { it.filter }
           .filter { !it.isDefaultValue() }
+          .toList()
 
         if (filters.isEmpty()) {
           // Do nothing if there are no filters to apply.
-          Flowable.empty()
+          Observable.empty()
         } else {
           // Emit an update to search/filter mode.
           val queryMode = QueryMode.Filter(filters)
-          Flowable.just(Change.QueryModeUpdate(queryMode))
+          Observable.just(Action.QueryModeUpdated(queryMode))
         }
       }
-
-    return Flowable.merge(listingChange, filterChange)
   }
 
-  /**
-   * Returns the page loader for this [source] given a [queryMode]. Whenever the query mode changes,
-   * this method is called again and the previous one is unsubscribed.
-   */
-  private fun bindPageLoader(
-    source: CatalogSource,
-    queryMode: QueryMode,
-    mangaInitializerSubject: FlowableProcessor<List<Manga>>
-  ): Flowable<Change> {
-    val currentPage = AtomicInteger(1)
-    val hasNextPage = AtomicBoolean(true)
-
-    return actions.ofType(Action.LoadMore::class)
+  private fun loadNextSideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<CatalogBrowseViewState>
+  ): Observable<Action> {
+    return actions.filter { it is Action.LoadMore || it is Action.QueryModeUpdated }
       .startWith(Action.LoadMore) // Always load the initial page
-      .map { currentPage.get() }
-      .concatMap f@{ requestedPage ->
-        val page = currentPage.get()
-        if (!hasNextPage.get() || requestedPage < page) return@f Flowable.empty<Change>()
+      .filter {
+        val state = stateFn()
+        state.source != null && state.queryMode != null &&
+          !state.isLoading && state.hasMorePages
+      }
+      .switchMap {
+        val state = stateFn()
+        val source = state.source!!
+        val queryMode = state.queryMode!!
+        val nextPage = state.currentPage + 1
 
         val mangasPageSingle = when (queryMode) {
           is QueryMode.Filter ->
-            searchMangaPageFromCatalogSource.interact(source, queryMode.filters, page)
+            searchMangaPageFromCatalogSource.interact(source, queryMode.filters, nextPage)
           is QueryMode.List ->
-            listMangaPageFromCatalogSource.interact(source, queryMode.listing, page)
+            listMangaPageFromCatalogSource.interact(source, queryMode.listing, nextPage)
         }
 
-        mangasPageSingle.subscribeOn(Schedulers.io())
-          .doOnSuccess { mangasPage ->
-            mangaInitializerSubject.onNext(mangasPage.mangas)
-            hasNextPage.set(mangasPage.hasNextPage)
-            currentPage.incrementAndGet()
-          }
-          .map<Change>(Change::PageReceived)
-          .toFlowable()
-          .onErrorReturn(Change::LoadingError)
-          .startWith(Change.Loading(true, page))
-      }
-  }
+        mangasPageSingle
+          .doOnSubscribe { Timber.w("Requesting page $nextPage") }
+          .subscribeOn(schedulers.io)
+          .toObservable()
+          .flatMap { mangasPage ->
+            val pageReceived = Observable.just(Action.PageReceived(mangasPage))
 
-  /**
-   * Returns the changes of the manga that are initialized.
-   */
-  private fun bindMangaInitialized(
-    source: CatalogSource,
-    mangaInitializerSubject: FlowableProcessor<List<Manga>>
-  ): Flowable<Change> {
-    return mangaInitializerSubject
-      .observeOn(Schedulers.io())
-      .flatMapIterable { it }
-      .concatMapMaybe { mangaInitializer.interact(source, it).onErrorComplete() }
-      .map(Change::MangaInitialized)
+            val mangaInitializer = Observable.fromIterable(mangasPage.mangas)
+              .subscribeOn(schedulers.io)
+              .concatMapMaybe { mangaInitializer.interact(source, it).onErrorComplete() }
+              .map { Action.MangaInitialized(it) }
+
+            Observable.merge(pageReceived, mangaInitializer)
+          }
+          .startWith(Action.Loading(true, state.currentPage))
+          .onErrorReturn(Action::LoadingError)
+      }
+
   }
 
   /**
    * Returns the changes of display mode updates.
    */
-  private fun bindDisplayMode(gridPreference: Preference<Boolean>): Flowable<Change> {
-    return actions.ofType(Action.SwapDisplayMode::class)
-      .map {
-        val newValue = !gridPreference.get()
+  private fun setDisplayModeSideEffect(
+    actions: Observable<Action>,
+    state: StateAccessor<CatalogBrowseViewState>
+  ): Observable<Action> {
+    return actions.ofType(Action.SwapDisplayMode::class.java)
+      .flatMap {
+        val newValue = !state().isGridMode
         gridPreference.set(newValue)
-        newValue
+        Observable.just(Action.DisplayModeUpdated(newValue))
       }
-      .map(Change::DisplayModeUpdate)
-  }
-
-  /**
-   * Returns the changes of errors occurred when requesting pages.
-   */
-  private fun bindErrorDelivered(): Flowable<Change> {
-    return actions.ofType(Action.ErrorDelivered::class)
-      .map { Change.LoadingError(null) }
   }
 
   /**
@@ -267,96 +246,98 @@ class CatalogBrowsePresenter @Inject constructor(
    * Emits an action to request a display mode change.
    */
   fun swapDisplayMode() {
-    actions.emit(Action.SwapDisplayMode)
+    actions.accept(Action.SwapDisplayMode)
   }
 
   /**
    * Emits an action to request the next page of the catalog.
    */
   fun loadMore() {
-    actions.emit(Action.LoadMore)
+    actions.accept(Action.LoadMore)
   }
 
   /**
    * Emits an action to query the catalog with the listing at the given [index].
    */
   fun setListing(index: Int) {
-    actions.emit(Action.SetListing(index))
+    actions.accept(Action.SetSearchMode.Listing(index))
   }
 
   /**
    * Emits an action to query the catalog with the given [filters].
    */
   fun setFilters(filters: List<FilterWrapper<*>>) {
-    actions.emit(Action.SetFilters(filters))
+    actions.accept(Action.SetSearchMode.Filters(filters))
   }
 
 }
 
 /**
- * List of actions that can be used to request a [Change] and mutate the view state.
+ * List of actions that can be used to request and mutate the view state.
  *
  * [SwapDisplayMode] is used to change the layout manager to a grid or a list.
  * [LoadMore] is used to request the next page of the catalog's current query.
  * [SetListing] is used to set a new query on the catalog with the given listing.
  * [SetFilters] is used to set a new query on the catalog with the given filters.
  * [ErrorDelivered] is used to notify the presenter that the UI has received the error.
- */
-private sealed class Action {
-
-  object SwapDisplayMode : Action()
-  object LoadMore : Action()
-  data class SetListing(val index: Int) : Action()
-  data class SetFilters(val filters: List<FilterWrapper<*>>) : Action()
-  object ErrorDelivered : Action()
-
-}
-
-/**
- * List of changes that can produce a new view state.
  *
- * [QueryModeUpdate] sets a new query mode. It's the result of applying a [SetListing] or
+ * [QueryModeUpdated] sets a new query mode. It's the result of applying a [SetListing] or
  *   [SetFilters] action.
  * [PageReceived] adds a page received from the catalog to the current list.
- * [DisplayModeUpdate] sets the new display mode. It's the result of applying a [SwapDisplayMode]
+ * [DisplayModeUpdated] sets the new display mode. It's the result of applying a [SwapDisplayMode]
  *   action.
  * [MangaInitialized] replaces the initialized manga with the non-initialized on the current list.
  * [Loading] sets the loading state, and also sets an empty list of manga if it's the first page.
  * [LoadingError] sets the error that can occur when the requested page fails to load.
  */
-private sealed class Change {
+private sealed class Action {
 
-  data class QueryModeUpdate(val mode: QueryMode) : Change()
-  data class PageReceived(val page: MangasPage) : Change()
-  data class DisplayModeUpdate(val isGridMode: Boolean) : Change()
-  data class MangaInitialized(val manga: Manga) : Change()
-  data class Loading(val isLoading: Boolean, val page: Int) : Change()
-  data class LoadingError(val error: Throwable?) : Change()
+  object SwapDisplayMode : Action()
+  object LoadMore : Action()
+  object ErrorDelivered : Action()
+  sealed class SetSearchMode : Action() {
+    data class Listing(val index: Int) : SetSearchMode()
+    data class Filters(val filters: List<FilterWrapper<*>>) : SetSearchMode()
+  }
+
+  data class QueryModeUpdated(val mode: QueryMode) : Action()
+  data class PageReceived(val page: MangasPage) : Action()
+  data class DisplayModeUpdated(val isGridMode: Boolean) : Action()
+  data class MangaInitialized(val manga: Manga) : Action()
+  data class Loading(val isLoading: Boolean, val page: Int) : Action()
+  data class LoadingError(val error: Throwable?) : Action()
 
 }
 
 /**
- * Function that reduces a [change] into a new [CatalogBrowseViewState] given the current [state].
+ * Function that reduces an [action] into a new [CatalogBrowseViewState] given the current [state].
  * The resulting view state is later emitted through a [BehaviorProcessor] from which the UI
  * receives the updates.
  */
-private fun reduce(state: CatalogBrowseViewState, change: Change): CatalogBrowseViewState {
-  return when (change) {
-    is Change.QueryModeUpdate -> state.copy(queryMode = change.mode)
-    is Change.PageReceived -> state.copy(
-      mangas = state.mangas + change.page.mangas,
-      isLoading = false,
-      hasMorePages = change.page.hasNextPage
-    )
-    is Change.DisplayModeUpdate -> state.copy(isGridMode = change.isGridMode)
-    is Change.MangaInitialized -> state.copy(mangas = state.mangas
-      .replaceFirst({ it.id == change.manga.id }, change.manga)
-    )
-    is Change.Loading -> state.copy(
-      isLoading = change.isLoading,
+private fun reducer(state: CatalogBrowseViewState, action: Action): CatalogBrowseViewState {
+  return when (action) {
+    is Action.QueryModeUpdated -> state.copy(
+      queryMode = action.mode,
+      mangas = emptyList(),
+      currentPage = 0,
       hasMorePages = true,
-      mangas = if (change.isLoading && change.page == 1) emptyList() else state.mangas
+      isLoading = false
     )
-    is Change.LoadingError -> state.copy(error = change.error, isLoading = false)
+    is Action.PageReceived -> state.copy(
+      mangas = state.mangas + action.page.mangas,
+      isLoading = false,
+      currentPage = action.page.number,
+      hasMorePages = action.page.hasNextPage
+    )
+    is Action.DisplayModeUpdated -> state.copy(isGridMode = action.isGridMode)
+    is Action.MangaInitialized -> state.copy(mangas = state.mangas
+      .replaceFirst({ it.id == action.manga.id }, action.manga)
+    )
+    is Action.Loading -> state.copy(
+      isLoading = action.isLoading
+    )
+    is Action.LoadingError -> state.copy(error = action.error, isLoading = false)
+    is Action.ErrorDelivered -> state.copy(error = null)
+    else -> state
   }
 }

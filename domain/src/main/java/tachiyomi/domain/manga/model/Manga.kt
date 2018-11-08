@@ -1,6 +1,6 @@
 package tachiyomi.domain.manga.model
 
-import tachiyomi.source.model.MangaMeta
+import tachiyomi.source.model.MangaInfo
 
 data class Manga(
   val id: Long = -1,
@@ -11,7 +11,7 @@ data class Manga(
   val author: String = "",
   val description: String = "",
   val genres: String = "",
-  val status: Int = MangaMeta.UNKNOWN,
+  val status: Int = MangaInfo.UNKNOWN,
   val cover: String = "",
   val favorite: Boolean = false,
   val lastUpdate: Long = 0,

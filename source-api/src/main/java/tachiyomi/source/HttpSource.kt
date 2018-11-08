@@ -61,7 +61,7 @@ abstract class HttpSource(private val dependencies: Dependencies) : CatalogSourc
 //   *
 //   * @param page the page whose source image has to be downloaded.
 //   */
-//  fun fetchImage(page: PageMeta): Response {
+//  fun fetchImage(page: PageInfo): Response {
 //    // TODO progress listener
 //    return client.newCall(imageRequest(page))
 //      .execute()

@@ -22,4 +22,12 @@ object AppScope {
     return Toothpick.openScopes(AppScope, any)
   }
 
+  /**
+   * Injects the application dependencies on the given object. Note the provided object must have
+   * members annotated with the @Inject annotation.
+   */
+  fun inject(obj: Any) {
+    Toothpick.inject(obj, AppScope.root())
+  }
+
 }

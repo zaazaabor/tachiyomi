@@ -1,6 +1,6 @@
 package tachiyomi.source.model
 
-data class PageMeta(
+data class PageInfo(
   val url: String = "",
   var imageUrl: String? = null
 )

@@ -30,9 +30,9 @@
     android:paddingEnd="8dp"
     android:background="@drawable/background_top_shadow">
 
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/filter_button_close"
-      style="@style/Theme.Widget.Button.Borderless"
+      style="@style/Widget.MaterialComponents.Button.TextButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/action_close"/>
@@ -42,16 +42,16 @@
       android:layout_height="0dp"
       android:layout_weight="1"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/filter_button_reset"
-      style="@style/Theme.Widget.Button.Borderless"
+      style="@style/Widget.MaterialComponents.Button.TextButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/action_reset"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/filter_button_search"
-      style="@style/Theme.Widget.Button.Colored"
+      style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/action_search"/>
