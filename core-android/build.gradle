@@ -8,6 +8,9 @@ android {
     minSdkVersion buildConfig.minSdk
     targetSdkVersion buildConfig.targetSdk
   }
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
 }
 
 dependencies {
