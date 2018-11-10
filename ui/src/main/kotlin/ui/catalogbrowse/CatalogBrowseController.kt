@@ -147,7 +147,7 @@ class CatalogBrowseController(
         dialog.show()
       }
 
-    presenter.stateRelay
+    presenter.stateObserver
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
   }

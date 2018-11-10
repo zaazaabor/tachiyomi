@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     val backstackSize = router.backstackSize
     if (backstackSize == 1 && router.backstack.first().controller() !is HomeController) {
       rootToHomeScreen()
-    } else if (backstackSize == 1 || !router.handleBack()) {
+    } else if (!router.handleBack()) {
       super.onBackPressed()
     }
   }
