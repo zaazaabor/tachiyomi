@@ -1,8 +1,8 @@
 package tachiyomi.core.util
 
 import android.content.Context
-import androidx.annotation.StringRes
 import android.widget.Toast
+import androidx.annotation.StringRes
 
 /**
  * Display a toast in this context.

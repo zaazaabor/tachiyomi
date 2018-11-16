@@ -6,10 +6,9 @@ import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.domain.library.LibraryEntry
-import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.library.model.LibraryManga
 
-internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryEntry>() {
+internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>() {
 
   /**
    * Query to get the manga from the library, with their categories and unread count.
@@ -35,30 +34,18 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryEntry>() {
         ON MC.${MangaCategoryTable.COL_MANGA_ID} = M.${MangaTable.COL_ID}
   """
 
-  override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryEntry {
+  override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryManga {
     val id = cursor.getLong(cursor.getColumnIndex(MangaTable.COL_ID))
     val source = cursor.getLong(cursor.getColumnIndex(MangaTable.COL_SOURCE))
-    val url = cursor.getString(cursor.getColumnIndex(MangaTable.COL_KEY))
-    val artist = cursor.getString(cursor.getColumnIndex(MangaTable.COL_ARTIST))
-    val author = cursor.getString(cursor.getColumnIndex(MangaTable.COL_AUTHOR))
-    val description = cursor.getString(cursor.getColumnIndex(MangaTable.COL_DESCRIPTION))
-    val genre = cursor.getString(cursor.getColumnIndex(MangaTable.COL_GENRE))
+    val key = cursor.getString(cursor.getColumnIndex(MangaTable.COL_KEY))
     val title = cursor.getString(cursor.getColumnIndex(MangaTable.COL_TITLE))
     val status = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_STATUS))
     val cover = cursor.getString(cursor.getColumnIndex(MangaTable.COL_COVER))
-    val favorite = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_FAVORITE)) == 1
     val lastUpdate = cursor.getLong(cursor.getColumnIndex(MangaTable.COL_LAST_UPDATE))
-    val initialized = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_INITIALIZED)) == 1
-    val viewer = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_VIEWER))
-    val flags = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_FLAGS))
-
-    val manga = Manga(id, source, url, artist, author, description, genre, title,
-      status, cover, favorite, lastUpdate, initialized, viewer, flags)
-
     val category = cursor.getLong(cursor.getColumnIndex("a_category"))
     val unread = cursor.getInt(cursor.getColumnIndex("a_unread"))
 
-    return LibraryEntry(manga, category, unread)
+    return LibraryManga(id, source, key, title, status, cover, lastUpdate, category, unread)
   }
 
 }

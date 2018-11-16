@@ -21,7 +21,7 @@ class TestSource : CatalogSource {
   }
 
   override fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo {
-    Thread.sleep(3000)
+//    Thread.sleep(3000)
     return MangasPageInfo(getTestManga(page), true)
   }
 

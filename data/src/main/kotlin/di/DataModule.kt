@@ -9,6 +9,8 @@ import tachiyomi.data.extension.ExtensionManager
 import tachiyomi.data.extension.prefs.ExtensionPreferences
 import tachiyomi.data.extension.prefs.ExtensionPreferencesProvider
 import tachiyomi.data.library.LibraryRepositoryImpl
+import tachiyomi.data.library.prefs.LibraryPreferences
+import tachiyomi.data.library.prefs.LibraryPreferencesProvider
 import tachiyomi.data.manga.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
 import tachiyomi.domain.category.repository.CategoryRepository
@@ -29,6 +31,8 @@ object DataModule : Module() {
     bind(SourceManager::class.java).toProvider(SourceManagerProvider::class.java)
       .providesSingletonInScope()
     bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
+      .providesSingletonInScope()
+    bind(LibraryPreferences::class.java).toProvider(LibraryPreferencesProvider::class.java)
       .providesSingletonInScope()
     bind(ExtensionManager::class.java).singletonInScope()
     bind(ExtensionPreferences::class.java).toProvider(ExtensionPreferencesProvider::class.java)

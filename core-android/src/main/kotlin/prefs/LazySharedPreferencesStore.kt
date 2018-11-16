@@ -61,4 +61,27 @@ class LazySharedPreferencesStore(
     return SharedPreference(rxSharedPreferences.getStringSet(key, defaultValue))
   }
 
+  /**
+   * Returns preference of type [T] for this [key]. The [serializer] and [deserializer] function
+   * must be provided.
+   */
+  override fun <T> getObject(
+    key: String,
+    defaultValue: T,
+    serializer: (T) -> String,
+    deserializer: (String) -> T
+  ): Preference<T> {
+    return SharedPreference(rxSharedPreferences.getObject(key, defaultValue,
+      object : com.f2prateek.rx.preferences2.Preference.Converter<T> {
+        override fun deserialize(serialized: String): T {
+          return deserializer(serialized)
+        }
+
+        override fun serialize(value: T): String {
+          return serializer(value)
+        }
+      }
+    ))
+  }
+
 }

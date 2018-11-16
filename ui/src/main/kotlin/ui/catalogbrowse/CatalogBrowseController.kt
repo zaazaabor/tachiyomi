@@ -22,7 +22,7 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Listing
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.util.visibleIf
@@ -36,7 +36,7 @@ import tachiyomi.widget.EndlessRecyclerViewScrollListener
  */
 class CatalogBrowseController(
   bundle: Bundle? = null
-) : MvpScopedController<CatalogBrowsePresenter>(bundle),
+) : MvpController<CatalogBrowsePresenter>(bundle),
   CatalogBrowseAdapter.Listener,
   EndlessRecyclerViewScrollListener.Callback {
 

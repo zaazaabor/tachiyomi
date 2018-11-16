@@ -13,11 +13,11 @@ import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.manga_controller.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.ui.base.MvpController
 
 class MangaController(
   bundle: Bundle? = null
-) : MvpScopedController<MangaPresenter>(bundle) {
+) : MvpController<MangaPresenter>(bundle) {
 
   private var adapter: MangaAdapter? = null
 

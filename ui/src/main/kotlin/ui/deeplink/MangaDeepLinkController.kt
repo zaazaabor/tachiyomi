@@ -5,23 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import tachiyomi.app.R
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.manga.MangaController
 
 class MangaDeepLinkController(
   bundle: Bundle? = null
-) : MvpScopedController<MangaDeepLinkPresenter>(bundle) {
+) : MvpController<MangaDeepLinkPresenter>(bundle) {
 
   override fun getPresenterClass() = MangaDeepLinkPresenter::class.java
 
   override fun getModule() = MangaDeepLinkModule(this)
 
-  fun getMangaKey() = args.getString(
-    MANGA_KEY)
+  fun getMangaKey() = args.getString(MANGA_KEY)
 
-  fun getSourceId() = args.getLong(
-    SOURCE_KEY)
+  fun getSourceId() = args.getLong(SOURCE_KEY)
 
   override fun onCreateView(
     inflater: LayoutInflater,

@@ -8,21 +8,19 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.deeplink_chapter_controller.*
 import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.ui.base.MvpController
 
 class ChapterDeepLinkController(
   bundle: Bundle?
-) : MvpScopedController<ChapterDeepLinkPresenter>(bundle) {
+) : MvpController<ChapterDeepLinkPresenter>(bundle) {
 
   override fun getPresenterClass() = ChapterDeepLinkPresenter::class.java
 
   override fun getModule() = ChapterDeepLinkModule(this)
 
-  fun getChapterKey() = args.getString(
-    CHAPTER_KEY)
+  fun getChapterKey() = args.getString(CHAPTER_KEY)
 
-  fun getSourceId() = args.getLong(
-    SOURCE_KEY)
+  fun getSourceId() = args.getLong(SOURCE_KEY)
 
   override fun onCreateView(
     inflater: LayoutInflater,

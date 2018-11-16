@@ -1,41 +1,117 @@
 package tachiyomi.ui.library
 
-import io.reactivex.processors.BehaviorProcessor
+import com.freeletics.rxredux.StateAccessor
+import com.freeletics.rxredux.reduxStore
+import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.Observable
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.library.LibraryCategory
-import tachiyomi.domain.library.interactor.GetLibraryByCategory
+import tachiyomi.data.library.prefs.LibraryPreferences
+import tachiyomi.domain.library.interactor.GetLibrary
+import tachiyomi.domain.library.model.LibraryCategory
+import tachiyomi.domain.library.model.LibraryFilter
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class LibraryPresenter @Inject constructor(
-  private val getLibraryByCategory: GetLibraryByCategory,
+  private val getLibrary: GetLibrary,
+  private val libraryPreferences: LibraryPreferences,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
-  val stateRelay = BehaviorProcessor.create<LibraryViewState>().toSerialized()
+  val state = BehaviorRelay.create<LibraryViewState>()
+
+  private val actions = PublishRelay.create<Action>()
+
+  private val lastSortPreference = libraryPreferences.lastSorting()
+
+  private val filtersPreference = libraryPreferences.filters()
 
   init {
-    val initialState = LibraryViewState()
-
-    val libraryChanges = getLibraryByCategory.interact()
-      .map(Change::LibraryUpdate)
-      .subscribeOn(schedulers.io)
-
-    libraryChanges.scan(initialState, ::reduce)
+    actions
+      .observeOn(schedulers.io)
+      .reduxStore(
+        initialState = getInitialViewState(),
+        sideEffects = listOf(::librarySideEffect, ::setFiltersSideEffect, ::setSortSideEffect),
+        reducer = { state, action -> action.reduce(state) }
+      )
+      .distinctUntilChanged()
       .logOnNext()
-      .subscribe(stateRelay::onNext)
+      .observeOn(schedulers.main)
+      .subscribe(state::accept)
       .addTo(disposables)
   }
 
-  private fun reduce(state: LibraryViewState, change: Change): LibraryViewState {
-    return when (change) {
-      is Change.LibraryUpdate -> state.copy(library = change.library)
-    }
+  private fun getInitialViewState(): LibraryViewState {
+    val lastSort = lastSortPreference.get()
+    return LibraryViewState(
+      emptyList(),
+      filters = emptyList(),
+      sort = lastSort
+    )
+  }
+
+  @Suppress("unused_parameter")
+  private fun librarySideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<LibraryViewState>
+  ): Observable<Action.LibraryUpdate> {
+    val state = stateFn()
+    getLibrary.setFilters(state.filters)
+    getLibrary.setSorting(state.sort)
+
+    return getLibrary.interact()
+      .subscribeOn(schedulers.io)
+      .toObservable()
+      .map(Action::LibraryUpdate)
+  }
+
+  @Suppress("unused_parameter")
+  private fun setFiltersSideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<LibraryViewState>
+  ): Observable<Action> {
+    return actions.ofType(Action.SetFilters::class.java)
+      .flatMap { action ->
+        filtersPreference.set(action.filters)
+        getLibrary.setFilters(action.filters)
+        Observable.empty<Action>()
+      }
+  }
+
+  @Suppress("unused_parameter")
+  private fun setSortSideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<LibraryViewState>
+  ): Observable<Action> {
+    return actions.ofType(Action.SetSorting::class.java)
+      .flatMap { action ->
+        lastSortPreference.set(action.sort)
+        getLibrary.setSorting(action.sort)
+        Observable.empty<Action>()
+      }
   }
 
 }
 
-private sealed class Change {
-  data class LibraryUpdate(val library: List<LibraryCategory>) : Change()
+private sealed class Action {
+
+  data class SetFilters(val filters: List<LibraryFilter>) : Action() {
+    override fun reduce(state: LibraryViewState) =
+      state.copy(filters = filters)
+  }
+
+  data class SetSorting(val sort: LibrarySort) : Action() {
+    override fun reduce(state: LibraryViewState) =
+      state.copy(sort = sort)
+  }
+
+  data class LibraryUpdate(val library: List<LibraryCategory>) : Action() {
+    override fun reduce(state: LibraryViewState) =
+      state.copy(library = library)
+  }
+
+  open fun reduce(state: LibraryViewState) = state
 }

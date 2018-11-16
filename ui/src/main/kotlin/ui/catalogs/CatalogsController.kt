@@ -10,12 +10,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.app.R
 import tachiyomi.source.CatalogSource
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
 import tachiyomi.ui.home.HomeController
 
-class CatalogsController : MvpScopedController<CatalogsPresenter>(),
+class CatalogsController : MvpController<CatalogsPresenter>(),
   CatalogsAdapter.Listener {
 
   private var adapter: CatalogsAdapter? = null

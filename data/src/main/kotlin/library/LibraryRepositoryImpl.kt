@@ -1,7 +1,6 @@
 package tachiyomi.data.library
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
-import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
@@ -13,7 +12,7 @@ import tachiyomi.data.library.resolver.LibraryMangaGetResolver
 import tachiyomi.data.manga.resolver.MangaFavoritePutResolver
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.category.repository.CategoryRepository
-import tachiyomi.domain.library.LibraryEntry
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
@@ -23,22 +22,22 @@ internal class LibraryRepositoryImpl @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) : LibraryRepository {
 
-  override fun getLibraryManga(): Flowable<List<Manga>> {
-    return storio.get()
-      .listOfObjects(Manga::class.java)
-      .withQuery(Query.builder()
-        .table(MangaTable.TABLE)
-        .where("${MangaTable.COL_FAVORITE} = ?")
-        .whereArgs(1)
-        .orderBy(MangaTable.COL_TITLE)
-        .build())
-      .prepare()
-      .asRxFlowable(BackpressureStrategy.BUFFER)
-  }
+//  override fun getLibraryManga(): Flowable<List<Manga>> {
+//    return storio.get()
+//      .listOfObjects(Manga::class.java)
+//      .withQuery(Query.builder()
+//        .table(MangaTable.TABLE)
+//        .where("${MangaTable.COL_FAVORITE} = ?")
+//        .whereArgs(1)
+//        .orderBy(MangaTable.COL_TITLE)
+//        .build())
+//      .prepare()
+//      .asRxFlowable(BackpressureStrategy.BUFFER)
+//  }
 
-  override fun getLibraryEntries(): Flowable<List<LibraryEntry>> {
+  override fun getLibraryMangas(): Flowable<List<LibraryManga>> {
     return storio.get()
-      .listOfObjects(LibraryEntry::class.java)
+      .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
         .query(LibraryMangaGetResolver.query)
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE,

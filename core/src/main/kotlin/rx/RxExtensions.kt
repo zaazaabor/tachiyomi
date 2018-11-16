@@ -3,6 +3,7 @@ package tachiyomi.core.rx
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.internal.disposables.DisposableContainer
 
 /**
@@ -35,4 +36,8 @@ fun <T> Observable<T>.scanWithPrevious(): Observable<Pair<T, T?>> {
  */
 inline fun <T, R> Flowable<T>.mapNullable(crossinline block: (T) -> R?): Flowable<R> {
   return flatMap { block(it)?.let { Flowable.just(it) } ?: Flowable.empty() }
+}
+
+fun <T, U, R> Flowable<T>.combineLatest(o2: Flowable<U>, combineFn: (T, U) -> R): Flowable<R> {
+  return Flowable.combineLatest(this, o2, BiFunction<T, U, R>(combineFn))
 }

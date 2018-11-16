@@ -6,14 +6,14 @@ import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import tachiyomi.core.db.inTransaction
+import tachiyomi.core.db.withId
+import tachiyomi.core.db.withIds
 import tachiyomi.data.category.model.MangaCategory
 import tachiyomi.data.category.resolver.RenameCategoryPutResolver
 import tachiyomi.data.category.resolver.ReorderCategoriesPutResolver
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
-import tachiyomi.core.db.inTransaction
-import tachiyomi.core.db.withId
-import tachiyomi.core.db.withIds
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject

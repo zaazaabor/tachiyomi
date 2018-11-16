@@ -7,10 +7,11 @@ import android.view.ViewGroup
 import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.library_controller.*
 import tachiyomi.app.R
-import tachiyomi.ui.base.MvpScopedController
+import tachiyomi.core.rx.scanWithPrevious
+import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.home.HomeController
 
-class LibraryController : MvpScopedController<LibraryPresenter>() {
+class LibraryController : MvpController<LibraryPresenter>() {
 
   override fun getPresenterClass() = LibraryPresenter::class.java
 
@@ -32,6 +33,14 @@ class LibraryController : MvpScopedController<LibraryPresenter>() {
     super.onViewCreated(view)
     RxToolbar.navigationClicks(library_toolbar)
       .subscribeWithView { (parentController as? HomeController)?.openDrawer() }
+
+    presenter.state
+      .scanWithPrevious()
+      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+  }
+
+  private fun render(state: LibraryViewState, prevState: LibraryViewState?) {
+
   }
 
 }

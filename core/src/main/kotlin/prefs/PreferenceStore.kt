@@ -36,4 +36,15 @@ interface PreferenceStore {
    */
   fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Preference<Set<String>>
 
+  /**
+   * Returns preference of type [T] for this [key]. The [serializer] and [deserializer] function
+   * must be provided.
+   */
+  fun <T> getObject(
+    key: String,
+    defaultValue: T,
+    serializer: (T) -> String,
+    deserializer: (String) -> T
+  ): Preference<T>
+
 }
