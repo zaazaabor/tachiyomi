@@ -7,10 +7,22 @@
   android:layout_height="match_parent"
   android:fitsSystemWindows="true">
 
-  <tachiyomi.ui.base.InsetsChangeHandlerFrameLayout
-    android:id="@+id/home_controller_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+  <FrameLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <tachiyomi.ui.base.InsetsChangeHandlerFrameLayout
+      android:id="@+id/home_controller_container"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"/>
+
+    <FrameLayout
+      android:id="@+id/home_fab_container"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|end"/>
+
+  </FrameLayout>
 
   <com.google.android.material.navigation.NavigationView
     android:id="@+id/home_nav_view"
@@ -18,6 +30,6 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     app:headerLayout="@layout/home_nav_header"
-    app:menu="@menu/home_menu" />
+    app:menu="@menu/home_drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

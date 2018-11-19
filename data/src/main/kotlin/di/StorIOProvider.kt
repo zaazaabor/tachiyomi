@@ -14,9 +14,13 @@ import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
 import javax.inject.Provider
+import javax.inject.Singleton
 
+@Singleton
+@ProvidesSingletonInScope
 internal class StorIOProvider @Inject constructor(
   private val context: Application
 ) : Provider<StorIOSQLite> {

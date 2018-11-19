@@ -11,10 +11,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
  * A custom bottom sheet layout for the list of filters which allows a sticky footer for the set of
  * actions (close, reset, search). It dynamically sets the translationY property on the footer view
  * when the sheet is scrolled.
- *
- * FIXME with 1.0.0-alpha3, the recycler view's layout manager leaves a small gap when scrolling
- * back to the top. This behavior wasn't seen on previous  support library versions so it's most
- * likely a bug. Check this again once a beta or stable version is released.
  */
 class FiltersBottomSheet @JvmOverloads constructor(
   context: Context,

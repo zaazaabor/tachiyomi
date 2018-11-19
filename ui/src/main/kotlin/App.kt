@@ -13,6 +13,7 @@ import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.HttpModule
 import tachiyomi.core.rx.SchedulersModule
 import tachiyomi.data.di.DataModule
+import tachiyomi.di.UiModule
 import timber.log.Timber
 import toothpick.Toothpick
 import toothpick.configuration.Configuration
@@ -41,7 +42,13 @@ class App : Application() {
     MemberInjectorRegistryLocator.setRootRegistry(MemberInjectorRegistry())
 
     val scope = Toothpick.openScope(AppScope)
-    scope.installModules(SmoothieApplicationModule(this), HttpModule, SchedulersModule, DataModule)
+    scope.installModules(
+      SmoothieApplicationModule(this),
+      HttpModule,
+      SchedulersModule,
+      DataModule,
+      UiModule
+    )
   }
 
   private fun initRxJava() {

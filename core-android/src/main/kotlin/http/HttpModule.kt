@@ -8,7 +8,7 @@ import toothpick.config.Module
 object HttpModule : Module() {
 
   init {
-    bind(Http::class.java).toProvider(HttpProvider::class.java).providesSingletonInScope()
+    bind(Http::class.java).toProvider(HttpProvider::class.java)
     bind(JSFactory::class.java).to(DuktapeJSFactory::class.java).singletonInScope()
   }
 }

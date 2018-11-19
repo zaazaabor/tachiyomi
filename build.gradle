@@ -33,7 +33,7 @@ buildscript {
     'materialDimens': '1.4',
     'materialDialog': '0.9.6.0',
     'glide'         : '4.8.0',
-    'flexbox'       : '1.0.0',
+    'flexbox'       : '1.1.0',
     'junit'         : '4.12',
     'mockito'       : '2.16.0',
     'mockitokotlin' : '1.5.0'

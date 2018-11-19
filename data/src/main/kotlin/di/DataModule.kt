@@ -23,20 +23,16 @@ import toothpick.config.Module
 object DataModule : Module() {
 
   init {
-    bind(StorIOSQLite::class.java).toProvider(StorIOProvider::class.java).providesSingletonInScope()
+    bind(StorIOSQLite::class.java).toProvider(StorIOProvider::class.java)
     bind(MangaRepository::class.java).to(MangaRepositoryImpl::class.java).singletonInScope()
     bind(ChapterRepository::class.java).to(ChapterRepositoryImpl::class.java).singletonInScope()
     bind(LibraryRepository::class.java).to(LibraryRepositoryImpl::class.java).singletonInScope()
     bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
     bind(SourceManager::class.java).toProvider(SourceManagerProvider::class.java)
-      .providesSingletonInScope()
     bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
-      .providesSingletonInScope()
     bind(LibraryPreferences::class.java).toProvider(LibraryPreferencesProvider::class.java)
-      .providesSingletonInScope()
     bind(ExtensionManager::class.java).singletonInScope()
     bind(ExtensionPreferences::class.java).toProvider(ExtensionPreferencesProvider::class.java)
-      .providesSingletonInScope()
   }
 
 }

@@ -13,10 +13,12 @@ import tachiyomi.source.CatalogSource
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
+import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.home.HomeController
 
 class CatalogsController : MvpController<CatalogsPresenter>(),
-  CatalogsAdapter.Listener {
+  CatalogsAdapter.Listener,
+  HomeChildController {
 
   private var adapter: CatalogsAdapter? = null
 
@@ -40,11 +42,12 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
     catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
     catalogs_recycler.adapter = adapter
 
+    setupToolbarIconWithHomeController(catalogs_toolbar)
     RxToolbar.navigationClicks(catalogs_toolbar)
       .subscribeWithView { (parentController as? HomeController)?.openDrawer() }
 
     // TODO no mapping, handle threading from presenter
-    presenter.stateRelay
+    presenter.state
       .map { it.catalogs }
       .distinctUntilChanged()
       .observeOn(AndroidSchedulers.mainThread())

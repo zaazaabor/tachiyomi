@@ -4,7 +4,7 @@
     <!--Theme Colors-->
     <!--============-->
     <!-- Default -->
-    <color name="colorPrimary">#54759E</color>
+    <color name="colorPrimary">#0277bd</color>
     <color name="colorPrimaryDark">#244A6F</color>
     <color name="colorPrimaryLight">#84A4CF</color>
     <color name="colorAccent">@color/cstm_accent_tachiyomi</color>

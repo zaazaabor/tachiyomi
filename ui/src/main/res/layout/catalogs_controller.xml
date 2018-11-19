@@ -12,8 +12,7 @@
     android:elevation="4dp"
     android:background="?attr/colorPrimary"
     android:theme="?attr/actionBarTheme"
-    app:title="Catalogs"
-    app:navigationIcon="@drawable/ic_menu_white_24dp"/>
+    app:title="@string/label_catalogues"/>
 
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/catalogs_recycler"

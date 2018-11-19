@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
-import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import kotlinx.android.synthetic.main.catalogbrowse_filters_sheet.view.*
 import tachiyomi.app.R
@@ -24,6 +24,7 @@ import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Listing
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
+import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.util.visibleIf
 import tachiyomi.widget.EndlessRecyclerViewScrollListener
@@ -38,7 +39,8 @@ class CatalogBrowseController(
   bundle: Bundle? = null
 ) : MvpController<CatalogBrowsePresenter>(bundle),
   CatalogBrowseAdapter.Listener,
-  EndlessRecyclerViewScrollListener.Callback {
+  EndlessRecyclerViewScrollListener.Callback,
+  HomeChildController.FAB {
 
   /**
    * Adapter containing the list of manga from the catalogue. This field is set to null when the
@@ -106,6 +108,7 @@ class CatalogBrowseController(
     adapter = CatalogBrowseAdapter(this)
 
     // Setup back navigation
+    setupToolbarIconWithHomeController(catalogbrowse_toolbar)
     RxToolbar.navigationClicks(catalogbrowse_toolbar)
       .subscribeWithView { router.handleBack() }
 
@@ -127,29 +130,16 @@ class CatalogBrowseController(
     // Initialize filters adapter
     filtersAdapter = FiltersAdapter()
 
-    // Setup search FAB clicks
-    catalogbrowse_fab.clicks()
-      .subscribeWithView {
-        val dialog = FiltersBottomSheetDialog(view.context)
-
-        val filtersView = LayoutInflater.from(view.context)
-          .inflate(R.layout.catalogbrowse_filters_sheet, null)
-
-        filtersView.filter_button_close.setOnClickListener { dialog.cancel() }
-        filtersView.filter_button_reset.setOnClickListener { resetFilters() }
-        filtersView.filter_button_search.setOnClickListener { applyFilters() }
-
-        val recycler = filtersView.catalogbrowse_filters_recycler
-
-        recycler.layoutManager = FlexboxLayoutManager(view.context)
-        recycler.adapter = filtersAdapter
-        dialog.setContentView(filtersView)
-        dialog.show()
-      }
-
     presenter.stateObserver
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
+  }
+
+  override fun createFAB(container: ViewGroup): FloatingActionButton {
+    val inflater = LayoutInflater.from(container.context)
+    val fab = inflater.inflate(R.layout.catalogbrowse_fab, container, false)
+    fab.setOnClickListener { showFilters() }
+    return fab as FloatingActionButton
   }
 
   /**
@@ -349,6 +339,29 @@ class CatalogBrowseController(
    */
   private fun setListing(index: Int) {
     presenter.setListing(index)
+  }
+
+  /**
+   * Opens a bottom sheet with the list of filters for the selected source.
+   */
+  private fun showFilters() {
+    val view = view ?: return
+
+    val dialog = FiltersBottomSheetDialog(view.context)
+
+    val filtersView = LayoutInflater.from(view.context)
+      .inflate(R.layout.catalogbrowse_filters_sheet, null)
+
+    filtersView.filter_button_close.setOnClickListener { dialog.cancel() }
+    filtersView.filter_button_reset.setOnClickListener { resetFilters() }
+    filtersView.filter_button_search.setOnClickListener { applyFilters() }
+
+    val recycler = filtersView.catalogbrowse_filters_recycler
+
+    recycler.layoutManager = FlexboxLayoutManager(view.context)
+    recycler.adapter = filtersAdapter
+    dialog.setContentView(filtersView)
+    dialog.show()
   }
 
   /**

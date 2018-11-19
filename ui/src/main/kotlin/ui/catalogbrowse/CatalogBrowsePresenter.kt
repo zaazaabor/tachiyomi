@@ -192,7 +192,7 @@ class CatalogBrowsePresenter @Inject constructor(
             val mangaInitializer = Observable.fromIterable(mangasPage.mangas)
               .subscribeOn(schedulers.io)
               .concatMapMaybe { mangaInitializer.interact(source, it).onErrorComplete() }
-              .map { Action.MangaInitialized(it) }
+              .map(Action::MangaInitialized)
 
             Observable.merge(pageReceived, mangaInitializer)
           }
