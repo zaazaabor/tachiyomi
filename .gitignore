@@ -4,6 +4,7 @@
 /.idea/*
 !/.idea/codeStyleSettings.xml
 !/.idea/inspectionProfiles/
+!/.idea/fileTemplates/
 .DS_Store
 /build
 /captures
