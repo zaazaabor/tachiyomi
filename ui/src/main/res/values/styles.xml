@@ -15,6 +15,16 @@
     <!--====-->
     <style name="Theme.ActionBar.Tab" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
+    <!--=========-->
+    <!--BottomNav-->
+    <!--=========-->
+    <style name="Theme.BottomNav">
+        <item name="android:background">?colorPrimary</item>
+        <item name="itemBackground">@drawable/bottom_nav_background</item>
+        <item name="itemTextColor">@drawable/bottom_nav_item_state</item>
+        <item name="itemIconTint">@drawable/bottom_nav_item_state</item>
+    </style>
+
     <!--===========-->
     <!--AlertDialog-->
     <!--===========-->
