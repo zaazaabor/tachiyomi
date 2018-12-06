@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!--============-->
+    <!-- Base Theme -->
+    <!--============-->
+    <style name="Theme" parent="Theme.Cyanea.Light.NoActionBar" >
+        <item name="actionBarTheme">@style/Theme.ActionBar.Light</item>
+    </style>
+
     <!--========-->
     <!--Toolbars-->
     <!--========-->
@@ -10,37 +17,6 @@
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 
-    <!--====-->
-    <!--Tabs-->
-    <!--====-->
-    <style name="Theme.ActionBar.Tab" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <!--=========-->
-    <!--BottomNav-->
-    <!--=========-->
-    <style name="Theme.BottomNav">
-        <item name="android:background">?colorPrimary</item>
-        <item name="itemBackground">@drawable/bottom_nav_background</item>
-        <item name="itemTextColor">@drawable/bottom_nav_item_state</item>
-        <item name="itemIconTint">@drawable/bottom_nav_item_state</item>
-    </style>
-
-    <!--===========-->
-    <!--AlertDialog-->
-    <!--===========-->
-    <style name="Theme.AlertDialog" />
-
-    <style name="Theme.AlertDialog.Light" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
-        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
-
-    <style name="Theme.AlertDialog.Dark" parent="Theme.AppCompat.Dialog.Alert">
-        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
-        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
-        <item name="colorAccent">@color/colorAccentDark</item>
-    </style>
 
     <!--==============-->
     <!--NavigationView-->
@@ -119,7 +95,6 @@
         </item>
         <item name="android:layout_marginEnd">@dimen/material_component_cards_space_between_cards
         </item>
-        <item name="cardBackgroundColor">?attr/dialogColor</item>
         <item name="cardElevation">2dp</item>
     </style>
 
