@@ -44,6 +44,10 @@
 
   <style name="TextAppearance.Body2" parent="TextAppearance.MaterialComponents.Body2" />
 
+  <style name="TextAppearance.Body2.Light">
+    <item name="android:textColor">@color/textColorPrimaryInverse</item>
+  </style>
+
   <style name="TextAppearance.Button" parent="TextAppearance.MaterialComponents.Button" />
 
   <style name="TextAppearance.Caption" parent="TextAppearance.MaterialComponents.Caption" />

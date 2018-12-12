@@ -13,6 +13,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.chapter.util.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.source.Source
 import tachiyomi.source.model.ChapterInfo
 import javax.inject.Inject
 
@@ -28,7 +29,8 @@ class SyncChaptersFromSource @Inject constructor(
 
   fun interact(
     rawSourceChapters: List<ChapterInfo>,
-    manga: Manga
+    manga: Manga,
+    source: Source
   ): Single<List<Chapter>> {
 
     if (rawSourceChapters.isEmpty()) {
@@ -51,7 +53,7 @@ class SyncChaptersFromSource @Inject constructor(
           dateUpload = meta.dateUpload,
           dateFetch = endDateFetch--,
           scanlator = meta.scanlator,
-          number = meta.number.takeIf { it >= 0f } ?: ChapterRecognition.parse(meta, manga),
+          number = meta.number.takeIf { it >= 0f } ?: ChapterRecognition.parse(meta, manga, source),
           sourceOrder = i
         )
       }

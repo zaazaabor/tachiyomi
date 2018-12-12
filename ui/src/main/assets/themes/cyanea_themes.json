@@ -3,7 +3,7 @@
     "theme_name": "Tachiyomi Default",
     "base_theme": "LIGHT",
     "primary": "#0277BD",
-    "primary_dark": "#244A6F",
+    "primary_dark": "#0165A0",
     "primary_light": "#84A4CF",
     "accent": "#9E7D54",
     "background": "#FFFFFFFF"
@@ -12,7 +12,7 @@
     "theme_name": "Tachiyomi Dark",
     "base_theme": "DARK",
     "primary": "#0277BD",
-    "primary_dark": "#244A6F",
+    "primary_dark": "#0165A0",
     "primary_light": "#84A4CF",
     "accent": "#9E7D54",
     "background": "#212121"

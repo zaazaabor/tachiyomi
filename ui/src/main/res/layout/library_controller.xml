@@ -16,7 +16,6 @@
       android:layout_height="?attr/actionBarSize"
       android:background="?attr/colorPrimary"
       android:elevation="4dp"
-      app:navigationIcon="?attr/homeAsUpIndicator"
       app:theme="?actionBarTheme"
       app:title="@string/label_library2" />
 

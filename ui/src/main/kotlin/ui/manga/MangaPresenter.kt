@@ -67,7 +67,7 @@ class MangaPresenter @Inject constructor(
         val info = MangaInfo(key = manga.key, title = "")
         val source = sourceManager.get(manga.source)!!
         Single.fromCallable { source.fetchChapterList(info) }
-          .flatMap { syncChaptersFromSource.interact(it, manga) }
+          .flatMap { syncChaptersFromSource.interact(it, manga, source) }
           .doOnSuccess { Timber.e(it.toString()) }
           .doOnError { Timber.e(it) }
       }
