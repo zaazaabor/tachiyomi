@@ -11,7 +11,7 @@ ext {
 }
 
 android {
-  compileSdkVersion buildConfig.compileSdk
+  compileSdkVersion Config.compileSdk
 
   sourceSets {
     main {
@@ -32,8 +32,8 @@ android {
   }
 
   defaultConfig {
-    minSdkVersion 21
-    targetSdkVersion buildConfig.targetSdk
+    minSdkVersion Config.minSdk
+    targetSdkVersion Config.targetSdk
     applicationIdSuffix pkgNameSuffix
     versionCode extVersionCode
     versionName "$libVersion.$extVersionSuffix"
@@ -57,6 +57,6 @@ dependencies {
   compileOnly project(":core")
   compileOnly project(":source-api")
   implementation project(':source-deeplink')
-  compileOnly deps.jsoup
-  compileOnly deps.kotson
+  compileOnly Deps.jsoup
+  compileOnly Deps.kotson
 }

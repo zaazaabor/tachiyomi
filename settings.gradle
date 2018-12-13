@@ -1,2 +1,0 @@
-include ':ui', ':data', ':domain', ':core', ':core-android', ':source-api', ':mangadex', ':app',
-  ':source-deeplink'
