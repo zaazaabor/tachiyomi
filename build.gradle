@@ -1,4 +1,5 @@
 buildscript {
+  //TODO: replace with Config.xxx from file buildSrc/src/main/kotlin/Config.kt
   ext.buildConfig = [
     'compileSdk': 28,
     'minSdk'    : 21,
@@ -8,6 +9,7 @@ buildscript {
       'code': 1
     ]
   ]
+  //TODO: replace with Versions.xx from buildSrc/src/main/kotlin/Versions.kt
   ext.versions = [
     'kotlin'        : '1.3.10',
     'coroutines'    : '1.0.0',
@@ -39,6 +41,7 @@ buildscript {
     'mockito'       : '2.16.0',
     'mockitokotlin' : '1.5.0'
   ]
+  //TODO: replace with Libs.xx from buildSrc/src/main/kotlin/Libs.kt
   ext.deps = [
     'kotlin'   : [
       'stdlib'    : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${versions.kotlin}",
@@ -104,8 +107,10 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:3.2.1'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
   }
+}
+plugins {
+   id("jmfayard.github.io.gradle-kotlin-dsl-libs") version "0.2.5"  // $ ./gradlew syncLibs
 }
 
 allprojects {
@@ -116,5 +121,3 @@ allprojects {
     maven { url "https://google.bintray.com/flexbox-layout" }
   }
 }
-
-apply plugin: 'com.github.ben-manes.versions'

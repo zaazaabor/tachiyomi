@@ -6,6 +6,6 @@
 !/.idea/inspectionProfiles/
 !/.idea/fileTemplates/
 .DS_Store
-/build
+build
 /captures
 .externalNativeBuild
