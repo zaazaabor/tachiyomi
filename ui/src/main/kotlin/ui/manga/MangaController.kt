@@ -19,8 +19,8 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.manga_controller.*
-import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
+import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 
 class MangaController(

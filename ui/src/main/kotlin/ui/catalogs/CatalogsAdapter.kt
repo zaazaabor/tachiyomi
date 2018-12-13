@@ -11,8 +11,8 @@ package tachiyomi.ui.catalogs
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import tachiyomi.app.R
 import tachiyomi.source.CatalogSource
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogsAdapter(

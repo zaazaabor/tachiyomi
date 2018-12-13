@@ -10,13 +10,10 @@ package tachiyomi.ui
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
-import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import kotlinx.android.synthetic.main.main_activity.*
-import tachiyomi.app.R
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.base.withoutTransition
 import tachiyomi.ui.deeplink.ChapterDeepLinkController

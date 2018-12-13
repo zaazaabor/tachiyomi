@@ -16,8 +16,8 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.filter_chip.*
 import kotlinx.android.synthetic.main.filter_group.*
 import kotlinx.android.synthetic.main.filter_text.*
-import tachiyomi.app.R
 import tachiyomi.source.model.Filter
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.inflate
 

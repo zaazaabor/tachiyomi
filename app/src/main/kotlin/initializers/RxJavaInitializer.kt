@@ -6,64 +6,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi
+package tachiyomi.app.initializers
 
-import android.app.Application
 import android.os.Looper
-import com.jaredrummler.cyanea.Cyanea
 import io.reactivex.android.plugins.RxAndroidPlugins
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
-import tachiyomi.app.BuildConfig
-import tachiyomi.app.FactoryRegistry
-import tachiyomi.app.MemberInjectorRegistry
-import tachiyomi.core.di.AppScope
-import tachiyomi.core.http.HttpModule
-import tachiyomi.core.rx.SchedulersModule
-import tachiyomi.data.di.DataModule
-import tachiyomi.di.UiModule
 import timber.log.Timber
-import toothpick.Toothpick
-import toothpick.configuration.Configuration
-import toothpick.registries.FactoryRegistryLocator
-import toothpick.registries.MemberInjectorRegistryLocator
-import toothpick.smoothie.module.SmoothieApplicationModule
 import java.io.IOException
 import java.net.SocketException
+import javax.inject.Inject
 
-@Suppress("unused")
-class App : Application() {
+class RxJavaInitializer @Inject constructor() {
 
-  override fun onCreate() {
-    super.onCreate()
-
-    if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
-    }
-
-    initRxJava()
-
-    // Initialize theme engine
-    Cyanea.init(this, resources)
-
-    val toothpickConfig =
-      if (BuildConfig.DEBUG) Configuration.forDevelopment() else Configuration.forProduction()
-    Toothpick.setConfiguration(toothpickConfig.disableReflection())
-    FactoryRegistryLocator.setRootRegistry(FactoryRegistry())
-    MemberInjectorRegistryLocator.setRootRegistry(MemberInjectorRegistry())
-
-    val scope = Toothpick.openScope(AppScope)
-    scope.installModules(
-      SmoothieApplicationModule(this),
-      HttpModule,
-      SchedulersModule,
-      DataModule,
-      UiModule
-    )
-  }
-
-  private fun initRxJava() {
+  init {
     // Init async scheduler
     val asyncMainThreadScheduler = AndroidSchedulers.from(Looper.getMainLooper(), true)
     RxAndroidPlugins.setInitMainThreadSchedulerHandler { asyncMainThreadScheduler }

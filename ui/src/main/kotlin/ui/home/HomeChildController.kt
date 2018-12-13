@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import com.bluelinelabs.conductor.Controller
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import tachiyomi.app.R
 import tachiyomi.util.getDrawableAttr
 
 interface HomeChildController {

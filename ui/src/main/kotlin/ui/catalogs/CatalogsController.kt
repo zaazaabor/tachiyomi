@@ -13,11 +13,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.catalogs_controller.*
-import tachiyomi.app.R
 import tachiyomi.source.CatalogSource
+import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
@@ -49,12 +47,13 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
     catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
     catalogs_recycler.adapter = adapter
 
+    presenter
     // TODO no mapping, handle threading from presenter
-    presenter.state
-      .map { it.catalogs }
-      .distinctUntilChanged()
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribeWithView(::renderCatalogues)
+//    presenter.state
+//      .map { it.catalogs }
+//      .distinctUntilChanged()
+//      .observeOn(AndroidSchedulers.mainThread())
+//      .subscribeWithView(::renderCatalogues)
   }
 
   override fun onDestroyView(view: View) {

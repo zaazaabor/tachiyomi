@@ -9,7 +9,8 @@
 package tachiyomi.data.source
 
 import android.app.Application
-import tachiyomi.data.extension.ExtensionManager
+import tachiyomi.data.catalog.CatalogRepositoryImpl
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
@@ -20,12 +21,12 @@ import javax.inject.Singleton
 @ProvidesSingletonInScope
 internal class SourceManagerProvider @Inject constructor(
   private val context: Application,
-  private val extensionManager: ExtensionManager
+  private val catalogRepository: CatalogRepository
 ) : Provider<SourceManager> {
 
   override fun get(): SourceManager {
     val sourceManager = SourceManagerImpl(context)
-    extensionManager.init(sourceManager)
+    (catalogRepository as CatalogRepositoryImpl).init(sourceManager)
     return sourceManager
   }
 

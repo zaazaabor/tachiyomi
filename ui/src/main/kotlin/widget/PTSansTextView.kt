@@ -13,7 +13,7 @@ import android.graphics.Canvas
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.widget.TextView
-import tachiyomi.app.R
+import tachiyomi.ui.R
 import java.util.HashMap
 
 class PTSansTextView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :

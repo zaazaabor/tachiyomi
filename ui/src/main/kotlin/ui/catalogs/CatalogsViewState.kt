@@ -8,8 +8,8 @@
 
 package tachiyomi.ui.catalogs
 
-import tachiyomi.source.CatalogSource
+import tachiyomi.domain.catalog.model.Catalog
 
 data class CatalogsViewState(
-  val catalogs: List<CatalogSource> = emptyList()
+  val catalogs: List<Catalog.Installed> = emptyList()
 )

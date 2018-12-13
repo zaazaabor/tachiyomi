@@ -15,15 +15,13 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.data.extension.ExtensionManager
-import tachiyomi.domain.source.interactor.GetCatalogSources
-import tachiyomi.source.CatalogSource
+import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val extensionManager: ExtensionManager,
-  private val getCatalogSources: GetCatalogSources,
+  private val catalogRepository: CatalogRepository,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
@@ -50,16 +48,17 @@ class CatalogsPresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<CatalogsViewState>
   ): Observable<Action.CatalogUpdate> {
-    return getCatalogSources.interact()
+    return catalogRepository.getInstalledCatalogsFlowable()
       .subscribeOn(schedulers.io)
       .map(Action::CatalogUpdate)
+      .logOnNext()
       .toObservable()
   }
 
 }
 
 private sealed class Action {
-  data class CatalogUpdate(val catalogs: List<CatalogSource>) : Action()
+  data class CatalogUpdate(val catalogs: List<Catalog.Installed>) : Action()
 }
 
 private fun reduce(state: CatalogsViewState, action: Action): CatalogsViewState {

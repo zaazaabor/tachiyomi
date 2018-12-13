@@ -12,25 +12,48 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.rx2.asCoroutineDispatcher
-import tachiyomi.core.di.bindInstance
+import tachiyomi.core.di.bindProvider
+import toothpick.ProvidesSingletonInScope
 import toothpick.config.Module
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 
 object SchedulersModule : Module() {
 
   init {
-    val rxSchedulers = RxSchedulers(
-      io = Schedulers.io(),
-      computation = Schedulers.computation(),
-      main = AndroidSchedulers.mainThread()
-    )
-    val coroutineDispatchers = CoroutineDispatchers(
-      io = rxSchedulers.io.asCoroutineDispatcher(),
-      computation = rxSchedulers.computation.asCoroutineDispatcher(),
-      main = Dispatchers.Main
-    )
+    bindProvider<RxSchedulers, RxSchedulersProvider>()
+    bindProvider<CoroutineDispatchers, CoroutineDispatchersProvider>()
+  }
 
-    bindInstance(rxSchedulers)
-    bindInstance(coroutineDispatchers)
+  @Singleton
+  @ProvidesSingletonInScope
+  internal class RxSchedulersProvider : Provider<RxSchedulers> {
+
+    override fun get(): RxSchedulers {
+      return RxSchedulers(
+        io = Schedulers.io(),
+        computation = Schedulers.computation(),
+        main = AndroidSchedulers.mainThread()
+      )
+    }
+
+  }
+
+  @Singleton
+  @ProvidesSingletonInScope
+  internal class CoroutineDispatchersProvider @Inject constructor(
+    private val rxSchedulers: RxSchedulers
+  ) : Provider<CoroutineDispatchers> {
+
+    override fun get(): CoroutineDispatchers {
+      return CoroutineDispatchers(
+        io = rxSchedulers.io.asCoroutineDispatcher(),
+        computation = rxSchedulers.computation.asCoroutineDispatcher(),
+        main = Dispatchers.Main
+      )
+    }
+
   }
 
 }

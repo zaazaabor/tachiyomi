@@ -22,7 +22,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.*
-import tachiyomi.app.BuildConfig
+import tachiyomi.ui.BuildConfig
 import timber.log.Timber
 
 abstract class BaseController(

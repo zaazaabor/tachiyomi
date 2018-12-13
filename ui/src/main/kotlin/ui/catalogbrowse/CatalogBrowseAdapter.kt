@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import tachiyomi.app.R
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.ui.R
 import tachiyomi.widget.AutofitRecyclerView
 
 /**

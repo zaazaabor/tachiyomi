@@ -9,18 +9,19 @@
 package tachiyomi.data.di
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
+import tachiyomi.core.di.bindProvider
+import tachiyomi.core.di.bindTo
+import tachiyomi.data.catalog.CatalogRepositoryImpl
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.data.catalog.prefs.CatalogPreferencesProvider
 import tachiyomi.data.category.CategoryRepositoryImpl
 import tachiyomi.data.chapter.ChapterRepositoryImpl
-import tachiyomi.data.extension.ExtensionManager
-import tachiyomi.data.extension.prefs.ExtensionPreferences
-import tachiyomi.data.extension.prefs.ExtensionPreferencesProvider
 import tachiyomi.data.library.LibraryRepositoryImpl
 import tachiyomi.data.library.prefs.LibraryPreferences
 import tachiyomi.data.library.prefs.LibraryPreferencesProvider
 import tachiyomi.data.manga.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.category.repository.CategoryRepository
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.repository.LibraryRepository
@@ -31,16 +32,21 @@ import toothpick.config.Module
 object DataModule : Module() {
 
   init {
-    bind(StorIOSQLite::class.java).toProvider(StorIOProvider::class.java)
-    bind(MangaRepository::class.java).to(MangaRepositoryImpl::class.java).singletonInScope()
-    bind(ChapterRepository::class.java).to(ChapterRepositoryImpl::class.java).singletonInScope()
-    bind(LibraryRepository::class.java).to(LibraryRepositoryImpl::class.java).singletonInScope()
-    bind(CategoryRepository::class.java).to(CategoryRepositoryImpl::class.java).singletonInScope()
-    bind(SourceManager::class.java).toProvider(SourceManagerProvider::class.java)
-    bind(CatalogPreferences::class.java).toProvider(CatalogPreferencesProvider::class.java)
-    bind(LibraryPreferences::class.java).toProvider(LibraryPreferencesProvider::class.java)
-    bind(ExtensionManager::class.java).singletonInScope()
-    bind(ExtensionPreferences::class.java).toProvider(ExtensionPreferencesProvider::class.java)
+    bindProvider<StorIOSQLite, StorIOProvider>()
+
+    bindProvider<SourceManager, SourceManagerProvider>()
+
+    bindTo<MangaRepository, MangaRepositoryImpl>().singletonInScope()
+
+    bindTo<ChapterRepository, ChapterRepositoryImpl>().singletonInScope()
+
+    bindTo<CategoryRepository, CategoryRepositoryImpl>().singletonInScope()
+
+    bindTo<LibraryRepository, LibraryRepositoryImpl>().singletonInScope()
+    bindProvider<LibraryPreferences, LibraryPreferencesProvider>()
+
+    bindTo<CatalogRepository, CatalogRepositoryImpl>().singletonInScope()
+    bindProvider<CatalogPreferences, CatalogPreferencesProvider>()
   }
 
 }

@@ -12,7 +12,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import tachiyomi.app.R
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 
 class MangaAdapter : BaseListAdapter<Any, RecyclerView.ViewHolder>(Diff()) {

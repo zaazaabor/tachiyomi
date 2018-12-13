@@ -25,11 +25,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import kotlinx.android.synthetic.main.catalogbrowse_filters_sheet.view.*
-import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Listing
+import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.home.HomeChildController

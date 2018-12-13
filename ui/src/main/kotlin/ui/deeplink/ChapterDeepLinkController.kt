@@ -14,8 +14,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.deeplink_chapter_controller.*
-import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
+import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 
 class ChapterDeepLinkController(

@@ -30,7 +30,7 @@ import javax.inject.Inject
  * Class used to update Glide module settings
  */
 @GlideModule
-class TachiGlideModule : AppGlideModule() {
+class wTachiGlideModule : AppGlideModule() {
 
   @Inject
   lateinit var http: Http

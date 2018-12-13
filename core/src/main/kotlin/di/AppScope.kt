@@ -20,14 +20,14 @@ object AppScope {
    * Returns the root scope.
    */
   fun root(): Scope {
-    return Toothpick.openScope(AppScope)
+    return Toothpick.openScope(this)
   }
 
   /**
    * Returns a new subscope inheriting the root scope.
    */
   fun subscope(any: Any): Scope {
-    return Toothpick.openScopes(AppScope, any)
+    return Toothpick.openScopes(this, any)
   }
 
   /**
@@ -35,7 +35,14 @@ object AppScope {
    * members annotated with the @Inject annotation.
    */
   fun inject(obj: Any) {
-    Toothpick.inject(obj, AppScope.root())
+    Toothpick.inject(obj, root())
+  }
+
+  /**
+   * Returns an instance of [T] from the root scope.
+   */
+  inline fun <reified T> getInstance(): T {
+    return root().getInstance(T::class.java)
   }
 
 }

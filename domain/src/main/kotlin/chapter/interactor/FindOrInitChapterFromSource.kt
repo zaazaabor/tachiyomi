@@ -14,7 +14,6 @@ import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.chapter.util.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetChaptersFromSource
-import tachiyomi.source.CatalogSource
 import tachiyomi.source.Source
 import javax.inject.Inject
 

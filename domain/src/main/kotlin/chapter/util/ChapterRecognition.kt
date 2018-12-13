@@ -9,9 +9,8 @@
 package tachiyomi.domain.chapter.util
 
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.CatalogSource
-import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.Source
+import tachiyomi.source.model.ChapterInfo
 
 /**
  * -R> = regex conversion.

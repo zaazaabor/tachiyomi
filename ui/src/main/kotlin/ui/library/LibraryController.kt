@@ -12,8 +12,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import tachiyomi.app.R
 import tachiyomi.core.rx.scanWithPrevious
+import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.home.HomeChildController
 

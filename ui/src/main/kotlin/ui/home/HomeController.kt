@@ -21,8 +21,8 @@ import com.bluelinelabs.conductor.Router
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity
 import kotlinx.android.synthetic.main.home_controller_bottomnav.*
-import tachiyomi.app.R
 import tachiyomi.core.di.AppScope
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.base.withoutTransition
