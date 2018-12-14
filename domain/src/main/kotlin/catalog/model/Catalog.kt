@@ -17,7 +17,7 @@ sealed class Catalog {
   abstract val versionName: String
   abstract val versionCode: Int
 
-  data class BuiltIn(
+  data class Internal(
     override val name: String,
     override val pkgName: String,
     override val versionName: String,

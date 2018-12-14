@@ -27,7 +27,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
   private val installer: CatalogInstaller
 ) : CatalogRepository {
 
-  var builtInCatalogs = emptyList<Catalog.BuiltIn>()
+  var builtInCatalogs = emptyList<Catalog.Internal>()
     private set
 
   /**
@@ -58,7 +58,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
     this.sourceManager = sourceManager
 
     builtInCatalogs = sourceManager.getSources().filterIsInstance<CatalogSource>()
-      .map { Catalog.BuiltIn(it.name, "", "1", 1, it) }
+      .map { Catalog.Internal(it.name, "", "1", 1, it) }
 
     installedCatalogs = loader.loadExtensions()
       .filterIsInstance<CatalogLoader.Result.Success>()
@@ -69,7 +69,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
     //CatalogInstallReceiver(InstallationListener()).register(context)
   }
 
-  override fun getBuiltInCatalogsFlowable(): Flowable<List<Catalog.BuiltIn>> {
+  override fun getInternalCatalogsFlowable(): Flowable<List<Catalog.Internal>> {
     return Flowable.just(builtInCatalogs)
   }
 

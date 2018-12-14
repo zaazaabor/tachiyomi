@@ -11,24 +11,41 @@ package tachiyomi.ui.catalogs
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import tachiyomi.source.CatalogSource
+import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogsAdapter(
   controller: CatalogsController
-) : BaseListAdapter<CatalogSource, SourceHolder>(Diff()) {
+) : BaseListAdapter<Catalog, CatalogHolder>(Diff()) {
 
   private val listener: Listener = controller
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SourceHolder {
-    val inflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.catalogs_card_item, parent, false)
-    return SourceHolder(view, this)
+  override fun getItemViewType(position: Int): Int {
+    val item = getItem(position)
+    return when (item) {
+      is Catalog.Internal, is Catalog.Installed -> VIEW_TYPE_BROWSABLE
+      else -> 0
+    }
   }
 
-  override fun onBindViewHolder(holder: SourceHolder, position: Int) {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatalogHolder {
+    val inflater = LayoutInflater.from(parent.context)
+    return when (viewType) {
+      VIEW_TYPE_BROWSABLE -> {
+        val view = inflater.inflate(R.layout.catalogs_card_item, parent, false)
+        CatalogHolder(view, this)
+      }
+      else -> error("TODO")
+    }
+  }
+
+  override fun onBindViewHolder(holder: CatalogHolder, position: Int) {
     holder.bind(getItem(position))
+  }
+
+  override fun onViewRecycled(holder: CatalogHolder) {
+    holder.recycle()
   }
 
   fun handleRowClick(position: Int) {
@@ -36,30 +53,26 @@ class CatalogsAdapter(
     listener.onRowClick(item)
   }
 
-  fun handleBrowseClick(position: Int) {
-    val item = getItemOrNull(position) ?: return
-    listener.onBrowseClick(item)
-  }
-
-  fun handleLatestClick(position: Int) {
-    val item = getItemOrNull(position) ?: return
-    listener.onLatestClick(item)
+  fun submitBrowsableCatalogs(catalogs: List<Catalog>) {
+    submitList(catalogs)
   }
 
   interface Listener {
-    fun onRowClick(catalog: CatalogSource)
-    fun onBrowseClick(catalog: CatalogSource)
-    fun onLatestClick(catalog: CatalogSource)
+    fun onRowClick(catalog: Catalog)
   }
 
-  private class Diff : DiffUtil.ItemCallback<CatalogSource>() {
-    override fun areItemsTheSame(oldItem: CatalogSource, newItem: CatalogSource): Boolean {
-      return oldItem.id == newItem.id
+  private class Diff : DiffUtil.ItemCallback<Catalog>() {
+    override fun areItemsTheSame(oldItem: Catalog, newItem: Catalog): Boolean {
+      return oldItem == newItem
     }
 
-    override fun areContentsTheSame(oldItem: CatalogSource, newItem: CatalogSource): Boolean {
+    override fun areContentsTheSame(oldItem: Catalog, newItem: Catalog): Boolean {
       return true
     }
+  }
+
+  private companion object {
+    const val VIEW_TYPE_BROWSABLE = 1
   }
 
 }

@@ -14,7 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.catalogs_controller.*
-import tachiyomi.source.CatalogSource
+import tachiyomi.core.rx.scanWithPrevious
+import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
@@ -47,13 +48,9 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
     catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
     catalogs_recycler.adapter = adapter
 
-    presenter
-    // TODO no mapping, handle threading from presenter
-//    presenter.state
-//      .map { it.catalogs }
-//      .distinctUntilChanged()
-//      .observeOn(AndroidSchedulers.mainThread())
-//      .subscribeWithView(::renderCatalogues)
+    presenter.state
+      .scanWithPrevious()
+      .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {
@@ -65,23 +62,27 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
   // ~ Render
   //===========================================================================
 
-  private fun renderCatalogues(catalogs: List<CatalogSource>) {
-    adapter?.submitList(catalogs)
+  private fun dispatch(state: CatalogsViewState, prevState: CatalogsViewState?) {
+    if (state.installed !== prevState?.installed || state.internal !== prevState.internal) {
+      renderBrowsableCatalogs(state.internal + state.installed)
+    }
+  }
+
+  private fun renderBrowsableCatalogs(catalogs: List<Catalog>) {
+    adapter?.submitBrowsableCatalogs(catalogs)
   }
 
   //===========================================================================
   // ~ User interaction
   //===========================================================================
 
-  override fun onRowClick(catalog: CatalogSource) {
-    router.pushController(CatalogBrowseController(catalog.id).withFadeTransition())
-  }
-
-  override fun onBrowseClick(catalog: CatalogSource) {
-    onRowClick(catalog)
-  }
-
-  override fun onLatestClick(catalog: CatalogSource) {
+  override fun onRowClick(catalog: Catalog) {
+    // TODO
+    val id = when (catalog) {
+      is Catalog.Installed -> catalog.source.id
+      else -> return
+    }
+    router.pushController(CatalogBrowseController(id).withFadeTransition())
   }
 
 }

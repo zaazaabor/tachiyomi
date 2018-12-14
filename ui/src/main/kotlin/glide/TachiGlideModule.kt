@@ -23,6 +23,7 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.Http
+import tachiyomi.domain.catalog.model.Catalog
 import java.io.InputStream
 import javax.inject.Inject
 
@@ -48,8 +49,12 @@ class TachiGlideModule : AppGlideModule() {
 
   override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
     val networkFactory = OkHttpUrlLoader.Factory(http.defaultClient)
+    val internalCatalogFactory = CatalogInternalModelLoader.Factory()
+    val installedCatalogFactory = CatalogInstalledModelLoader.Factory(context)
 
     registry.replace(GlideUrl::class.java, InputStream::class.java, networkFactory)
+    registry.append(Catalog.Internal::class.java, Drawable::class.java, internalCatalogFactory)
+    registry.append(Catalog.Installed::class.java, Drawable::class.java, installedCatalogFactory)
 //    registry.append(Manga::class.java, InputStream::class.java, MangaModelLoader.Factory())
   }
 }

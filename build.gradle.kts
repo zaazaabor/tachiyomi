@@ -4,7 +4,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:3.2.1")
+    classpath("com.android.tools.build:gradle:3.3.0-rc02")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Deps.kotlin.version}")
   }
 }
@@ -16,8 +16,8 @@ plugins {
 allprojects {
   repositories {
     google()
-    jcenter()
     maven { setUrl("https://jitpack.io") }
     maven { setUrl("https://google.bintray.com/flexbox-layout") }
+    jcenter()
   }
 }

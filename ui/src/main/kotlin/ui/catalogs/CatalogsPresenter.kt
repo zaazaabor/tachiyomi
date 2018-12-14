@@ -47,22 +47,30 @@ class CatalogsPresenter @Inject constructor(
   private fun loadCatalogsSideEffect(
     actions: Observable<Action>,
     stateFn: StateAccessor<CatalogsViewState>
-  ): Observable<Action.CatalogUpdate> {
-    return catalogRepository.getInstalledCatalogsFlowable()
+  ): Observable<Action> {
+    val internalCatalogs = catalogRepository.getInternalCatalogsFlowable()
       .subscribeOn(schedulers.io)
-      .map(Action::CatalogUpdate)
-      .logOnNext()
+      .map(Action::InternalCatalogUpdate)
       .toObservable()
+
+    val installedCatalogs = catalogRepository.getInstalledCatalogsFlowable()
+      .subscribeOn(schedulers.io)
+      .map(Action::InstalledCatalogUpdate)
+      .toObservable()
+
+    return Observable.merge(internalCatalogs, installedCatalogs)
   }
 
 }
 
 private sealed class Action {
-  data class CatalogUpdate(val catalogs: List<Catalog.Installed>) : Action()
+  data class InternalCatalogUpdate(val catalogs: List<Catalog.Internal>) : Action()
+  data class InstalledCatalogUpdate(val catalogs: List<Catalog.Installed>) : Action()
 }
 
 private fun reduce(state: CatalogsViewState, action: Action): CatalogsViewState {
   return when (action) {
-    is Action.CatalogUpdate -> state.copy(catalogs = action.catalogs)
+    is Action.InternalCatalogUpdate -> state.copy(internal = action.catalogs)
+    is Action.InstalledCatalogUpdate -> state.copy(installed = action.catalogs)
   }
 }

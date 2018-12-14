@@ -11,5 +11,6 @@ package tachiyomi.ui.catalogs
 import tachiyomi.domain.catalog.model.Catalog
 
 data class CatalogsViewState(
-  val catalogs: List<Catalog.Installed> = emptyList()
+  val internal: List<Catalog.Internal> = emptyList(),
+  val installed: List<Catalog.Installed> = emptyList()
 )

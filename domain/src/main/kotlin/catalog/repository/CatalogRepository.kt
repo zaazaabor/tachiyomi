@@ -13,7 +13,7 @@ import tachiyomi.domain.catalog.model.Catalog
 
 interface CatalogRepository {
 
-  fun getBuiltInCatalogsFlowable(): Flowable<List<Catalog.BuiltIn>>
+  fun getInternalCatalogsFlowable(): Flowable<List<Catalog.Internal>>
 
   fun getInstalledCatalogsFlowable(): Flowable<List<Catalog.Installed>>
 
