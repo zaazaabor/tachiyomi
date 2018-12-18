@@ -10,9 +10,11 @@ package tachiyomi.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.jaredrummler.cyanea.inflator.CyaneaViewProcessor
 import kotlinx.android.synthetic.main.main_activity.*
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.base.withoutTransition
@@ -20,7 +22,7 @@ import tachiyomi.ui.deeplink.ChapterDeepLinkController
 import tachiyomi.ui.deeplink.MangaDeepLinkController
 import tachiyomi.ui.home.HomeController
 
-class MainActivity : CyaneaAppCompatActivity() {
+class MainActivity : CyaneaAppCompatActivity(), CyaneaViewProcessor.Provider {
 
   private var router: Router? = null
 
@@ -85,6 +87,10 @@ class MainActivity : CyaneaAppCompatActivity() {
       controller.withoutTransition()
     }
     router.setRoot(transaction)
+  }
+
+  override fun getViewProcessors(): Array<CyaneaViewProcessor<out View>> {
+    return getCyaneaViewProcessors()
   }
 
   companion object {
