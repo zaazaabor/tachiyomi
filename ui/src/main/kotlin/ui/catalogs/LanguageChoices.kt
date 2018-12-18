@@ -8,7 +8,10 @@
 
 package tachiyomi.ui.catalogs
 
-data class CatalogsViewState(
-  val items: List<Any> = emptyList(),
-  val languageChoice: LanguageChoice = LanguageChoice.All
-)
+data class LanguageChoices(val choices: List<LanguageChoice>, val selected: LanguageChoice)
+
+sealed class LanguageChoice {
+  object All : LanguageChoice()
+  data class One(val language: Language) : LanguageChoice()
+  data class Others(val languages: List<Language>) : LanguageChoice()
+}

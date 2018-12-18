@@ -51,10 +51,14 @@ class TachiGlideModule : AppGlideModule() {
     val networkFactory = OkHttpUrlLoader.Factory(http.defaultClient)
     val internalCatalogFactory = CatalogInternalModelLoader.Factory()
     val installedCatalogFactory = CatalogInstalledModelLoader.Factory(context)
+    val availableCatalogFactory = CatalogAvailableModelLoader.Factory()
 
     registry.replace(GlideUrl::class.java, InputStream::class.java, networkFactory)
+
     registry.append(Catalog.Internal::class.java, Drawable::class.java, internalCatalogFactory)
     registry.append(Catalog.Installed::class.java, Drawable::class.java, installedCatalogFactory)
+    registry.append(Catalog.Available::class.java, InputStream::class.java, availableCatalogFactory)
+
 //    registry.append(Manga::class.java, InputStream::class.java, MangaModelLoader.Factory())
   }
 }

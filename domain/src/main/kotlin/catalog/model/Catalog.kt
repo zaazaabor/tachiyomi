@@ -39,6 +39,7 @@ sealed class Catalog {
     override val pkgName: String,
     override val versionName: String,
     override val versionCode: Int,
+    val lang: String,
     val apkName: String,
     val iconUrl: String
   ) : Catalog()

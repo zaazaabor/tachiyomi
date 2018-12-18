@@ -9,12 +9,15 @@
 package tachiyomi.ui.catalogs
 
 import android.view.View
-import kotlinx.android.synthetic.main.catalogs_card_item.*
+import kotlinx.android.synthetic.main.catalogs_browsable_item.*
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.glide.GlideApp
 import tachiyomi.ui.base.BaseViewHolder
 
-class CatalogHolder(view: View, adapter: CatalogsAdapter) : BaseViewHolder(view) {
+class CatalogHolder(
+  view: View,
+  adapter: CatalogsAdapter
+) : BaseViewHolder(view) {
 
   init {
     view.setOnClickListener {

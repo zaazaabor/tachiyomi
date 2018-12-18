@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.catalog.model.Catalog
@@ -45,7 +44,6 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
     adapter = CatalogsAdapter(this)
-    catalogs_recycler.layoutManager = LinearLayoutManager(view.context)
     catalogs_recycler.adapter = adapter
 
     presenter.state
@@ -63,26 +61,31 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
   //===========================================================================
 
   private fun dispatch(state: CatalogsViewState, prevState: CatalogsViewState?) {
-    if (state.installed !== prevState?.installed || state.internal !== prevState.internal) {
-      renderBrowsableCatalogs(state.internal + state.installed)
+    if (state.items !== prevState?.items) {
+      renderItems(state.items)
     }
   }
 
-  private fun renderBrowsableCatalogs(catalogs: List<Catalog>) {
-    adapter?.submitBrowsableCatalogs(catalogs)
+  private fun renderItems(catalogs: List<Any>) {
+    adapter?.submitItems(catalogs)
   }
 
   //===========================================================================
   // ~ User interaction
   //===========================================================================
 
-  override fun onRowClick(catalog: Catalog) {
+  override fun onCatalogClick(catalog: Catalog) {
     // TODO
     val id = when (catalog) {
+      is Catalog.Internal -> catalog.source.id
       is Catalog.Installed -> catalog.source.id
       else -> return
     }
     router.pushController(CatalogBrowseController(id).withFadeTransition())
+  }
+
+  override fun onLanguageChoiceClick(languageChoice: LanguageChoice) {
+    presenter.setLanguageChoice(languageChoice)
   }
 
 }

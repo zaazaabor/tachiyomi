@@ -23,6 +23,7 @@ object Deps {
     const val appCompat = "androidx.appcompat:appcompat:1.0.0"
     const val recyclerView =  "androidx.recyclerview:recyclerview:1.0.0"
     const val card = "androidx.cardview:cardview:1.0.0"
+    const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
   }
 
   const val androidKTX = "androidx.core:core-ktx:1.0.1"

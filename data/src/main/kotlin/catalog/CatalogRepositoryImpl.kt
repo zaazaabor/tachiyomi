@@ -12,6 +12,8 @@ import android.app.Application
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import tachiyomi.core.rx.RxSchedulers
+import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver
 import tachiyomi.data.catalog.installer.CatalogInstaller
 import tachiyomi.data.catalog.installer.CatalogLoader
@@ -24,7 +26,9 @@ import javax.inject.Inject
 class CatalogRepositoryImpl @Inject internal constructor(
   private val context: Application,
   private val loader: CatalogLoader,
-  private val installer: CatalogInstaller
+  private val installer: CatalogInstaller,
+  private val api: CatalogGithubApi,
+  private val schedulers: RxSchedulers
 ) : CatalogRepository {
 
   var builtInCatalogs = emptyList<Catalog.Internal>()
@@ -33,7 +37,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
   /**
    * Relay used to notify the installed catalogs.
    */
-  private val installedCatalogsRelay = BehaviorRelay.create<List<Catalog.Installed>>()
+  private val installedCatalogsRelay = BehaviorRelay.createDefault<List<Catalog.Installed>>(emptyList())
 
   /**
    * List of the currently installed catalogs.
@@ -42,6 +46,14 @@ class CatalogRepositoryImpl @Inject internal constructor(
     private set(value) {
       field = value
       installedCatalogsRelay.accept(value)
+    }
+
+  private val availableCatalogsRelay = BehaviorRelay.createDefault<List<Catalog.Available>>(emptyList())
+
+  var availableCatalogs = emptyList<Catalog.Available>()
+    private set(value) {
+      field = value
+      availableCatalogsRelay.accept(value)
     }
 
   /**
@@ -77,12 +89,25 @@ class CatalogRepositoryImpl @Inject internal constructor(
     return installedCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
   }
 
+  // TODO local DB persistence
   override fun getAvailableCatalogsFlowable(): Flowable<List<Catalog.Available>> {
-    // TODO
-    return Flowable.just(emptyList())
+    if (availableCatalogs.isEmpty()) {
+      refreshAvailableCatalogs()
+    }
+    return availableCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
+  }
+
+  fun refreshAvailableCatalogs() {
+    api.findCatalogs()
+      .subscribeOn(schedulers.io)
+      .doOnSuccess { availableCatalogs = it }
+      .ignoreElement()
+      .onErrorComplete()
+      .subscribe()
   }
 
   /**
+   * TODO
    * Listener which receives events of the extensions being installed, updated or removed.
    */
   private inner class InstallationListener : CatalogInstallReceiver.Listener {

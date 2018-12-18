@@ -41,6 +41,7 @@ dependencies {
 
   implementation(Deps.rxAndroid)
   implementation(Deps.cyanea)
+  implementation(Deps.androidX.emoji)
 }
 
 kapt {

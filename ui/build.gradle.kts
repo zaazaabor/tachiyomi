@@ -26,6 +26,7 @@ dependencies {
   implementation(Deps.androidX.appCompat)
   implementation(Deps.androidX.recyclerView)
   implementation(Deps.androidX.card)
+  implementation(Deps.androidX.emoji)
   implementation(Deps.constraint)
 
   implementation(Deps.androidKTX)
