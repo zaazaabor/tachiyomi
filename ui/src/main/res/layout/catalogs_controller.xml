@@ -11,7 +11,7 @@
     android:layout_height="wrap_content"
     android:background="?attr/colorPrimary"
     android:elevation="4dp"
-    app:theme="?actionBarTheme"
+    android:theme="?actionBarTheme"
     app:title="@string/label_catalogues" />
 
   <androidx.recyclerview.widget.RecyclerView

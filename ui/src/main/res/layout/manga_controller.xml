@@ -16,8 +16,8 @@
       android:layout_height="wrap_content"
       android:background="?attr/colorPrimary"
       android:elevation="4dp"
-      app:navigationIcon="?attr/homeAsUpIndicator"
-      app:theme="?actionBarTheme" />
+      android:theme="?actionBarTheme"
+      app:navigationIcon="?attr/homeAsUpIndicator" />
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/manga_recycler"

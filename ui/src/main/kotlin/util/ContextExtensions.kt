@@ -11,6 +11,7 @@ package tachiyomi.util
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.annotation.AttrRes
+import androidx.core.content.res.getResourceIdOrThrow
 
 /**
  * Returns the color for the given attribute.
@@ -27,6 +28,13 @@ fun Context.getResourceColor(@AttrRes resource: Int): Int {
 fun Context.getDrawableAttr(@AttrRes resource: Int): Drawable? {
   val typedArray = obtainStyledAttributes(intArrayOf(resource))
   val drawable = typedArray.getDrawable(0)
+  typedArray.recycle()
+  return drawable
+}
+
+fun Context.getResourceId(@AttrRes resource: Int): Int {
+  val typedArray = obtainStyledAttributes(intArrayOf(resource))
+  val drawable = typedArray.getResourceIdOrThrow(0)
   typedArray.recycle()
   return drawable
 }

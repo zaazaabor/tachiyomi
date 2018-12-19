@@ -11,11 +11,13 @@ package tachiyomi.ui
 import android.app.Activity
 import android.content.res.ColorStateList
 import android.util.AttributeSet
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.inflator.CyaneaViewProcessor
+import tachiyomi.util.getResourceId
 
 fun Activity.getCyaneaViewProcessors(): Array<CyaneaViewProcessor<*>> {
   return arrayOf(
@@ -43,10 +45,16 @@ private class BottomNavigationViewProcessor : CyaneaViewProcessor<BottomNavigati
       intArrayOf(uncheckedColor, checkedColor)
     )
 
+    val itemBackgroundRes = ContextThemeWrapper(view.context, if (cyanea.isActionBarLight) {
+      R.style.Theme_MaterialComponents_Light_NoActionBar
+    } else {
+      R.style.Theme_MaterialComponents_NoActionBar
+    }).getResourceId(R.attr.selectableItemBackgroundBorderless)
+
+    view.setBackgroundColor(cyanea.primary)
     view.itemIconTintList = colorState
     view.itemTextColor = colorState
-    view.setBackgroundColor(cyanea.primary)
-    cyanea.tinter.tint(view.itemBackground)
+    view.itemBackgroundResource = itemBackgroundRes
   }
 
 }

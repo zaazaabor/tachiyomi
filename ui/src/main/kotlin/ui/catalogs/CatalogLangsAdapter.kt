@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
-import timber.log.Timber
 
 class CatalogLangsAdapter(
   private val listener: CatalogsAdapter.Listener
@@ -29,7 +28,6 @@ class CatalogLangsAdapter(
 
   override fun onBindViewHolder(holder: CatalogLangHolder, position: Int) {
     val item = getItem(position)
-    Timber.w("Binding $item")
     holder.bind(item, item == selectedChoice)
   }
 
