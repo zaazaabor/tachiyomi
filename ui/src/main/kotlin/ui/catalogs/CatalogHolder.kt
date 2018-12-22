@@ -8,19 +8,21 @@
 
 package tachiyomi.ui.catalogs
 
-import android.view.View
+import android.view.ViewGroup
 import kotlinx.android.synthetic.main.catalogs_browsable_item.*
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.glide.GlideApp
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
+import tachiyomi.util.inflate
 
 class CatalogHolder(
-  view: View,
+  parent: ViewGroup,
   adapter: CatalogsAdapter
-) : BaseViewHolder(view) {
+) : BaseViewHolder(parent.inflate(R.layout.catalogs_browsable_item)) {
 
   init {
-    view.setOnClickListener {
+    itemView.setOnClickListener {
       adapter.handleRowClick(adapterPosition)
     }
   }

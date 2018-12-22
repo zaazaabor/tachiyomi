@@ -8,14 +8,16 @@
 
 package tachiyomi.ui.catalogs
 
-import android.view.View
+import android.view.ViewGroup
 import kotlinx.android.synthetic.main.catalogs_langs_item.*
+import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
+import tachiyomi.util.inflate
 
 class CatalogLangsHolder(
-  view: View,
+  parent: ViewGroup,
   adapter: CatalogLangsAdapter
-) : BaseViewHolder(view) {
+) : BaseViewHolder(parent.inflate(R.layout.catalogs_langs_item)) {
 
   init {
     catalogs_langs_recycler.itemAnimator = null

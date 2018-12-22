@@ -8,22 +8,21 @@
 
 package tachiyomi.ui.catalogs
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogLangsAdapter(
+  controller: CatalogsController,
   private val listener: CatalogsAdapter.Listener
 ) : BaseListAdapter<LanguageChoice, CatalogLangHolder>(Diff()) {
 
   private var selectedChoice: LanguageChoice? = null
 
+  private val holderTheme = CatalogLangHolder.Theme(controller.activity!!)
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatalogLangHolder {
-    val inflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.catalogs_lang_item, parent, false)
-    return CatalogLangHolder(view, this)
+    return CatalogLangHolder(parent, holderTheme, this)
   }
 
   override fun onBindViewHolder(holder: CatalogLangHolder, position: Int) {

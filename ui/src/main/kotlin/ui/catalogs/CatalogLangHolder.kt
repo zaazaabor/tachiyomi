@@ -8,43 +8,78 @@
 
 package tachiyomi.ui.catalogs
 
+import android.content.Context
 import android.content.res.ColorStateList
-import android.view.View
-import androidx.core.graphics.ColorUtils
+import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.emoji.text.EmojiCompat
-import kotlinx.android.synthetic.main.catalogs_lang_item.*
+import com.google.android.material.chip.Chip
+import com.jaredrummler.cyanea.Cyanea
+import com.jaredrummler.cyanea.utils.ColorUtils
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.getResourceColor
+import tachiyomi.util.inflate
 
-class CatalogLangHolder(view: View, adapter: CatalogLangsAdapter) : BaseViewHolder(view) {
-
-  private val unsetColor = catalogs_lang_chip.chipBackgroundColor
-
-  private val selectedColor = ColorStateList.valueOf(
-    ColorUtils.setAlphaComponent(view.context.getResourceColor(R.attr.colorPrimary), 64)
-  )
+class CatalogLangHolder(
+  parent: ViewGroup,
+  theme: Theme,
+  private val adapter: CatalogLangsAdapter
+) : BaseViewHolder(parent.inflate(R.layout.catalogs_lang_item)) {
 
   private var currentText: String? = null
 
+  private val chip = itemView as Chip
+
   init {
-    view.setOnClickListener {
+    chip.setOnClickListener {
       adapter.handleClick(adapterPosition)
     }
+    chip.chipBackgroundColor = theme.chipBackgroundColor
+    chip.setTextColor(theme.chipTextColor)
   }
 
   fun bind(choice: LanguageChoice, isSelected: Boolean) {
     val newText = when (choice) {
-      LanguageChoice.All -> "All" // TODO string resource
+      LanguageChoice.All -> chip.context.getString(R.string.lang_all)
       is LanguageChoice.One -> choice.language.toEmoji() ?: ""
-      is LanguageChoice.Others -> "Others" // TODO string resource
+      is LanguageChoice.Others -> chip.context.getString(R.string.lang_others)
     }
     if (currentText != newText) {
       currentText = newText
-      catalogs_lang_chip.text = EmojiCompat.get().process(newText)
+      chip.text = EmojiCompat.get().process(newText)
     }
-    catalogs_lang_chip.isSelected = isSelected
-    catalogs_lang_chip.chipBackgroundColor = if (isSelected) selectedColor else unsetColor
+    chip.isSelected = isSelected
+  }
+
+  class Theme(context: Context) {
+    private val cyanea: Cyanea get() = Cyanea.instance
+
+    val chipBackgroundColor = ColorStateList(
+      arrayOf(
+        intArrayOf(android.R.attr.state_selected),
+        intArrayOf()
+      ),
+      intArrayOf(
+        cyanea.accent,
+        if (cyanea.isDark) cyanea.backgroundColorLight else cyanea.backgroundColorDark
+      )
+    )
+
+    val chipTextColor = ColorStateList(
+      arrayOf(
+        intArrayOf(android.R.attr.state_selected),
+        intArrayOf()
+      ),
+      intArrayOf(
+        ContextCompat.getColor(context, if (ColorUtils.isDarkColor(cyanea.accent)) {
+          R.color.textColorPrimaryInverse
+        } else {
+          R.color.textColorPrimary
+        }),
+        context.getResourceColor(android.R.attr.textColorPrimary)
+      )
+    )
   }
 
 }

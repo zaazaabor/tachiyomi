@@ -8,11 +8,9 @@
 
 package tachiyomi.ui.catalogs
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.domain.catalog.model.Catalog
-import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 import tachiyomi.ui.base.BaseViewHolder
 
@@ -22,7 +20,7 @@ class CatalogsAdapter(
 
   private val listener: Listener = controller
 
-  private val langsAdapter = CatalogLangsAdapter(listener)
+  private val langsAdapter = CatalogLangsAdapter(controller, listener)
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
@@ -35,20 +33,10 @@ class CatalogsAdapter(
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-    val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
-      VIEW_TYPE_BROWSABLE -> {
-        val view = inflater.inflate(R.layout.catalogs_browsable_item, parent, false)
-        CatalogHolder(view, this)
-      }
-      VIEW_TYPE_AVAILABLE -> {
-        val view = inflater.inflate(R.layout.catalogs_browsable_item, parent, false)
-        CatalogHolder(view, this)
-      }
-      VIEW_TYPE_LANGUAGES -> {
-        val view = inflater.inflate(R.layout.catalogs_langs_item, parent, false)
-        CatalogLangsHolder(view, langsAdapter)
-      }
+      VIEW_TYPE_BROWSABLE -> CatalogHolder(parent, this)
+      VIEW_TYPE_AVAILABLE -> CatalogHolder(parent, this)
+      VIEW_TYPE_LANGUAGES -> CatalogLangsHolder(parent, langsAdapter)
       else -> error("TODO")
     }
   }

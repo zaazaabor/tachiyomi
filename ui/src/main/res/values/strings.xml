@@ -500,4 +500,9 @@
   <string name="channel_downloader">Downloader</string>
   <string name="advanced_search">Advanced search</string>
 
+
+  <!-- Tachiyomi 1.x TODO reorganize file and remove unused -->
+  <string name="lang_all">All</string>
+  <string name="lang_others">Others</string>
+
 </resources>
