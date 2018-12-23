@@ -11,20 +11,20 @@ package tachiyomi.ui.catalogs
 import android.content.Context
 import android.content.res.ColorStateList
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.emoji.text.EmojiCompat
 import com.google.android.material.chip.Chip
 import com.jaredrummler.cyanea.Cyanea
-import com.jaredrummler.cyanea.utils.ColorUtils
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
-import tachiyomi.util.getResourceColor
+import tachiyomi.util.backgroundColorAlt
+import tachiyomi.util.getColorFromAttr
 import tachiyomi.util.inflate
+import tachiyomi.util.textColorForAccent
 
 class CatalogLangHolder(
   parent: ViewGroup,
   theme: Theme,
-  private val adapter: CatalogLangsAdapter
+  adapter: CatalogLangsAdapter
 ) : BaseViewHolder(parent.inflate(R.layout.catalogs_lang_item)) {
 
   private var currentText: String? = null
@@ -32,9 +32,7 @@ class CatalogLangHolder(
   private val chip = itemView as Chip
 
   init {
-    chip.setOnClickListener {
-      adapter.handleClick(adapterPosition)
-    }
+    chip.setOnClickListener { adapter.handleClick(adapterPosition) }
     chip.chipBackgroundColor = theme.chipBackgroundColor
     chip.setTextColor(theme.chipTextColor)
   }
@@ -55,29 +53,18 @@ class CatalogLangHolder(
   class Theme(context: Context) {
     private val cyanea: Cyanea get() = Cyanea.instance
 
+    private val chipStates = arrayOf(intArrayOf(android.R.attr.state_selected), intArrayOf())
+
     val chipBackgroundColor = ColorStateList(
-      arrayOf(
-        intArrayOf(android.R.attr.state_selected),
-        intArrayOf()
-      ),
-      intArrayOf(
-        cyanea.accent,
-        if (cyanea.isDark) cyanea.backgroundColorLight else cyanea.backgroundColorDark
-      )
+      chipStates,
+      intArrayOf(cyanea.accent, cyanea.backgroundColorAlt)
     )
 
     val chipTextColor = ColorStateList(
-      arrayOf(
-        intArrayOf(android.R.attr.state_selected),
-        intArrayOf()
-      ),
+      chipStates,
       intArrayOf(
-        ContextCompat.getColor(context, if (ColorUtils.isDarkColor(cyanea.accent)) {
-          R.color.textColorPrimaryInverse
-        } else {
-          R.color.textColorPrimary
-        }),
-        context.getResourceColor(android.R.attr.textColorPrimary)
+        cyanea.textColorForAccent,
+        context.getColorFromAttr(android.R.attr.textColorPrimary)
       )
     )
   }

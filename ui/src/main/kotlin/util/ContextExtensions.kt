@@ -18,7 +18,7 @@ import androidx.core.content.res.getResourceIdOrThrow
  *
  * @param resource the attribute.
  */
-fun Context.getResourceColor(@AttrRes resource: Int): Int {
+fun Context.getColorFromAttr(@AttrRes resource: Int): Int {
   val typedArray = obtainStyledAttributes(intArrayOf(resource))
   val attrValue = typedArray.getColor(0, 0)
   typedArray.recycle()

@@ -37,7 +37,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
   /**
    * Relay used to notify the installed catalogs.
    */
-  private val installedCatalogsRelay = BehaviorRelay.createDefault<List<Catalog.Installed>>(emptyList())
+  private val installedCatalogsRelay = BehaviorRelay.create<List<Catalog.Installed>>()
 
   /**
    * List of the currently installed catalogs.

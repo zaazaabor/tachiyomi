@@ -16,7 +16,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import tachiyomi.ui.R
-import tachiyomi.util.getResourceColor
+import tachiyomi.util.getColorFromAttr
 import tachiyomi.util.setGone
 import tachiyomi.util.setVisible
 
@@ -54,7 +54,7 @@ class StateImageViewTarget(
     view.scaleType = errorScaleType
 
     val vector = VectorDrawableCompat.create(view.context.resources, errorDrawableRes, null)
-    vector?.setTint(view.context.getResourceColor(android.R.attr.textColorSecondary))
+    vector?.setTint(view.context.getColorFromAttr(android.R.attr.textColorSecondary))
     view.setImageDrawable(vector)
   }
 
