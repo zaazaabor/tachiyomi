@@ -10,12 +10,15 @@ package tachiyomi.domain.library.repository
 
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Single
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 
 interface LibraryRepository {
 
   fun getLibraryMangas(): Flowable<List<LibraryManga>>
+
+  fun getFavoriteSourceIds(): Single<List<Long>>
 
   fun addToLibrary(manga: Manga): Completable
 

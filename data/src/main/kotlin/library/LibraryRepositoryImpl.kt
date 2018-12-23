@@ -13,9 +13,11 @@ import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Single
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.table.ChapterTable
+import tachiyomi.data.library.resolver.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.resolver.LibraryMangaGetResolver
 import tachiyomi.data.manga.resolver.MangaFavoritePutResolver
 import tachiyomi.data.manga.table.MangaTable
@@ -54,6 +56,15 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.BUFFER)
+  }
+
+  override fun getFavoriteSourceIds(): Single<List<Long>> {
+    return storio.get()
+      .listOfObjects(Long::class.java)
+      .withQuery(RawQuery.builder().query(FavoriteSourceIdsGetResolver.query).build())
+      .withGetResolver(FavoriteSourceIdsGetResolver)
+      .prepare()
+      .asRxSingle()
   }
 
   override fun addToLibrary(manga: Manga): Completable {

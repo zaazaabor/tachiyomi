@@ -22,7 +22,7 @@
         <data
           android:scheme="https"
           android:host="mangadex.org"
-          android:pathPattern="/manga/.*" />
+          android:pathPattern="/title/.*" />
         <data
           android:scheme="https"
           android:host="mangadex.org"

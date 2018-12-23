@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.util.launchNow
 import tachiyomi.data.catalog.installer.CatalogLoader.Result
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
 
 /**
  * Broadcast receiver that listens for the system's packages installed, updated or removed, and only
@@ -118,8 +118,8 @@ internal class CatalogInstallReceiver(
    */
   interface Listener {
 
-    fun onCatalogInstalled(catalog: Catalog.Installed)
-    fun onCatalogUpdated(catalog: Catalog.Installed)
+    fun onCatalogInstalled(catalog: CatalogInstalled)
+    fun onCatalogUpdated(catalog: CatalogInstalled)
     fun onPackageUninstalled(pkgName: String)
   }
 

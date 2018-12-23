@@ -9,13 +9,17 @@
 package tachiyomi.domain.catalog.repository
 
 import io.reactivex.Flowable
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogRemote
 
 interface CatalogRepository {
 
-  fun getInternalCatalogsFlowable(): Flowable<List<Catalog.Internal>>
+  val installedCatalogs: List<CatalogInstalled>
 
-  fun getInstalledCatalogsFlowable(): Flowable<List<Catalog.Installed>>
+  fun getInternalCatalogsFlowable(): Flowable<List<CatalogInternal>>
 
-  fun getAvailableCatalogsFlowable(): Flowable<List<Catalog.Available>>
+  fun getInstalledCatalogsFlowable(): Flowable<List<CatalogInstalled>>
+
+  fun getRemoteCatalogsFlowable(): Flowable<List<CatalogRemote>>
 }

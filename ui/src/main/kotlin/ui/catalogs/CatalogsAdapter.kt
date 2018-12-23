@@ -11,6 +11,8 @@ package tachiyomi.ui.catalogs
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogLocal
+import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.ui.base.BaseListAdapter
 import tachiyomi.ui.base.BaseViewHolder
 
@@ -25,8 +27,8 @@ class CatalogsAdapter(
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
     return when (item) {
-      is Catalog.Internal, is Catalog.Installed -> VIEW_TYPE_BROWSABLE
-      is Catalog.Available -> VIEW_TYPE_AVAILABLE
+      is CatalogLocal -> VIEW_TYPE_BROWSABLE
+      is CatalogRemote -> VIEW_TYPE_AVAILABLE
       is LanguageChoices -> VIEW_TYPE_LANGUAGES
       else -> error("Unknown view type for item class ${item.javaClass}")
     }

@@ -11,6 +11,7 @@ dependencies {
   implementation(Deps.kotlin.stdlib)
   implementation(Deps.rxJava)
   implementation(Deps.rxRelay)
+  implementation(Deps.rxKotlin)
 
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)

@@ -19,7 +19,7 @@ import okhttp3.Response
 import tachiyomi.core.http.GET
 import tachiyomi.core.http.Http
 import tachiyomi.core.http.asSingleSuccess
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogRemote
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,7 +30,7 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
   // TODO create a new branch for 1.x extensions
   private val repoUrl = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"
 
-  fun findCatalogs(): Single<List<Catalog.Available>> {
+  fun findCatalogs(): Single<List<CatalogRemote>> {
     val call = GET("$repoUrl/index.json")
 
     return http.defaultClient.newCall(call).asSingleSuccess()
@@ -38,7 +38,7 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
       .doOnError { Timber.w(it) }
   }
 
-  private fun parseResponse(response: Response): List<Catalog.Available> {
+  private fun parseResponse(response: Response): List<CatalogRemote> {
     val text = response.body()?.use { it.string() } ?: return emptyList()
 
     val json = gson.fromJson<JsonArray>(text)
@@ -52,11 +52,11 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
       val lang = element["lang"].string
       val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
 
-      Catalog.Available(name, pkgName, versionName, versionCode, lang, apkName, icon)
+      CatalogRemote(name, pkgName, versionName, versionCode, lang, apkName, icon)
     }
   }
 
-  fun getApkUrl(extension: Catalog.Available): String {
+  fun getApkUrl(extension: CatalogRemote): String {
     return "$repoUrl/apk/${extension.apkName}"
   }
 }

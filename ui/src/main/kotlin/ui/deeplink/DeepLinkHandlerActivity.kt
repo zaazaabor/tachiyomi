@@ -12,7 +12,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import tachiyomi.core.di.AppScope
-import tachiyomi.data.extension.ExtensionManager
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.DeepLink
 import tachiyomi.source.DeepLinkSource
@@ -29,7 +29,7 @@ class DeepLinkHandlerActivity : Activity() {
   internal lateinit var sourceManager: SourceManager
 
   @Inject
-  internal lateinit var extensionManager: ExtensionManager
+  internal lateinit var catalogRepository: CatalogRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,44 +46,39 @@ class DeepLinkHandlerActivity : Activity() {
     AppScope.inject(this)
 
     // Find caller extension
-    val extension = extensionManager.installedExtensions.find { it.pkgName == referrer }
-    if (extension == null) {
+    val catalog = catalogRepository.installedCatalogs.find { it.pkgName == referrer }
+    if (catalog == null) {
       Timber.w("Extension not found: $referrer")
       finish()
       return
     }
 
-    Timber.w("Found $extension")
-
-    val sourceUrl = intent.data.toString()
-
-    val handlingSources = extension.sources
-      .mapNotNull { source ->
-        if (source is DeepLinkSource) {
-          source.handlesLink(sourceUrl)?.let {
-            SourceHandler(source, it)
-          }
-        } else {
-          null
-        }
-      }
-
-    if (handlingSources.isEmpty()) {
-      Timber.w("No source could handle link $sourceUrl")
+    val urlToHandle = intent?.data?.toString()
+    if (urlToHandle == null) {
+      Timber.w("Url to handle not found in intent")
       finish()
       return
     }
 
-    Timber.w("Sources handling: $handlingSources")
+    val source = catalog.source
+    val sourceHandler = if (source is DeepLinkSource) {
+      source.handleLink(urlToHandle)?.let { SourceHandler(source, it) }
+    } else {
+      null
+    }
 
-    val receiver = handlingSources.first() // TODO intermediary UI to select a receiver?
+    if (sourceHandler == null) {
+      Timber.w("No source could handle link $urlToHandle")
+      finish()
+      return
+    }
 
-    when (receiver.link) {
+    when (sourceHandler.link) {
       is DeepLink.Manga -> {
         val intent = Intent(this, MainActivity::class.java).apply {
           action = MainActivity.SHORTCUT_DEEPLINK_MANGA
-          putExtra(MangaDeepLinkController.MANGA_KEY, receiver.link.key)
-          putExtra(MangaDeepLinkController.SOURCE_KEY, receiver.source.id)
+          putExtra(MangaDeepLinkController.MANGA_KEY, sourceHandler.link.key)
+          putExtra(MangaDeepLinkController.SOURCE_KEY, sourceHandler.source.id)
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
         startActivity(intent)
@@ -91,8 +86,8 @@ class DeepLinkHandlerActivity : Activity() {
       is DeepLink.Chapter -> {
         val intent = Intent(this, MainActivity::class.java).apply {
           action = MainActivity.SHORTCUT_DEEPLINK_CHAPTER
-          putExtra(ChapterDeepLinkController.CHAPTER_KEY, receiver.link.key)
-          putExtra(ChapterDeepLinkController.SOURCE_KEY, receiver.source.id)
+          putExtra(ChapterDeepLinkController.CHAPTER_KEY, sourceHandler.link.key)
+          putExtra(ChapterDeepLinkController.SOURCE_KEY, sourceHandler.source.id)
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
         startActivity(intent)

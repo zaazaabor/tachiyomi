@@ -6,7 +6,6 @@ plugins {
 
 dependencies {
   api(Deps.kotlin.stdlib)
-  api(Deps.kotlin.stdlib)
   api(Deps.rxJava)
   api(Deps.okhttp)
   api(Deps.jsoup)

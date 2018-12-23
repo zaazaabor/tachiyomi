@@ -18,16 +18,16 @@ import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
 
 internal class CatalogInstalledModelLoader(
   context: Context
-) : ModelLoader<Catalog.Installed, Drawable> {
+) : ModelLoader<CatalogInstalled, Drawable> {
 
   private val packageManager = context.packageManager
 
   override fun buildLoadData(
-    model: Catalog.Installed,
+    model: CatalogInstalled,
     width: Int,
     height: Int,
     options: Options
@@ -37,13 +37,13 @@ internal class CatalogInstalledModelLoader(
     return ModelLoader.LoadData(key, fetcher)
   }
 
-  override fun handles(model: Catalog.Installed): Boolean {
+  override fun handles(model: CatalogInstalled): Boolean {
     return true
   }
 
   private class Fetcher(
     private val packageManager: PackageManager,
-    private val model: Catalog.Installed
+    private val model: CatalogInstalled
   ) : DataFetcher<Drawable> {
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in Drawable>) {
@@ -71,9 +71,9 @@ internal class CatalogInstalledModelLoader(
 
   }
 
-  class Factory(private val context: Context) : ModelLoaderFactory<Catalog.Installed, Drawable> {
+  class Factory(private val context: Context) : ModelLoaderFactory<CatalogInstalled, Drawable> {
 
-    override fun build(factory: MultiModelLoaderFactory): ModelLoader<Catalog.Installed, Drawable> {
+    override fun build(factory: MultiModelLoaderFactory): ModelLoader<CatalogInstalled, Drawable> {
       return CatalogInstalledModelLoader(context)
     }
 

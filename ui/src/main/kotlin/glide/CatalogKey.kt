@@ -11,12 +11,15 @@ package tachiyomi.glide
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.signature.ObjectKey
 import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogRemote
 
 @Suppress("unused")
 internal fun ModelLoader<out Catalog, *>.getCatalogKey(model: Catalog): ObjectKey {
   return ObjectKey(when (model) {
-    is Catalog.Internal -> "catalog://${model.source.id}"
-    is Catalog.Installed -> "catalog://${model.pkgName}/${model.versionCode}"
-    is Catalog.Available -> model.iconUrl
+    is CatalogInternal -> "catalog://${model.source.id}"
+    is CatalogInstalled -> "catalog://${model.pkgName}/${model.versionCode}"
+    is CatalogRemote -> model.iconUrl
   })
 }

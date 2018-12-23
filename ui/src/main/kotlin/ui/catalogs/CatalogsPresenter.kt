@@ -18,13 +18,15 @@ import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.catalog.model.Catalog
-import tachiyomi.domain.catalog.repository.CatalogRepository
+import tachiyomi.domain.catalog.interactor.GetLocalCatalogs
+import tachiyomi.domain.catalog.interactor.GetRemoteCatalogs
+import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val catalogRepository: CatalogRepository,
+  private val getLocalCatalogs: GetLocalCatalogs,
+  private val getRemoteCatalogs: GetRemoteCatalogs,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
@@ -51,15 +53,13 @@ class CatalogsPresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<CatalogsViewState>
   ): Observable<Action> {
-    val internalCatalogs = catalogRepository.getInternalCatalogsFlowable()
+    val localCatalogs = getLocalCatalogs.interact()
+      .subscribeOn(schedulers.io)
       .observeOn(schedulers.io)
       .toObservable()
 
-    val installedCatalogs = catalogRepository.getInstalledCatalogsFlowable()
-      .observeOn(schedulers.io)
-      .toObservable()
-
-    val availableCatalogs = catalogRepository.getAvailableCatalogsFlowable()
+    val remoteCatalogs = getRemoteCatalogs.interact()
+      .subscribeOn(schedulers.io)
       .observeOn(schedulers.io)
       .toObservable()
 
@@ -69,18 +69,16 @@ class CatalogsPresenter @Inject constructor(
       .startWith(stateFn().languageChoice)
 
     return Observables.combineLatest(
-      internalCatalogs,
-      installedCatalogs,
-      availableCatalogs,
+      localCatalogs,
+      remoteCatalogs,
       selectedLanguage
-    ) { internal, installed, available, choice ->
+    ) { local, remote, choice ->
       val items = mutableListOf<Any>()
-      items.addAll(installed)
-      items.addAll(internal)
+      items.addAll(local)
 
-      if (available.isNotEmpty()) {
-        val choices = LanguageChoices(getLanguageChoices(available), choice)
-        val availableCatalogsFiltered = getFilteredAvailableCatalogs(available, choice)
+      if (remote.isNotEmpty()) {
+        val choices = LanguageChoices(getLanguageChoices(remote), choice)
+        val availableCatalogsFiltered = getFilteredRemoteCatalogs(remote, choice)
 
         items.add(choices)
         items.addAll(availableCatalogsFiltered)
@@ -91,7 +89,7 @@ class CatalogsPresenter @Inject constructor(
 
   }
 
-  private fun getLanguageChoices(catalogs: List<Catalog.Available>): List<LanguageChoice> {
+  private fun getLanguageChoices(catalogs: List<CatalogRemote>): List<LanguageChoice> {
     val knownLanguages = mutableListOf<LanguageChoice.One>()
     val unknownLanguages = mutableListOf<Language>()
 
@@ -115,10 +113,10 @@ class CatalogsPresenter @Inject constructor(
     return languages
   }
 
-  private fun getFilteredAvailableCatalogs(
-    catalogs: List<Catalog.Available>,
+  private fun getFilteredRemoteCatalogs(
+    catalogs: List<CatalogRemote>,
     choice: LanguageChoice
-  ): List<Catalog.Available> {
+  ): List<CatalogRemote> {
     return when (choice) {
       is LanguageChoice.All -> catalogs
       is LanguageChoice.One -> catalogs.filter { choice.language.code == it.lang }

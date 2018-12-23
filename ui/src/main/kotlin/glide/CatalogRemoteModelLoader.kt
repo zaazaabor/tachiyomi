@@ -14,15 +14,15 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import com.bumptech.glide.load.model.stream.BaseGlideUrlLoader
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogRemote
 import java.io.InputStream
 
-internal class CatalogAvailableModelLoader(
+internal class CatalogRemoteModelLoader(
   urlLoader: ModelLoader<GlideUrl, InputStream>
-) : BaseGlideUrlLoader<Catalog.Available>(urlLoader) {
+) : BaseGlideUrlLoader<CatalogRemote>(urlLoader) {
 
   override fun getUrl(
-    model: Catalog.Available,
+    model: CatalogRemote,
     width: Int,
     height: Int,
     options: Options?
@@ -30,15 +30,15 @@ internal class CatalogAvailableModelLoader(
     return model.iconUrl
   }
 
-  override fun handles(model: Catalog.Available): Boolean {
+  override fun handles(model: CatalogRemote): Boolean {
     return true
   }
 
-  class Factory : ModelLoaderFactory<Catalog.Available, InputStream> {
+  class Factory : ModelLoaderFactory<CatalogRemote, InputStream> {
 
-    override fun build(factory: MultiModelLoaderFactory): ModelLoader<Catalog.Available, InputStream> {
+    override fun build(factory: MultiModelLoaderFactory): ModelLoader<CatalogRemote, InputStream> {
       val loader = factory.build(GlideUrl::class.java, InputStream::class.java)
-      return CatalogAvailableModelLoader(loader)
+      return CatalogRemoteModelLoader(loader)
     }
 
     override fun teardown() {

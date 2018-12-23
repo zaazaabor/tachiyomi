@@ -17,13 +17,13 @@ import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.widget.TextOvalDrawable
 
-internal class CatalogInternalModelLoader : ModelLoader<Catalog.Internal, Drawable> {
+internal class CatalogInternalModelLoader : ModelLoader<CatalogInternal, Drawable> {
 
   override fun buildLoadData(
-    model: Catalog.Internal,
+    model: CatalogInternal,
     width: Int,
     height: Int,
     options: Options
@@ -33,12 +33,12 @@ internal class CatalogInternalModelLoader : ModelLoader<Catalog.Internal, Drawab
     return ModelLoader.LoadData(key, fetcher)
   }
 
-  override fun handles(model: Catalog.Internal): Boolean {
+  override fun handles(model: CatalogInternal): Boolean {
     return true
   }
 
   private class Fetcher(
-    private val model: Catalog.Internal
+    private val model: CatalogInternal
   ) : DataFetcher<Drawable> {
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in Drawable>) {
@@ -73,9 +73,9 @@ internal class CatalogInternalModelLoader : ModelLoader<Catalog.Internal, Drawab
     }
   }
 
-  class Factory : ModelLoaderFactory<Catalog.Internal, Drawable> {
+  class Factory : ModelLoaderFactory<CatalogInternal, Drawable> {
 
-    override fun build(factory: MultiModelLoaderFactory): ModelLoader<Catalog.Internal, Drawable> {
+    override fun build(factory: MultiModelLoaderFactory): ModelLoader<CatalogInternal, Drawable> {
       return CatalogInternalModelLoader()
     }
 

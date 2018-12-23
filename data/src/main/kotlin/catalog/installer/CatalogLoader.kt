@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 import tachiyomi.core.http.Http
 import tachiyomi.core.prefs.LazySharedPreferencesStore
 import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.source.Dependencies
 import tachiyomi.source.Source
 import timber.log.Timber
@@ -133,7 +133,7 @@ internal class CatalogLoader @Inject constructor(
       return Result.Error(e)
     }
 
-    val extension = Catalog.Installed(extName, pkgName, versionName, versionCode, source)
+    val extension = CatalogInstalled(source.name, source, pkgName, versionName, versionCode)
     return Result.Success(extension)
   }
 
@@ -157,7 +157,7 @@ internal class CatalogLoader @Inject constructor(
   }
 
   sealed class Result {
-    class Success(val catalog: Catalog.Installed) : Result()
+    class Success(val catalog: CatalogInstalled) : Result()
     class Error(val message: String? = null) : Result() {
       constructor(exception: Throwable) : this(exception.message)
     }

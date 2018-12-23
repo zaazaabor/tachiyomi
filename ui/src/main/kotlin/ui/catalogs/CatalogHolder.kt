@@ -28,12 +28,7 @@ class CatalogHolder(
   }
 
   fun bind(item: Catalog) {
-    // TODO maybe don't prepend Tachiyomi: to extension catalogs
-    val name = when (item) {
-      is Catalog.Installed -> item.source.name
-      else -> item.name
-    }
-    title.text = name
+    title.text = item.name
 
     GlideApp.with(itemView)
       .load(item)

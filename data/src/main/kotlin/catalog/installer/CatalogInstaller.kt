@@ -20,7 +20,7 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import tachiyomi.core.util.getUriCompat
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogRemote
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -62,7 +62,7 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
    * @param url The url of the apk.
    * @param extension The extension to install.
    */
-  fun downloadAndInstall(url: String, catalog: Catalog) = Observable.defer {
+  fun downloadAndInstall(url: String, catalog: CatalogRemote) = Observable.defer {
     val pkgName = catalog.pkgName
 
     val oldDownload = activeDownloads[pkgName]

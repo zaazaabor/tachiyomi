@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
@@ -75,10 +76,8 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
   //===========================================================================
 
   override fun onCatalogClick(catalog: Catalog) {
-    // TODO
     val id = when (catalog) {
-      is Catalog.Internal -> catalog.source.id
-      is Catalog.Installed -> catalog.source.id
+      is CatalogLocal -> catalog.source.id
       else -> return
     }
     router.pushController(CatalogBrowseController(id).withFadeTransition())

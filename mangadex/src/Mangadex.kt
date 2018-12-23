@@ -302,11 +302,11 @@ open class Mangadex(
     Filter.Genre("Isekai")
   )
 
-  override fun handlesLink(url: String): DeepLink? {
+  override fun handleLink(url: String): DeepLink? {
     return when {
       "/chapter/" in url ->
         DeepLink.Chapter("/chapter/" + url.substringAfter("chapter/").substringBefore("/"))
-      "/manga/" in url -> DeepLink.Manga(url.substringAfter("mangadex.org")
+      "/title/" in url -> DeepLink.Manga(url.substringAfter("mangadex.org")
         .substringBeforeLast("/") + "/")
       else -> null
     }

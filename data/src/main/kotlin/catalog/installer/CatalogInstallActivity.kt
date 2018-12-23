@@ -13,7 +13,6 @@ import android.content.Intent
 import android.os.Bundle
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.util.toast
-import tachiyomi.data.extension.ExtensionManager
 
 /**
  * Activity used to install extensions, because we can only receive the result of the installation
@@ -49,8 +48,8 @@ class CatalogInstallActivity : Activity() {
     val downloadId = intent?.extras?.getLong(CatalogInstaller.EXTRA_DOWNLOAD_ID) ?: return
     val success = resultCode == RESULT_OK
 
-    val extensionManager: ExtensionManager = AppScope.getInstance()
-    extensionManager.setInstallationResult(downloadId, success)
+    val installer = AppScope.getInstance<CatalogInstaller>()
+    installer.setInstallationResult(downloadId, success)
   }
 
   private companion object {

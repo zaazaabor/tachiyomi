@@ -23,7 +23,9 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.Http
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogRemote
 import java.io.InputStream
 import javax.inject.Inject
 
@@ -51,13 +53,13 @@ class TachiGlideModule : AppGlideModule() {
     val networkFactory = OkHttpUrlLoader.Factory(http.defaultClient)
     val internalCatalogFactory = CatalogInternalModelLoader.Factory()
     val installedCatalogFactory = CatalogInstalledModelLoader.Factory(context)
-    val availableCatalogFactory = CatalogAvailableModelLoader.Factory()
+    val remoteCatalogFactory = CatalogRemoteModelLoader.Factory()
 
     registry.replace(GlideUrl::class.java, InputStream::class.java, networkFactory)
 
-    registry.append(Catalog.Internal::class.java, Drawable::class.java, internalCatalogFactory)
-    registry.append(Catalog.Installed::class.java, Drawable::class.java, installedCatalogFactory)
-    registry.append(Catalog.Available::class.java, InputStream::class.java, availableCatalogFactory)
+    registry.append(CatalogInternal::class.java, Drawable::class.java, internalCatalogFactory)
+    registry.append(CatalogInstalled::class.java, Drawable::class.java, installedCatalogFactory)
+    registry.append(CatalogRemote::class.java, InputStream::class.java, remoteCatalogFactory)
 
 //    registry.append(Manga::class.java, InputStream::class.java, MangaModelLoader.Factory())
   }

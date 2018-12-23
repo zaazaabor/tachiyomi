@@ -17,7 +17,9 @@ import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver
 import tachiyomi.data.catalog.installer.CatalogInstaller
 import tachiyomi.data.catalog.installer.CatalogLoader
-import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
@@ -31,29 +33,29 @@ class CatalogRepositoryImpl @Inject internal constructor(
   private val schedulers: RxSchedulers
 ) : CatalogRepository {
 
-  var builtInCatalogs = emptyList<Catalog.Internal>()
+  var builtInCatalogs = emptyList<CatalogInternal>()
     private set
 
   /**
    * Relay used to notify the installed catalogs.
    */
-  private val installedCatalogsRelay = BehaviorRelay.create<List<Catalog.Installed>>()
+  private val installedCatalogsRelay = BehaviorRelay.create<List<CatalogInstalled>>()
 
   /**
    * List of the currently installed catalogs.
    */
-  var installedCatalogs = emptyList<Catalog.Installed>()
+  override var installedCatalogs = emptyList<CatalogInstalled>()
     private set(value) {
       field = value
       installedCatalogsRelay.accept(value)
     }
 
-  private val availableCatalogsRelay = BehaviorRelay.createDefault<List<Catalog.Available>>(emptyList())
+  private val remoteCatalogsRelay = BehaviorRelay.createDefault<List<CatalogRemote>>(emptyList())
 
-  var availableCatalogs = emptyList<Catalog.Available>()
+  var remoteCatalogs = emptyList<CatalogRemote>()
     private set(value) {
       field = value
-      availableCatalogsRelay.accept(value)
+      remoteCatalogsRelay.accept(value)
     }
 
   /**
@@ -70,7 +72,7 @@ class CatalogRepositoryImpl @Inject internal constructor(
     this.sourceManager = sourceManager
 
     builtInCatalogs = sourceManager.getSources().filterIsInstance<CatalogSource>()
-      .map { Catalog.Internal(it.name, "", "1", 1, it) }
+      .map { CatalogInternal(it.name, it) }
 
     installedCatalogs = loader.loadExtensions()
       .filterIsInstance<CatalogLoader.Result.Success>()
@@ -81,26 +83,26 @@ class CatalogRepositoryImpl @Inject internal constructor(
     //CatalogInstallReceiver(InstallationListener()).register(context)
   }
 
-  override fun getInternalCatalogsFlowable(): Flowable<List<Catalog.Internal>> {
+  override fun getInternalCatalogsFlowable(): Flowable<List<CatalogInternal>> {
     return Flowable.just(builtInCatalogs)
   }
 
-  override fun getInstalledCatalogsFlowable(): Flowable<List<Catalog.Installed>> {
+  override fun getInstalledCatalogsFlowable(): Flowable<List<CatalogInstalled>> {
     return installedCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
   }
 
   // TODO local DB persistence
-  override fun getAvailableCatalogsFlowable(): Flowable<List<Catalog.Available>> {
-    if (availableCatalogs.isEmpty()) {
+  override fun getRemoteCatalogsFlowable(): Flowable<List<CatalogRemote>> {
+    if (remoteCatalogs.isEmpty()) {
       refreshAvailableCatalogs()
     }
-    return availableCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
+    return remoteCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
   }
 
   fun refreshAvailableCatalogs() {
     api.findCatalogs()
       .subscribeOn(schedulers.io)
-      .doOnSuccess { availableCatalogs = it }
+      .doOnSuccess { remoteCatalogs = it }
       .ignoreElement()
       .onErrorComplete()
       .subscribe()
@@ -112,10 +114,10 @@ class CatalogRepositoryImpl @Inject internal constructor(
    */
   private inner class InstallationListener : CatalogInstallReceiver.Listener {
 
-    override fun onCatalogInstalled(catalog: Catalog.Installed) {
+    override fun onCatalogInstalled(catalog: CatalogInstalled) {
     }
 
-    override fun onCatalogUpdated(catalog: Catalog.Installed) {
+    override fun onCatalogUpdated(catalog: CatalogInstalled) {
     }
 
     override fun onPackageUninstalled(pkgName: String) {
