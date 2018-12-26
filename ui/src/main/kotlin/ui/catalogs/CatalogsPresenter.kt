@@ -8,7 +8,6 @@
 
 package tachiyomi.ui.catalogs
 
-import androidx.core.os.LocaleListCompat
 import com.freeletics.rxredux.StateAccessor
 import com.freeletics.rxredux.reduxStore
 import com.jakewharton.rxrelay2.BehaviorRelay
@@ -78,7 +77,7 @@ class CatalogsPresenter @Inject constructor(
 
       if (remote.isNotEmpty()) {
         val choices = LanguageChoices(getLanguageChoices(remote), choice)
-        val availableCatalogsFiltered = getFilteredRemoteCatalogs(remote, choice)
+        val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
 
         items.add(choices)
         items.addAll(availableCatalogsFiltered)
@@ -113,7 +112,7 @@ class CatalogsPresenter @Inject constructor(
     return languages
   }
 
-  private fun getFilteredRemoteCatalogs(
+  private fun getRemoteCatalogsForLanguageChoice(
     catalogs: List<CatalogRemote>,
     choice: LanguageChoice
   ): List<CatalogRemote> {
@@ -129,31 +128,6 @@ class CatalogsPresenter @Inject constructor(
 
   fun setLanguageChoice(languageChoice: LanguageChoice) {
     actions.accept(Action.SetLanguageChoice(languageChoice))
-  }
-
-}
-
-private class UserLanguagesComparator : Comparator<Language> {
-
-  private val userLanguages = mutableSetOf<String>()
-
-  init {
-    val userLocales = LocaleListCompat.getDefault()
-    for (i in 0 until userLocales.size()) {
-      userLanguages.add(userLocales[i].language)
-    }
-  }
-
-  override fun compare(langOne: Language, langTwo: Language): Int {
-    val langOnePosition = userLanguages.indexOf(langOne.code)
-    val langTwoPosition = userLanguages.indexOf(langTwo.code)
-
-    return when {
-      langOnePosition != -1 && langTwoPosition != -1 -> langOnePosition.compareTo(langTwoPosition)
-      langOnePosition != -1 -> -1
-      langTwoPosition != -1 -> 1
-      else -> langOne.code.compareTo(langTwo.code)
-    }
   }
 
 }

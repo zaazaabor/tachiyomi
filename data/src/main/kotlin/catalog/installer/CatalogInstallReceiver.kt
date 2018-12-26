@@ -12,9 +12,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.core.util.launchNow
 import tachiyomi.data.catalog.installer.CatalogLoader.Result
 import tachiyomi.domain.catalog.model.CatalogInstalled
 
@@ -57,7 +58,9 @@ internal class CatalogInstallReceiver(
 
     when (intent.action) {
       Intent.ACTION_PACKAGE_ADDED -> {
-        if (!isReplacing(intent)) launchNow {
+        GlobalScope.launch(dispatchers.io) {
+          if (isReplacing(intent)) return@launch
+
           val result = getExtensionFromIntent(intent)
           when (result) {
             is Result.Success -> listener.onCatalogInstalled(result.catalog)
@@ -65,7 +68,7 @@ internal class CatalogInstallReceiver(
         }
       }
       Intent.ACTION_PACKAGE_REPLACED -> {
-        launchNow {
+        GlobalScope.launch(dispatchers.io) {
           val result = getExtensionFromIntent(intent)
           when (result) {
             is Result.Success -> listener.onCatalogUpdated(result.catalog)
@@ -73,7 +76,9 @@ internal class CatalogInstallReceiver(
         }
       }
       Intent.ACTION_PACKAGE_REMOVED -> {
-        if (!isReplacing(intent)) {
+        GlobalScope.launch(dispatchers.io) {
+          if (isReplacing(intent)) return@launch
+
           val pkgName = getPackageNameFromIntent(intent)
           if (pkgName != null) {
             listener.onPackageUninstalled(pkgName)

@@ -10,7 +10,6 @@ package tachiyomi.domain.catalog.interactor
 
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
-import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogSort
 import tachiyomi.domain.catalog.repository.CatalogRepository
@@ -22,8 +21,7 @@ class GetLocalCatalogs @Inject constructor(
   private val libraryRepository: LibraryRepository
 ) {
 
-  // TODO should we defer this call?
-  fun interact(sort: CatalogSort = CatalogSort.Name): Flowable<List<Catalog>> {
+  fun interact(sort: CatalogSort = CatalogSort.Name) = Flowable.defer {
     val catalogsFlow = Flowables.combineLatest(
       catalogRepository.getInternalCatalogsFlowable(),
       catalogRepository.getInstalledCatalogsFlowable()
@@ -31,24 +29,31 @@ class GetLocalCatalogs @Inject constructor(
       internal + installed
     }
 
-    return when (sort) {
-      CatalogSort.Name -> catalogsFlow.map { catalogs -> catalogs.sortedBy { it.name } }
-      CatalogSort.Favorites -> {
-        val favoriteIdsFlow = libraryRepository.getFavoriteSourceIds()
-          .map { favoriteIds ->
-            var position = 0
-            favoriteIds.associateWith { position++ }
-          }
-          .toFlowable()
+    when (sort) {
+      CatalogSort.Name -> sortByName(catalogsFlow)
+      CatalogSort.Favorites -> sortByFavorites(catalogsFlow)
+    }
+  }
 
-        Flowables.combineLatest(
-          catalogsFlow,
-          favoriteIdsFlow
-        ) { catalogs, favoriteIds ->
-          val favoritesComparator = FavoritesComparator(favoriteIds)
-          catalogs.sortedWith(favoritesComparator.thenBy { it.name })
-        }
+  private fun sortByName(catalogsFlow: Flowable<List<CatalogLocal>>): Flowable<List<CatalogLocal>> {
+    return catalogsFlow.map { catalogs -> catalogs.sortedBy { it.name } }
+  }
+
+  private fun sortByFavorites(
+    catalogsFlow: Flowable<List<CatalogLocal>>
+  ): Flowable<List<CatalogLocal>> {
+    val favoriteIdsFlow = libraryRepository.getFavoriteSourceIds()
+      .map { favoriteIds ->
+        var position = 0
+        favoriteIds.associateWith { position++ }
       }
+      .toFlowable()
+
+    return Flowables.combineLatest(
+      catalogsFlow,
+      favoriteIdsFlow
+    ) { catalogs, favoriteIds ->
+      catalogs.sortedWith(FavoritesComparator(favoriteIds))
     }
   }
 
@@ -57,9 +62,13 @@ class GetLocalCatalogs @Inject constructor(
   ) : Comparator<CatalogLocal> {
 
     override fun compare(c1: CatalogLocal, c2: CatalogLocal): Int {
-      val pos1 = favoriteIds.getOrElse(c1.source.id) { Int.MAX_VALUE }
-      val pos2 = favoriteIds.getOrElse(c2.source.id) { Int.MAX_VALUE }
-      return pos1.compareTo(pos2)
+      val pos1 = favoriteIds[c1.source.id] ?: Int.MAX_VALUE
+      val pos2 = favoriteIds[c2.source.id] ?: Int.MAX_VALUE
+
+      return when (val positionCompare = pos1.compareTo(pos2)) {
+        0 -> c1.name.compareTo(c2.name)
+        else -> positionCompare
+      }
     }
   }
 

@@ -13,7 +13,7 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
 import tachiyomi.data.manga.table.MangaTable
 
-object FavoriteSourceIdsGetResolver : DefaultGetResolver<Long>() {
+internal object FavoriteSourceIdsGetResolver : DefaultGetResolver<Long>() {
 
   val query = """
     SELECT ${MangaTable.COL_SOURCE}
@@ -26,4 +26,5 @@ object FavoriteSourceIdsGetResolver : DefaultGetResolver<Long>() {
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): Long {
     return cursor.getLong(0)
   }
+
 }

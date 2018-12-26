@@ -21,6 +21,7 @@ import tachiyomi.core.http.Http
 import tachiyomi.core.http.asSingleSuccess
 import tachiyomi.domain.catalog.model.CatalogRemote
 import timber.log.Timber
+import java.security.MessageDigest
 import javax.inject.Inject
 
 internal class CatalogGithubApi @Inject constructor(private val http: Http) {
@@ -51,9 +52,18 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
       val versionCode = element["code"].int
       val lang = element["lang"].string
       val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
+      val sourceId = getDefaultId(name, lang)
 
-      CatalogRemote(name, pkgName, versionName, versionCode, lang, apkName, icon)
+      CatalogRemote(name, sourceId, pkgName, versionName, versionCode, lang, apkName, icon)
     }
+  }
+
+  // TODO id must be provided in JSON
+  private fun getDefaultId(name: String, lang: String): Long {
+    val key = "${name.toLowerCase()}/$lang/1"
+    val bytes = MessageDigest.getInstance("MD5").digest(key.toByteArray())
+    return (0..7).map { bytes[it].toLong() and 0xff shl 8 * (7 - it) }
+      .reduce(Long::or) and Long.MAX_VALUE
   }
 
   fun getApkUrl(extension: CatalogRemote): String {

@@ -34,10 +34,11 @@ data class CatalogInstalled(
 
 data class CatalogRemote(
   override val name: String,
+  val sourceId: Long,
   val pkgName: String,
   val versionName: String,
   val versionCode: Int,
   val lang: String,
-  val apkName: String,
+  val apkName: String, // TODO this should probably be apkUrl
   val iconUrl: String
 ) : Catalog()
