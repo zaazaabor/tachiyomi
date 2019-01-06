@@ -48,6 +48,10 @@
     <item name="android:textColor">@color/textColorPrimaryInverse</item>
   </style>
 
+  <style name="TextAppearance.Body2.Secondary">
+    <item name="android:textColor">?android:textColorSecondary</item>
+  </style>
+
   <style name="TextAppearance.Button" parent="TextAppearance.MaterialComponents.Button" />
 
   <style name="TextAppearance.Caption" parent="TextAppearance.MaterialComponents.Caption" />

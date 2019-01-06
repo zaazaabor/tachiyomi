@@ -43,6 +43,11 @@ class MangaListHolder(
    * Binds only the cover of the given [manga] with this holder.
    */
   override fun bindImage(manga: Manga) {
+    // TODO
+  }
+
+  override fun recycle() {
+    // TODO
   }
 
 //  override fun setImage(manga: Manga) {

@@ -9,6 +9,7 @@
 package tachiyomi.util
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import androidx.annotation.AttrRes
 import androidx.core.content.res.getResourceIdOrThrow
@@ -25,11 +26,11 @@ fun Context.getColorFromAttr(@AttrRes resource: Int): Int {
   return attrValue
 }
 
-fun Context.getDrawableAttr(@AttrRes resource: Int): Drawable? {
+fun Context.getDrawableAttr(@AttrRes resource: Int): Drawable {
   val typedArray = obtainStyledAttributes(intArrayOf(resource))
   val drawable = typedArray.getDrawable(0)
   typedArray.recycle()
-  return drawable
+  return drawable!!
 }
 
 fun Context.getResourceId(@AttrRes resource: Int): Int {
@@ -38,3 +39,6 @@ fun Context.getResourceId(@AttrRes resource: Int): Int {
   typedArray.recycle()
   return drawable
 }
+
+val Int.dpToPx
+  get() = (this * Resources.getSystem().displayMetrics.density).toInt()

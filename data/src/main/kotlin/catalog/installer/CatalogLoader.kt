@@ -88,9 +88,7 @@ internal class CatalogLoader @Inject constructor(
       return Result.Error(error)
     }
 
-    val extName = pkgManager.getApplicationLabel(appInfo)?.toString()
-      .orEmpty().substringAfter("Tachiyomi: ")
-
+    val extName = pkgManager.getApplicationLabel(appInfo)?.toString().orEmpty()
     @Suppress("DEPRECATION")
     val versionCode = pkgInfo.versionCode
     val versionName = pkgInfo.versionName
@@ -106,7 +104,8 @@ internal class CatalogLoader @Inject constructor(
 
     val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
 
-    val sourceClassName = appInfo.metaData.getString(METADATA_SOURCE_CLASS)?.trim()
+    val metadata = appInfo.metaData
+    val sourceClassName = metadata.getString(METADATA_SOURCE_CLASS)?.trim()
       ?: return Result.Error("Source class not found in manifest")
 
     val fullSourceClassName = if (sourceClassName.startsWith(".")) {
@@ -133,8 +132,12 @@ internal class CatalogLoader @Inject constructor(
       return Result.Error(e)
     }
 
-    val extension = CatalogInstalled(source.name, source, pkgName, versionName, versionCode)
-    return Result.Success(extension)
+    val description = metadata.getString(METADATA_DESCRIPTION)?.takeIf { it.isNotEmpty() }
+      ?: "Installed catalog description"
+
+    val catalog = CatalogInstalled(
+      source.name, description, source, pkgName, versionName, versionCode)
+    return Result.Success(catalog)
   }
 
   /**
@@ -147,10 +150,12 @@ internal class CatalogLoader @Inject constructor(
   }
 
   private companion object {
-    const val EXTENSION_FEATURE = "tachiyomi.extension"
-    const val METADATA_SOURCE_CLASS = "tachiyomi.extension.class"
-    const val LIB_VERSION_MIN = 2
-    const val LIB_VERSION_MAX = 2
+    const val EXTENSION_FEATURE = "tachiyomix"
+    const val METADATA_SOURCE_CLASS = "source.class"
+    const val METADATA_DESCRIPTION = "source.description"
+    const val METADATA_NSFW = "source.nsfw"
+    const val LIB_VERSION_MIN = 1
+    const val LIB_VERSION_MAX = 1
 
     @Suppress("DEPRECATION")
     const val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS

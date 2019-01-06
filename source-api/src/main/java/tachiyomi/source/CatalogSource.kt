@@ -6,7 +6,7 @@ import tachiyomi.source.model.MangasPageInfo
 
 interface CatalogSource : Source {
 
-  val lang: String
+  override val lang: String
 
   fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo
 

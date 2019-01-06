@@ -46,6 +46,7 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
     super.onViewCreated(view)
     adapter = CatalogsAdapter(this)
     catalogs_recycler.adapter = adapter
+    catalogs_recycler.addItemDecoration(CatalogDividerDecoration(view.context))
 
     presenter.state
       .scanWithPrevious()

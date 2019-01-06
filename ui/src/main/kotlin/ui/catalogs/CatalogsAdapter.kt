@@ -11,8 +11,6 @@ package tachiyomi.ui.catalogs
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.domain.catalog.model.Catalog
-import tachiyomi.domain.catalog.model.CatalogLocal
-import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.ui.base.BaseListAdapter
 import tachiyomi.ui.base.BaseViewHolder
 
@@ -24,21 +22,23 @@ class CatalogsAdapter(
 
   private val langsAdapter = CatalogLangsAdapter(controller, listener)
 
+  private val catalogTheme = CatalogHolder.Theme(controller.activity!!)
+
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
     return when (item) {
-      is CatalogLocal -> VIEW_TYPE_BROWSABLE
-      is CatalogRemote -> VIEW_TYPE_AVAILABLE
+      is Catalog -> VIEW_TYPE_CATALOG
       is LanguageChoices -> VIEW_TYPE_LANGUAGES
+      is CatalogHeader -> VIEW_TYPE_HEADER
       else -> error("Unknown view type for item class ${item.javaClass}")
     }
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
     return when (viewType) {
-      VIEW_TYPE_BROWSABLE -> CatalogHolder(parent, this)
-      VIEW_TYPE_AVAILABLE -> CatalogHolder(parent, this)
+      VIEW_TYPE_CATALOG -> CatalogHolder(parent, catalogTheme, this)
       VIEW_TYPE_LANGUAGES -> CatalogLangsHolder(parent, langsAdapter)
+      VIEW_TYPE_HEADER -> CatalogHeaderHolder(parent)
       else -> error("TODO")
     }
   }
@@ -48,6 +48,7 @@ class CatalogsAdapter(
     val item = getItem(position)
     when (holder) {
       is CatalogHolder -> holder.bind(item as Catalog)
+      is CatalogHeaderHolder -> holder.bind(item as CatalogHeader)
     }
   }
 
@@ -91,9 +92,9 @@ class CatalogsAdapter(
   }
 
   companion object {
-    const val VIEW_TYPE_BROWSABLE = 1
-    const val VIEW_TYPE_AVAILABLE = 2
-    const val VIEW_TYPE_LANGUAGES = 3
+    const val VIEW_TYPE_CATALOG = 1
+    const val VIEW_TYPE_LANGUAGES = 2
+    const val VIEW_TYPE_HEADER = 3
   }
 
 }

@@ -19,6 +19,9 @@ interface Source {
    */
   val name: String
 
+  // TODO remove CatalogSource?
+  val lang: String
+
   /**
    * Returns an observable with the updated details for a manga.
    *

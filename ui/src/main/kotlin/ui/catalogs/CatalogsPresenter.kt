@@ -19,6 +19,8 @@ import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.domain.catalog.interactor.GetLocalCatalogs
 import tachiyomi.domain.catalog.interactor.GetRemoteCatalogs
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
@@ -73,12 +75,18 @@ class CatalogsPresenter @Inject constructor(
       selectedLanguage
     ) { local, remote, choice ->
       val items = mutableListOf<Any>()
-      items.addAll(local)
+
+      if (local.isNotEmpty()) {
+        val updatable = local.count { it is CatalogInstalled && it.hasUpdate }
+        items.add(CatalogHeader.Installed(updatable))
+        items.addAll(local)
+      }
 
       if (remote.isNotEmpty()) {
-        val choices = LanguageChoices(getLanguageChoices(remote), choice)
+        val choices = LanguageChoices(getLanguageChoices(remote, local), choice)
         val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
 
+        items.add(CatalogHeader.Available)
         items.add(choices)
         items.addAll(availableCatalogsFiltered)
       }
@@ -88,14 +96,21 @@ class CatalogsPresenter @Inject constructor(
 
   }
 
-  private fun getLanguageChoices(catalogs: List<CatalogRemote>): List<LanguageChoice> {
+  private fun getLanguageChoices(
+    remote: List<CatalogRemote>,
+    local: List<CatalogLocal>
+  ): List<LanguageChoice> {
     val knownLanguages = mutableListOf<LanguageChoice.One>()
     val unknownLanguages = mutableListOf<Language>()
 
-    catalogs.asSequence()
+    val languageComparators = UserLanguagesComparator()
+      .then(InstalledLanguagesComparator(local))
+      .thenBy { it.code }
+
+    remote.asSequence()
       .map { Language(it.lang) }
       .distinct()
-      .sortedWith(UserLanguagesComparator())
+      .sortedWith(languageComparators)
       .forEach { code ->
         if (code.toEmoji() != null) {
           knownLanguages.add(LanguageChoice.One(code))
@@ -107,7 +122,9 @@ class CatalogsPresenter @Inject constructor(
     val languages = mutableListOf<LanguageChoice>()
     languages.add(LanguageChoice.All)
     languages.addAll(knownLanguages)
-    languages.add(LanguageChoice.Others(unknownLanguages))
+    if (unknownLanguages.isNotEmpty()) {
+      languages.add(LanguageChoice.Others(unknownLanguages))
+    }
 
     return languages
   }

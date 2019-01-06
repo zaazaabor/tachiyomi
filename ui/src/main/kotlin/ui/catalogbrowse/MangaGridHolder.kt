@@ -45,7 +45,6 @@ class MangaGridHolder(
    * Binds only the cover of the given [manga] with this holder.
    */
   override fun bindImage(manga: Manga) {
-    Glide.with(view.context).clear(thumbnail)
     if (!manga.cover.isEmpty()) {
       Glide.with(view.context)
         .load(manga.cover)
@@ -55,6 +54,10 @@ class MangaGridHolder(
         //.placeholder(android.R.color.transparent)
         .into(StateImageViewTarget(thumbnail, progress))
     }
+  }
+
+  override fun recycle() {
+    Glide.with(view.context).clear(thumbnail)
   }
 
 }

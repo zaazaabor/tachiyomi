@@ -10,6 +10,7 @@ package tachiyomi.domain.catalog.interactor
 
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
+import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogSort
 import tachiyomi.domain.catalog.repository.CatalogRepository
@@ -21,7 +22,7 @@ class GetLocalCatalogs @Inject constructor(
   private val libraryRepository: LibraryRepository
 ) {
 
-  fun interact(sort: CatalogSort = CatalogSort.Name) = Flowable.defer {
+  fun interact(sort: CatalogSort = CatalogSort.Favorites) = Flowable.defer {
     val catalogsFlow = Flowables.combineLatest(
       catalogRepository.getInternalCatalogsFlowable(),
       catalogRepository.getInstalledCatalogsFlowable()
@@ -36,7 +37,9 @@ class GetLocalCatalogs @Inject constructor(
   }
 
   private fun sortByName(catalogsFlow: Flowable<List<CatalogLocal>>): Flowable<List<CatalogLocal>> {
-    return catalogsFlow.map { catalogs -> catalogs.sortedBy { it.name } }
+    return catalogsFlow.map { catalogs ->
+      catalogs.sortedWith(UpdatesComparator().thenBy { it.name })
+    }
   }
 
   private fun sortByFavorites(
@@ -53,23 +56,32 @@ class GetLocalCatalogs @Inject constructor(
       catalogsFlow,
       favoriteIdsFlow
     ) { catalogs, favoriteIds ->
-      catalogs.sortedWith(FavoritesComparator(favoriteIds))
+      catalogs.sortedWith(
+        UpdatesComparator().then(FavoritesComparator(favoriteIds)).thenBy { it.name }
+      )
     }
   }
 
-  private class FavoritesComparator(
-    private val favoriteIds: Map<Long, Int>
-  ) : Comparator<CatalogLocal> {
+  private class FavoritesComparator(val favoriteIds: Map<Long, Int>) : Comparator<CatalogLocal> {
 
     override fun compare(c1: CatalogLocal, c2: CatalogLocal): Int {
       val pos1 = favoriteIds[c1.source.id] ?: Int.MAX_VALUE
       val pos2 = favoriteIds[c2.source.id] ?: Int.MAX_VALUE
 
-      return when (val positionCompare = pos1.compareTo(pos2)) {
-        0 -> c1.name.compareTo(c2.name)
-        else -> positionCompare
+      return pos1.compareTo(pos2)
+    }
+
+  }
+
+  private class UpdatesComparator : Comparator<CatalogLocal> {
+
+    override fun compare(c1: CatalogLocal, c2: CatalogLocal): Int {
+      return when {
+        c1 is CatalogInstalled && c2 is CatalogInstalled -> c2.hasUpdate.compareTo(c1.hasUpdate)
+        else -> 0
       }
     }
+
   }
 
 }

@@ -17,8 +17,15 @@ class GetRemoteCatalogs @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(): Flowable<List<CatalogRemote>> {
+  fun interact(withNsfw: Boolean = true): Flowable<List<CatalogRemote>> {
     return catalogRepository.getRemoteCatalogsFlowable()
+      .map { catalogs ->
+        if (withNsfw) {
+          catalogs
+        } else {
+          catalogs.filter { !it.nsfw }
+        }
+      }
   }
 
 }

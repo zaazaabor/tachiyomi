@@ -84,7 +84,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
 
     internalCatalogs = sourceManager.getSources()
       .filterIsInstance<CatalogSource>()
-      .map { CatalogInternal(it.name, it) }
+      .map { CatalogInternal(it.name, "Internal source description", it) }
 
     installedCatalogs = loader.loadExtensions()
       .filterIsInstance<CatalogLoader.Result.Success>()
@@ -145,6 +145,8 @@ internal class CatalogRepositoryImpl @Inject constructor(
    * Listener which receives events of the catalogs being installed, updated or removed.
    */
   private inner class InstallationListener : CatalogInstallReceiver.Listener {
+
+    // TODO update checks
 
     @Synchronized
     override fun onCatalogInstalled(catalog: CatalogInstalled) {

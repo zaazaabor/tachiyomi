@@ -12,6 +12,7 @@ import tachiyomi.source.Source
 
 sealed class Catalog {
   abstract val name: String
+  abstract val description: String
 }
 
 sealed class CatalogLocal : Catalog() {
@@ -20,11 +21,13 @@ sealed class CatalogLocal : Catalog() {
 
 data class CatalogInternal(
   override val name: String,
+  override val description: String = "",
   override val source: Source
 ) : CatalogLocal()
 
 data class CatalogInstalled(
   override val name: String,
+  override val description: String = "",
   override val source: Source,
   val pkgName: String,
   val versionName: String,
@@ -34,11 +37,13 @@ data class CatalogInstalled(
 
 data class CatalogRemote(
   override val name: String,
+  override val description: String = "",
   val sourceId: Long,
   val pkgName: String,
   val versionName: String,
   val versionCode: Int,
   val lang: String,
   val apkName: String, // TODO this should probably be apkUrl
-  val iconUrl: String
+  val iconUrl: String,
+  val nsfw: Boolean
 ) : Catalog()

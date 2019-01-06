@@ -20,10 +20,12 @@ import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.data.catalog.sql.CatalogTable.COL_APKURL
+import tachiyomi.data.catalog.sql.CatalogTable.COL_DESCRIPTION
 import tachiyomi.data.catalog.sql.CatalogTable.COL_ICONURL
 import tachiyomi.data.catalog.sql.CatalogTable.COL_ID
 import tachiyomi.data.catalog.sql.CatalogTable.COL_LANG
 import tachiyomi.data.catalog.sql.CatalogTable.COL_NAME
+import tachiyomi.data.catalog.sql.CatalogTable.COL_NSFW
 import tachiyomi.data.catalog.sql.CatalogTable.COL_PKGNAME
 import tachiyomi.data.catalog.sql.CatalogTable.COL_VCODE
 import tachiyomi.data.catalog.sql.CatalogTable.COL_VNAME
@@ -53,15 +55,17 @@ internal class CatalogPutResolver : DefaultPutResolver<CatalogRemote>() {
   }
 
   override fun mapToContentValues(obj: CatalogRemote): ContentValues {
-    return ContentValues(8).apply {
+    return ContentValues(10).apply {
       put(COL_ID, obj.sourceId.takeIf { it != -1L })
       put(COL_NAME, obj.name)
+      put(COL_DESCRIPTION, obj.description)
       put(COL_PKGNAME, obj.pkgName)
       put(COL_VCODE, obj.versionCode)
       put(COL_VNAME, obj.versionName)
       put(COL_LANG, obj.lang)
       put(COL_APKURL, obj.apkName)
       put(COL_ICONURL, obj.iconUrl)
+      put(COL_NSFW, if (obj.nsfw) 1 else 0)
     }
   }
 
@@ -79,15 +83,17 @@ internal class CatalogGetResolver : DefaultGetResolver<CatalogRemote>() {
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): CatalogRemote {
     val sourceId = cursor.getLong(cursor.getColumnIndex(COL_ID))
     val name = cursor.getString(cursor.getColumnIndex(COL_NAME))
+    val description = cursor.getString(cursor.getColumnIndex(COL_DESCRIPTION))
     val pkgName = cursor.getString(cursor.getColumnIndex(COL_PKGNAME))
     val versionCode = cursor.getInt(cursor.getColumnIndex(COL_VCODE))
     val versionName = cursor.getString(cursor.getColumnIndex(COL_VNAME))
     val lang = cursor.getString(cursor.getColumnIndex(COL_LANG))
     val apkUrl = cursor.getString(cursor.getColumnIndex(COL_APKURL))
     val iconUrl = cursor.getString(cursor.getColumnIndex(COL_ICONURL))
+    val nsfw = cursor.getInt(cursor.getColumnIndex(COL_NSFW)) == 1
 
     return CatalogRemote(
-      name, sourceId, pkgName, versionName, versionCode, lang, apkUrl, iconUrl
+      name, description, sourceId, pkgName, versionName, versionCode, lang, apkUrl, iconUrl, nsfw
     )
   }
 

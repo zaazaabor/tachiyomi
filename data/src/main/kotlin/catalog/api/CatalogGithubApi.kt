@@ -11,6 +11,7 @@ package tachiyomi.data.catalog.api
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.get
 import com.github.salomonbrys.kotson.int
+import com.github.salomonbrys.kotson.nullBool
 import com.github.salomonbrys.kotson.string
 import com.google.gson.Gson
 import com.google.gson.JsonArray
@@ -42,7 +43,7 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
   private fun parseResponse(response: Response): List<CatalogRemote> {
     val text = response.body()?.use { it.string() } ?: return emptyList()
 
-    val json = gson.fromJson<JsonArray>(text)
+    val json = gson.fromJson<JsonArray>(tmpJson) // TODO
 
     return json.map { element ->
       val name = element["name"].string.substringAfter("Tachiyomi: ")
@@ -53,8 +54,11 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
       val lang = element["lang"].string
       val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
       val sourceId = getDefaultId(name, lang)
+      val description = element["description"].string
+      val nsfw = element["nsfw"].nullBool ?: false
 
-      CatalogRemote(name, sourceId, pkgName, versionName, versionCode, lang, apkName, icon)
+      CatalogRemote(name, description, sourceId, pkgName, versionName, versionCode, lang, apkName,
+        icon, nsfw)
     }
   }
 
@@ -70,3 +74,61 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
     return "$repoUrl/apk/${extension.apkName}"
   }
 }
+
+private val tmpJson = """[
+  {
+    "name": "Tachiyomi: MangaDex",
+    "id": 1,
+    "pkg": "eu.kanade.tachiyomi.extension.all.mangadex",
+    "apk": "tachiyomi-all.mangadex-v1.2.44.apk",
+    "lang": "en",
+    "code": 44,
+    "version": "1.2.44",
+    "description": "Highest quality and scanlator-approved source",
+    "nsfw": false
+  },
+  {
+    "name": "Tachiyomi: MangaDex",
+    "id": 2,
+    "pkg": "eu.kanade.tachiyomi.extension.all.mangadex",
+    "apk": "tachiyomi-all.mangadex-v1.2.44.apk",
+    "lang": "es",
+    "code": 44,
+    "version": "1.2.44",
+    "description": "Highest quality and scanlator-approved source",
+    "nsfw": false
+  },
+  {
+    "name": "Tachiyomi: E-Hentai",
+    "id": 3,
+    "pkg": "eu.kanade.tachiyomi.extension.all.ehentai",
+    "apk": "tachiyomi-all.ehentai-v1.0.1.apk",
+    "lang": "en",
+    "code": 1,
+    "version": "1.0.1",
+    "description": "",
+    "nsfw": true
+  },
+  {
+    "name": "Tachiyomi: Japscan",
+    "id": 4,
+    "pkg": "eu.kanade.tachiyomi.extension.fr.japscan",
+    "apk": "tachiyomi-fr.japscan-v1.2.5.apk",
+    "lang": "fr",
+    "code": 5,
+    "version": "1.2.5",
+    "description": "",
+    "nsfw": false
+  },
+  {
+    "name": "Tachiyomi: WieManga",
+    "id": 5,
+    "pkg": "eu.kanade.tachiyomi.extension.de.wiemanga",
+    "apk": "tachiyomi-de.wiemanga-v1.2.2.apk",
+    "lang": "de",
+    "code": 2,
+    "version": "1.2.2",
+    "description": "",
+    "nsfw": false
+  }
+]"""

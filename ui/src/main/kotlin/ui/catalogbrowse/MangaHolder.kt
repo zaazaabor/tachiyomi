@@ -28,4 +28,9 @@ abstract class MangaHolder(view: View) : BaseViewHolder(view) {
    */
   abstract fun bindImage(manga: Manga)
 
+  /**
+   * Recycles this view holder.
+   */
+  abstract fun recycle()
+
 }

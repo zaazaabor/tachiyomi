@@ -18,7 +18,6 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
 import tachiyomi.core.di.AppScope
@@ -45,8 +44,6 @@ class TachiGlideModule : AppGlideModule() {
   override fun applyOptions(context: Context, builder: GlideBuilder) {
     builder.setDiskCache(InternalCacheDiskCacheFactory(context, 50 * 1024 * 1024))
     builder.setDefaultRequestOptions(RequestOptions().format(DecodeFormat.PREFER_RGB_565))
-    builder.setDefaultTransitionOptions(Drawable::class.java,
-      DrawableTransitionOptions.withCrossFade())
   }
 
   override fun registerComponents(context: Context, glide: Glide, registry: Registry) {

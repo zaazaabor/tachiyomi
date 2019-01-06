@@ -139,6 +139,12 @@ class CatalogBrowseAdapter(
     }
   }
 
+  override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+    when (holder) {
+      is MangaHolder -> holder.recycle()
+    }
+  }
+
   /**
    * Handles a user click on the element at the given [position]. The click is delegated to the
    * [listener] of this adapter.
