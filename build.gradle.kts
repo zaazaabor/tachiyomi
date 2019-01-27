@@ -4,7 +4,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:3.3.0-rc03")
+    classpath("com.android.tools.build:gradle:3.3.0")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Deps.kotlin.version}")
   }
 }
@@ -20,4 +20,8 @@ allprojects {
     maven { setUrl("https://google.bintray.com/flexbox-layout") }
     jcenter()
   }
+}
+
+tasks.register("clean", Delete::class) {
+  delete(rootProject.buildDir)
 }

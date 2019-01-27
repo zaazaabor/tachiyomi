@@ -11,17 +11,9 @@ package tachiyomi.ui.catalogbrowse
 import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.DisplayModeUpdated
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.ErrorDelivered
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.LoadMore
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.Loading
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.LoadingError
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.MangaInitialized
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.PageReceived
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.QueryModeUpdated
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction.SwapDisplayMode
-import tachiyomi.ui.catalogbrowse.CatalogBrowseAction as Action
 import tachiyomi.ui.catalogbrowse.CatalogBrowseViewState as ViewState
+
+private typealias Action = CatalogBrowseAction
 
 /**
  * List of actions that can be used to request and mutate the view state.

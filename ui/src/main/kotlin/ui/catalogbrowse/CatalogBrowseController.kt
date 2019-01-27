@@ -34,6 +34,7 @@ import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withFadeTransition
 import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
+import tachiyomi.util.inflate
 import tachiyomi.util.visibleIf
 import tachiyomi.widget.EndlessRecyclerViewScrollListener
 
@@ -100,7 +101,7 @@ class CatalogBrowseController(
     container: ViewGroup,
     savedViewState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.catalogbrowse_controller, container, false)
+    return container.inflate(R.layout.catalogbrowse_controller)
   }
 
   /**

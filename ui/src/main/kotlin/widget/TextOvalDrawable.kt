@@ -16,7 +16,6 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.OvalShape
 import androidx.annotation.ColorInt
 import java.util.Arrays
 import java.util.Random
@@ -25,10 +24,12 @@ class TextOvalDrawable(
   text: String,
   @ColorInt private val backgroundColor: Int = Color.GRAY,
   @ColorInt private val textColor: Int = Color.WHITE
-) : ShapeDrawable(OvalShape()) {
+) : ShapeDrawable() {
+
+  private val ovalRect = RectF()
+  private val padding = Rect()
 
   private val text = text.toUpperCase()
-  private val rect = RectF()
   private var centerX = 0f
   private var centerY = 0f
   private var centerFont = 0f
@@ -46,18 +47,23 @@ class TextOvalDrawable(
   }
 
   override fun draw(canvas: Canvas) {
-    super.draw(canvas)
-    val count = canvas.save()
-    canvas.translate(rect.left, rect.top)
+    canvas.drawOval(ovalRect, paint)
     canvas.drawText(text, centerX, centerY - centerFont, textPaint)
-    canvas.restoreToCount(count)
   }
 
   override fun onBoundsChange(bounds: Rect) {
     super.onBoundsChange(bounds)
-    rect.set(bounds)
-    centerX = rect.width() / 2
-    centerY = rect.height() / 2
+    getPadding(padding)
+
+    ovalRect.set(
+      bounds.left.toFloat() + padding.left,
+      bounds.top.toFloat() + padding.top,
+      bounds.right.toFloat() - padding.right,
+      bounds.bottom.toFloat() - padding.bottom
+    )
+
+    centerX = ovalRect.width() / 2 + ovalRect.left
+    centerY = ovalRect.height() / 2 + ovalRect.top
     textPaint.textSize = Math.min(centerX, centerY)
     centerFont = (textPaint.descent() + textPaint.ascent()) / 2
   }

@@ -16,8 +16,8 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
-import tachiyomi.core.db.toRxOptional
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.db.toOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.data.manga.resolver.MangaDetailsUpdatePutResolver
 import tachiyomi.data.manga.resolver.MangaFlagsPutResolver
 import tachiyomi.data.manga.table.MangaTable
@@ -31,7 +31,7 @@ internal class MangaRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : MangaRepository {
 
-  override fun subscribeManga(mangaId: Long): Flowable<RxOptional<Manga>> {
+  override fun subscribeManga(mangaId: Long): Flowable<Optional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -42,10 +42,10 @@ internal class MangaRepositoryImpl @Inject constructor(
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
-      .map { it.toRxOptional() }
+      .map { it.toOptional() }
   }
 
-  override fun subscribeManga(key: String, sourceId: Long): Flowable<RxOptional<Manga>> {
+  override fun subscribeManga(key: String, sourceId: Long): Flowable<Optional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -56,7 +56,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
-      .map { it.toRxOptional() }
+      .map { it.toOptional() }
   }
 
   override fun getManga(mangaId: Long): Maybe<Manga> {

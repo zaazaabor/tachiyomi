@@ -10,8 +10,13 @@ package tachiyomi.ui.catalogs
 
 import android.content.Context
 import android.graphics.PorterDuff
+import android.text.SpannedString
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.ForegroundColorSpan
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.text.buildSpannedString
+import androidx.core.text.inSpans
 import com.jaredrummler.cyanea.Cyanea
 import kotlinx.android.synthetic.main.catalogs_catalog_item.*
 import tachiyomi.domain.catalog.model.Catalog
@@ -20,12 +25,13 @@ import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.glide.GlideApp
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
+import tachiyomi.util.getColorFromAttr
 import tachiyomi.util.inflate
 import tachiyomi.util.visibleIf
 
 class CatalogHolder(
   parent: ViewGroup,
-  theme: Theme,
+  private val theme: Theme,
   adapter: CatalogsAdapter
 ) : BaseViewHolder(parent.inflate(R.layout.catalogs_catalog_item)) {
 
@@ -35,26 +41,49 @@ class CatalogHolder(
     itemView.setOnClickListener {
       adapter.handleRowClick(adapterPosition)
     }
+    install_btn.setOnClickListener {
+      adapter.handleInstallClick(adapterPosition)
+    }
+    settings_btn.setOnClickListener {
+      adapter.handleSettingsClick(adapterPosition)
+    }
 
     install_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
+    settings_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
   }
 
   fun bind(catalog: Catalog) {
-    title.text = catalog.name
+    title.text = when (catalog) {
+      is CatalogInstalled -> getTitleWithVersion(catalog.name, catalog.versionCode)
+      is CatalogRemote -> getTitleWithVersion(catalog.name, catalog.versionCode)
+      else -> catalog.name
+    }
+
     description.text = catalog.description
     description.visibleIf { catalog.description.isNotEmpty() }
 
     install_btn.visibleIf {
       catalog is CatalogRemote || (catalog is CatalogInstalled && catalog.hasUpdate)
     }
+    settings_btn.visibleIf { catalog is CatalogInstalled }
 
     GlideApp.with(itemView)
       .load(catalog)
       .into(image)
   }
 
-  fun recycle() {
+  override fun recycle() {
     GlideApp.with(itemView).clear(image)
+  }
+
+  private fun getTitleWithVersion(title: String, version: Int): SpannedString {
+    return buildSpannedString {
+      append("$title ")
+
+      inSpans(AbsoluteSizeSpan(12, true), ForegroundColorSpan(theme.textColorSecondary)) {
+        append("v$version")
+      }
+    }
   }
 
   class Theme(context: Context) {
@@ -65,6 +94,8 @@ class CatalogHolder(
     } else {
       R.color.textColorIcon
     })
+
+    val textColorSecondary = context.getColorFromAttr(android.R.attr.textColorSecondary)
   }
 
 }

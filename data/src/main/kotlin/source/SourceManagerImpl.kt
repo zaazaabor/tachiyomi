@@ -9,7 +9,7 @@
 package tachiyomi.data.source
 
 import android.app.Application
-import tachiyomi.core.BuildConfig
+import tachiyomi.data.BuildConfig
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.Source
 import tachiyomi.source.TestSource

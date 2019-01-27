@@ -6,22 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.rx
+package tachiyomi.core.stdlib
 
 /**
  * A wrapper around a nullable object because in RxJava2 emitting null is forbidden.
  */
-sealed class RxOptional<out T> {
+sealed class Optional<out T> {
 
   /**
    * Represents an existing object, accesible through [value].
    */
-  class Some<out T>(val value: T) : RxOptional<T>()
+  data class Some<out T>(val value: T) : Optional<T>()
 
   /**
    * Represents an absent (null) object.
    */
-  object None : RxOptional<Nothing>()
+  object None : Optional<Nothing>()
 
   /**
    * Returns the value or null.
@@ -32,7 +32,7 @@ sealed class RxOptional<out T> {
     /**
      * Returns a [Some] if the given [value] is not null, otherwise [None].
      */
-    fun <T> of(value: T?): RxOptional<T> {
+    fun <T> of(value: T?): Optional<T> {
       return if (value != null) Some(value) else None
     }
   }

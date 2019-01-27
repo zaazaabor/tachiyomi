@@ -12,7 +12,7 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
 import tachiyomi.domain.chapter.model.Chapter
 
@@ -20,7 +20,7 @@ interface ChapterRepository {
 
   fun subscribeChapters(mangaId: Long): Flowable<List<Chapter>>
 
-  fun subscribeChapter(chapterId: Long): Flowable<RxOptional<Chapter>>
+  fun subscribeChapter(chapterId: Long): Flowable<Optional<Chapter>>
 
   fun getChapters(mangaId: Long): Single<List<Chapter>>
 

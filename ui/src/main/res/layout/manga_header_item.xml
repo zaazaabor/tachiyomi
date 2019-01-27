@@ -6,7 +6,7 @@
   android:layout_height="wrap_content">
 
   <androidx.constraintlayout.widget.Guideline
-    android:id="@+id/guideline"
+    android:id="@+id/catalogdetail_guideline"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -18,13 +18,13 @@
     android:layout_height="0dp"
     android:alpha="0.1"
     android:background="@color/material_grey_700"
-    app:layout_constraintBottom_toTopOf="@+id/barrier"
+    app:layout_constraintBottom_toTopOf="@+id/description_barrier"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="parent" />
 
   <androidx.constraintlayout.widget.Barrier
-    android:id="@+id/barrier"
+    android:id="@+id/description_barrier"
     android:layout_width="0dp"
     android:layout_height="0dp"
     app:barrierDirection="bottom"
@@ -39,10 +39,10 @@
     android:layout_marginStart="16dp"
     android:layout_marginTop="16dp"
     android:contentDescription="@string/description_cover"
-    app:layout_constraintBottom_toTopOf="@id/barrier"
+    app:layout_constraintBottom_toTopOf="@id/description_barrier"
     app:layout_constraintDimensionRatio="h,2:3"
     app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toLeftOf="@+id/guideline"
+    app:layout_constraintRight_toLeftOf="@+id/catalogdetail_guideline"
     app:layout_constraintTop_toTopOf="parent"
     tools:background="@color/material_grey_700" />
 
@@ -237,7 +237,7 @@
     android:textIsSelectable="false"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/barrier" />
+    app:layout_constraintTop_toBottomOf="@+id/description_barrier" />
 
   <TextView
     android:id="@+id/manga_summary"

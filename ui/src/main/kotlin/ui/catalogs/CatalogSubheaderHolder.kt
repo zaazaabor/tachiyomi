@@ -14,17 +14,17 @@ import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.inflate
 
-class CatalogHeaderHolder(
+class CatalogSubheaderHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent.inflate(R.layout.catalogs_header_item)) {
+) : BaseViewHolder(parent.inflate(R.layout.catalogs_subheader_item)) {
 
   private val textView = itemView as TextView
 
-  fun bind(header: CatalogHeader) {
+  fun bind(header: CatalogSubheader) {
     // TODO string resources
     textView.text = when (header) {
-      CatalogHeader.Installed -> "Installed"
-      CatalogHeader.Available -> "Available"
+      is CatalogSubheader.UpdateAvailable -> "Update available (${header.updatable})"
+      CatalogSubheader.UpToDate -> "Up to date"
     }
   }
 

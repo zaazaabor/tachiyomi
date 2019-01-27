@@ -6,7 +6,7 @@ import org.gradle.kotlin.dsl.project
 object Deps {
 
   object kotlin {
-    const val version = "1.3.10"
+    const val version = "1.3.20"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
   }
 

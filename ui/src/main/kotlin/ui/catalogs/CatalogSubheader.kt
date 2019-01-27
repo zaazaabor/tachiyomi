@@ -8,9 +8,9 @@
 
 package tachiyomi.ui.catalogs
 
-sealed class CatalogHeader {
+sealed class CatalogSubheader {
 
-  object Installed : CatalogHeader()
-  object Available : CatalogHeader()
+  data class UpdateAvailable(val updatable: Int) : CatalogSubheader()
+  object UpToDate : CatalogSubheader()
 
 }

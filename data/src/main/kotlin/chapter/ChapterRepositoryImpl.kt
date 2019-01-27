@@ -19,10 +19,10 @@ import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import tachiyomi.core.db.inTransaction
-import tachiyomi.core.db.toRxOptional
+import tachiyomi.core.db.toOptional
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.data.chapter.resolver.ChapterSourceOrderPutResolver
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
@@ -62,10 +62,10 @@ class ChapterRepositoryImpl @Inject constructor(
       .distinctUntilChanged() // TODO do we want to run a distinct?
   }
 
-  override fun subscribeChapter(chapterId: Long): Flowable<RxOptional<Chapter>> {
+  override fun subscribeChapter(chapterId: Long): Flowable<Optional<Chapter>> {
     return preparedChapter(chapterId).asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
-      .map { it.toRxOptional() }
+      .map { it.toOptional() }
   }
 
   override fun getChapters(mangaId: Long): Single<List<Chapter>> {

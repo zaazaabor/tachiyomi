@@ -17,13 +17,16 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.CompletableSubject
 import tachiyomi.core.util.getUriCompat
 import tachiyomi.domain.catalog.model.CatalogRemote
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 /**
@@ -54,6 +57,9 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
    * Relay used to notify the installation step of every download.
    */
   private val downloadsRelay = PublishRelay.create<Pair<Long, InstallStep>>()
+
+  private val uninstallIds = AtomicLong()
+  private val activeUninstalls = hashMapOf<Long, CompletableSubject>()
 
   /**
    * Adds the given extension to the downloads queue and returns an observable containing its
@@ -134,7 +140,8 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
   fun installApk(downloadId: Long, uri: Uri) {
     val intent = Intent(context, CatalogInstallActivity::class.java)
       .setDataAndType(uri, APK_MIME)
-      .putExtra(EXTRA_DOWNLOAD_ID, downloadId)
+      .putExtra(EXTRA_OPERATION, OPERATION_INSTALL)
+      .putExtra(EXTRA_ID, downloadId)
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
     context.startActivity(intent)
@@ -145,12 +152,23 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
    *
    * @param pkgName The package name of the extension to uninstall
    */
-  fun uninstallApk(pkgName: String) {
-    val packageUri = Uri.parse("package:$pkgName")
-    val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageUri)
-      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+  fun uninstallApk(pkgName: String) = Completable.defer {
+    val uninstallId = uninstallIds.incrementAndGet()
 
+    val packageUri = Uri.parse("package:$pkgName")
+    val intent = Intent(context, CatalogInstallActivity::class.java)
+      .setData(packageUri)
+      .putExtra(EXTRA_OPERATION, OPERATION_UNINSTALL)
+      .putExtra(EXTRA_ID, uninstallId)
+      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent
+        .FLAG_ACTIVITY_NO_ANIMATION)
+
+    val subject = CompletableSubject.create()
+    activeUninstalls[uninstallId] = subject
     context.startActivity(intent)
+
+    subject.timeout(3, TimeUnit.MINUTES)
+      .doFinally { activeUninstalls.remove(uninstallId) }
   }
 
   /**
@@ -159,9 +177,24 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
    * @param downloadId The id of the download.
    * @param result Whether the extension was installed or not.
    */
-  fun setInstallationResult(downloadId: Long, result: Boolean) {
+  fun setInstallResult(downloadId: Long, result: Boolean) {
     val step = if (result) InstallStep.Installed else InstallStep.Error
     downloadsRelay.accept(downloadId to step)
+  }
+
+  /**
+   * Sets the result of the uninstallation of an extension.
+   *
+   * @param uninstallId The id of the uninstall process.
+   * @param result Whether the extension was uninstalled or not.
+   */
+  fun setUninstallResult(uninstallId: Long, result: Boolean) {
+    val subject = activeUninstalls[uninstallId] ?: return
+    if (result) {
+      subject.onComplete()
+    } else {
+      subject.onError(Exception())
+    }
   }
 
   /**
@@ -251,7 +284,11 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
 
   companion object {
     const val APK_MIME = "application/vnd.android.package-archive"
-    const val EXTRA_DOWNLOAD_ID = "CatalogInstaller.extra.DOWNLOAD_ID"
+    const val EXTRA_ID = "CatalogInstaller.extra.ID"
+    const val EXTRA_OPERATION = "CatalogInstaller.extra.OPERATION"
+
+    const val OPERATION_INSTALL = 1
+    const val OPERATION_UNINSTALL = 2
   }
 
 }

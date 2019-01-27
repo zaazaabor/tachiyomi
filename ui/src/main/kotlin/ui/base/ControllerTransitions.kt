@@ -41,7 +41,7 @@ class FadeTransition : SimpleTransitionChangeHandler() {
     to: View?,
     isPush: Boolean
   ): Transition? {
-    return Fade().excludeTarget(Toolbar::class.java, true)
+    return Fade(Fade.MODE_OUT)
   }
 
   override fun getEnterTransition(
@@ -50,7 +50,7 @@ class FadeTransition : SimpleTransitionChangeHandler() {
     to: View?,
     isPush: Boolean
   ): Transition? {
-    return Fade().excludeTarget(Toolbar::class.java, true)
+    return Fade(Fade.MODE_IN).excludeTarget(Toolbar::class.java, true)
   }
 
 }

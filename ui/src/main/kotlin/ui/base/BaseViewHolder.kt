@@ -17,4 +17,10 @@ abstract class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view), Layou
   override val containerView: View?
     get() = itemView
 
+  /**
+   * Recycles this view holder.
+   */
+  open fun recycle() {
+  }
+
 }

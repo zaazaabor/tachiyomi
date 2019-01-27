@@ -13,7 +13,7 @@ import io.reactivex.Single
 import io.reactivex.processors.BehaviorProcessor
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.core.rx.mapNullable
+import tachiyomi.core.rx.filterNotNull
 import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SubscribeManga
@@ -43,7 +43,7 @@ class MangaPresenter @Inject constructor(
     val sharedManga = subscribeManga.interact(mangaId!!).share()
 
     val mangaIntent = sharedManga
-      .mapNullable { it.get() }
+      .filterNotNull { it.get() }
       .map(Change::MangaUpdate)
 
     val intents = listOf(mangaIntent)
@@ -56,7 +56,7 @@ class MangaPresenter @Inject constructor(
       .addTo(disposables)
 
     // Initialize manga if needed
-    sharedManga.mapNullable { it.get() }
+    sharedManga.filterNotNull { it.get() }
       .take(1)
       .flatMapMaybe { mangaInitializer.interact(it) }
       .ignoreElements()

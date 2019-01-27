@@ -15,11 +15,13 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.catalogs_controller.*
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
-import tachiyomi.ui.base.withFadeTransition
+import tachiyomi.ui.base.withHorizontalTransition
 import tachiyomi.ui.catalogbrowse.CatalogBrowseController
+import tachiyomi.ui.catalogdetail.CatalogDetailsController
 import tachiyomi.ui.home.HomeChildController
 
 class CatalogsController : MvpController<CatalogsPresenter>(),
@@ -81,11 +83,20 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
       is CatalogLocal -> catalog.source.id
       else -> return
     }
-    router.pushController(CatalogBrowseController(id).withFadeTransition())
+    router.pushController(CatalogBrowseController(id).withHorizontalTransition())
   }
 
   override fun onLanguageChoiceClick(languageChoice: LanguageChoice) {
     presenter.setLanguageChoice(languageChoice)
+  }
+
+  override fun onInstallClick(catalog: Catalog) {
+    // TODO
+  }
+
+  override fun onSettingsClick(catalog: Catalog) {
+    if (catalog !is CatalogInstalled) return
+    router.pushController(CatalogDetailsController(catalog.pkgName).withHorizontalTransition())
   }
 
 }

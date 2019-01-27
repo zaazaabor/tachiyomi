@@ -14,7 +14,6 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDelete
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDeleteByQuery
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
-import tachiyomi.core.rx.RxOptional
 
 inline fun StorIOSQLite.inTransaction(block: () -> Unit) {
   lowLevel().beginTransaction()
@@ -63,6 +62,6 @@ fun PreparedDelete.Builder.withIds(
   )
 }
 
-fun <T> Optional<T>.toRxOptional(): RxOptional<T> {
-  return RxOptional.of(orNull())
+fun <T> Optional<T>.toOptional(): tachiyomi.core.stdlib.Optional<T> {
+  return tachiyomi.core.stdlib.Optional.of(orNull())
 }

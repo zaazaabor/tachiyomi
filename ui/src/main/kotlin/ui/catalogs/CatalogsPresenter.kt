@@ -17,8 +17,8 @@ import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.catalog.interactor.GetLocalCatalogs
-import tachiyomi.domain.catalog.interactor.GetRemoteCatalogs
+import tachiyomi.domain.catalog.interactor.SubscribeLocalCatalogs
+import tachiyomi.domain.catalog.interactor.SubscribeRemoteCatalogs
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
@@ -26,8 +26,8 @@ import tachiyomi.ui.base.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val getLocalCatalogs: GetLocalCatalogs,
-  private val getRemoteCatalogs: GetRemoteCatalogs,
+  private val subscribeLocalCatalogs: SubscribeLocalCatalogs,
+  private val subscribeRemoteCatalogs: SubscribeRemoteCatalogs,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
@@ -54,15 +54,13 @@ class CatalogsPresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<CatalogsViewState>
   ): Observable<Action> {
-    val localCatalogs = getLocalCatalogs.interact()
+    val localCatalogs = subscribeLocalCatalogs.interact()
       .subscribeOn(schedulers.io)
       .observeOn(schedulers.io)
-      .toObservable()
 
-    val remoteCatalogs = getRemoteCatalogs.interact()
+    val remoteCatalogs = subscribeRemoteCatalogs.interact(excludeInstalled = true)
       .subscribeOn(schedulers.io)
       .observeOn(schedulers.io)
-      .toObservable()
 
     val selectedLanguage = actions.ofType<Action.SetLanguageChoice>()
       .observeOn(schedulers.io)
@@ -77,9 +75,24 @@ class CatalogsPresenter @Inject constructor(
       val items = mutableListOf<Any>()
 
       if (local.isNotEmpty()) {
-        val updatable = local.count { it is CatalogInstalled && it.hasUpdate }
-        items.add(CatalogHeader.Installed(updatable))
-        items.addAll(local)
+        items.add(CatalogHeader.Installed)
+
+        val (updatable, upToDate) = local.partition { it is CatalogInstalled && it.hasUpdate }
+        when {
+          updatable.isEmpty() -> {
+            items.addAll(upToDate)
+          }
+          upToDate.isEmpty() -> {
+            items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+            items.addAll(updatable)
+          }
+          else -> {
+            items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+            items.addAll(updatable)
+            items.add(CatalogSubheader.UpToDate)
+            items.addAll(upToDate)
+          }
+        }
       }
 
       if (remote.isNotEmpty()) {

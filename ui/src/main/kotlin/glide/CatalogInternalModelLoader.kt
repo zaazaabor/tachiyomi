@@ -18,6 +18,7 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.util.dpToPx
 import tachiyomi.widget.TextOvalDrawable
 
 internal class CatalogInternalModelLoader : ModelLoader<CatalogInternal, Drawable> {
@@ -54,6 +55,8 @@ internal class CatalogInternalModelLoader : ModelLoader<CatalogInternal, Drawabl
         backgroundColor = TextOvalDrawable.Colors.getColor(sourceName),
         textColor = Color.WHITE
       )
+      val padding = 2.dpToPx
+      drawable.setPadding(padding, padding, padding, padding)
 
       callback.onDataReady(drawable)
     }

@@ -42,8 +42,15 @@ fun <T> Observable<T>.scanWithPrevious(): Observable<Pair<T, T?>> {
 /**
  * Returns a flowable that skips the null values of the result of the given [block] function.
  */
-inline fun <T, R> Flowable<T>.mapNullable(crossinline block: (T) -> R?): Flowable<R> {
+inline fun <T, R> Flowable<T>.filterNotNull(crossinline block: (T) -> R?): Flowable<R> {
   return flatMap { block(it)?.let { Flowable.just(it) } ?: Flowable.empty() }
+}
+
+/**
+ * Returns an observable that skips the null values of the result of the given [block] function.
+ */
+inline fun <T, R> Observable<T>.filterNotNull(crossinline block: (T) -> R?): Observable<R> {
+  return flatMap { block(it)?.let { Observable.just(it) } ?: Observable.empty() }
 }
 
 fun <T, U, R> Flowable<T>.combineLatest(o2: Flowable<U>, combineFn: (T, U) -> R): Flowable<R> {

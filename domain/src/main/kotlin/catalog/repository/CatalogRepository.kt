@@ -8,7 +8,8 @@
 
 package tachiyomi.domain.catalog.repository
 
-import io.reactivex.Flowable
+import io.reactivex.Completable
+import io.reactivex.Observable
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
@@ -17,9 +18,12 @@ interface CatalogRepository {
 
   val installedCatalogs: List<CatalogInstalled>
 
-  fun getInternalCatalogsFlowable(): Flowable<List<CatalogInternal>>
+  fun getInternalCatalogsObservable(): Observable<List<CatalogInternal>>
 
-  fun getInstalledCatalogsFlowable(): Flowable<List<CatalogInstalled>>
+  fun getInstalledCatalogsObservable(): Observable<List<CatalogInstalled>>
 
-  fun getRemoteCatalogsFlowable(): Flowable<List<CatalogRemote>>
+  fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>>
+
+  fun uninstallCatalog(catalog: CatalogInstalled): Completable
+
 }

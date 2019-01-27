@@ -31,6 +31,8 @@ dependencies {
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.smoothie)
   kapt(Deps.toothpick.compiler)
+
+  implementation(Deps.androidX.appCompat)
 }
 
 kapt {

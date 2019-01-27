@@ -96,10 +96,11 @@ internal class MangaGetResolver : DefaultGetResolver<Manga>() {
     val initialized = cursor.getInt(cursor.getColumnIndex(COL_INITIALIZED)) == 1
     val viewer = cursor.getInt(cursor.getColumnIndex(COL_VIEWER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
+    val dateAdded = 0L // TODO
 
     return Manga(
       id, source, key, title, artist, author, description, genre, status,
-      cover, favorite, lastUpdate, initialized, viewer, flags
+      cover, favorite, lastUpdate, dateAdded, initialized, viewer, flags
     )
   }
 }

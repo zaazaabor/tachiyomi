@@ -79,7 +79,7 @@ private val tmpJson = """[
   {
     "name": "Tachiyomi: MangaDex",
     "id": 1,
-    "pkg": "eu.kanade.tachiyomi.extension.all.mangadex",
+    "pkg": "tachiyomix.mangadex.en",
     "apk": "tachiyomi-all.mangadex-v1.2.44.apk",
     "lang": "en",
     "code": 44,
@@ -90,7 +90,7 @@ private val tmpJson = """[
   {
     "name": "Tachiyomi: MangaDex",
     "id": 2,
-    "pkg": "eu.kanade.tachiyomi.extension.all.mangadex",
+    "pkg": "tachiyomix.mangadex.es",
     "apk": "tachiyomi-all.mangadex-v1.2.44.apk",
     "lang": "es",
     "code": 44,
@@ -101,7 +101,7 @@ private val tmpJson = """[
   {
     "name": "Tachiyomi: E-Hentai",
     "id": 3,
-    "pkg": "eu.kanade.tachiyomi.extension.all.ehentai",
+    "pkg": "tachiyomix.ehentai.en",
     "apk": "tachiyomi-all.ehentai-v1.0.1.apk",
     "lang": "en",
     "code": 1,
@@ -112,7 +112,7 @@ private val tmpJson = """[
   {
     "name": "Tachiyomi: Japscan",
     "id": 4,
-    "pkg": "eu.kanade.tachiyomi.extension.fr.japscan",
+    "pkg": "tachiyomix.japscan.fr",
     "apk": "tachiyomi-fr.japscan-v1.2.5.apk",
     "lang": "fr",
     "code": 5,
@@ -123,7 +123,7 @@ private val tmpJson = """[
   {
     "name": "Tachiyomi: WieManga",
     "id": 5,
-    "pkg": "eu.kanade.tachiyomi.extension.de.wiemanga",
+    "pkg": "tachiyomix.mangadex.de",
     "apk": "tachiyomi-de.wiemanga-v1.2.2.apk",
     "lang": "de",
     "code": 2,

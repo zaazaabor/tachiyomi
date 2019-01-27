@@ -22,7 +22,7 @@ class CatalogDividerDecoration(context: Context) : RecyclerView.ItemDecoration()
 
   private val bounds = Rect()
 
-  private val left = 64.dpToPx
+  private val left = 72.dpToPx
 
   override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
     if (parent.layoutManager == null) return

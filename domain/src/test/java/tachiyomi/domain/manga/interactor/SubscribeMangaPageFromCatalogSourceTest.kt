@@ -22,7 +22,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnitRunner
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import toothpick.testing.ToothPickRule
@@ -60,13 +60,13 @@ class SubscribeMangaPageFromCatalogSourceTest {
     `when`(source.fetchMangaList(anyInt())).thenReturn(sourceMangaPage)
 
     `when`(mangaRepository.subscribeManga(eq("url1"), anyLong()))
-      .thenReturn(Flowable.just(RxOptional.of(dbManga1)))
+      .thenReturn(Flowable.just(Optional.of(dbManga1)))
 
     `when`(mangaRepository.subscribeManga(eq("url2"), anyLong()))
-      .thenReturn(Flowable.just(RxOptional.None))
+      .thenReturn(Flowable.just(Optional.None))
 
     `when`(mangaRepository.subscribeManga(eq("url3"), anyLong()))
-      .thenReturn(Flowable.just(RxOptional.None))
+      .thenReturn(Flowable.just(Optional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga1), anyLong()))
       .thenReturn(Single.just(dbManga1))

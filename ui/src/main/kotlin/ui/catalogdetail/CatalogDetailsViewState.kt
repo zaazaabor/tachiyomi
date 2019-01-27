@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.catalogs
+package tachiyomi.ui.catalogdetail
 
-sealed class CatalogHeader {
+import tachiyomi.domain.catalog.model.CatalogInstalled
 
-  object Installed : CatalogHeader()
-  object Available : CatalogHeader()
-
-}
+data class CatalogDetailsViewState(
+  val catalog: CatalogInstalled? = null,
+  val isUninstalled: Boolean = false
+)

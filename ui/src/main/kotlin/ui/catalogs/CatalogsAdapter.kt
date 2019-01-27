@@ -30,6 +30,7 @@ class CatalogsAdapter(
       is Catalog -> VIEW_TYPE_CATALOG
       is LanguageChoices -> VIEW_TYPE_LANGUAGES
       is CatalogHeader -> VIEW_TYPE_HEADER
+      is CatalogSubheader -> VIEW_TYPE_SUBHEADER
       else -> error("Unknown view type for item class ${item.javaClass}")
     }
   }
@@ -39,6 +40,7 @@ class CatalogsAdapter(
       VIEW_TYPE_CATALOG -> CatalogHolder(parent, catalogTheme, this)
       VIEW_TYPE_LANGUAGES -> CatalogLangsHolder(parent, langsAdapter)
       VIEW_TYPE_HEADER -> CatalogHeaderHolder(parent)
+      VIEW_TYPE_SUBHEADER -> CatalogSubheaderHolder(parent)
       else -> error("TODO")
     }
   }
@@ -49,18 +51,12 @@ class CatalogsAdapter(
     when (holder) {
       is CatalogHolder -> holder.bind(item as Catalog)
       is CatalogHeaderHolder -> holder.bind(item as CatalogHeader)
+      is CatalogSubheaderHolder -> holder.bind(item as CatalogSubheader)
     }
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {
-    when (holder) {
-      is CatalogHolder -> holder.recycle()
-    }
-  }
-
-  fun handleRowClick(position: Int) {
-    val item = getItemOrNull(position) as? Catalog ?: return
-    listener.onCatalogClick(item)
+    holder.recycle()
   }
 
   fun submitItems(items: List<Any>) {
@@ -72,9 +68,26 @@ class CatalogsAdapter(
     }
   }
 
+  fun handleRowClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onCatalogClick(item)
+  }
+
+  fun handleInstallClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onInstallClick(item)
+  }
+
+  fun handleSettingsClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onSettingsClick(item)
+  }
+
   interface Listener {
     fun onCatalogClick(catalog: Catalog)
     fun onLanguageChoiceClick(languageChoice: LanguageChoice)
+    fun onInstallClick(catalog: Catalog)
+    fun onSettingsClick(catalog: Catalog)
   }
 
   private class Diff : DiffUtil.ItemCallback<Any>() {
@@ -95,6 +108,7 @@ class CatalogsAdapter(
     const val VIEW_TYPE_CATALOG = 1
     const val VIEW_TYPE_LANGUAGES = 2
     const val VIEW_TYPE_HEADER = 3
+    const val VIEW_TYPE_SUBHEADER = 4
   }
 
 }

@@ -9,13 +9,12 @@
 package tachiyomi.data.catalog
 
 import android.app.Application
-import com.jakewharton.rxrelay2.BehaviorRelay
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
-import io.reactivex.Flowable
+import io.reactivex.Observable
+import io.reactivex.subjects.BehaviorSubject
 import tachiyomi.core.db.inTransaction
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.data.catalog.api.CatalogGithubApi
@@ -46,7 +45,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
   /**
    * Relay used to notify the installed catalogs.
    */
-  private val installedCatalogsRelay = BehaviorRelay.create<List<CatalogInstalled>>()
+  private val installedCatalogsRelay = BehaviorSubject.create<List<CatalogInstalled>>()
 
   /**
    * List of the currently installed catalogs.
@@ -54,15 +53,15 @@ internal class CatalogRepositoryImpl @Inject constructor(
   override var installedCatalogs = emptyList<CatalogInstalled>()
     private set(value) {
       field = value
-      installedCatalogsRelay.accept(value)
+      installedCatalogsRelay.onNext(value)
     }
 
-  private val remoteCatalogsRelay = BehaviorRelay.create<List<CatalogRemote>>()
+  private val remoteCatalogsRelay = BehaviorSubject.create<List<CatalogRemote>>()
 
   var remoteCatalogs = emptyList<CatalogRemote>()
     private set(value) {
       field = value
-      remoteCatalogsRelay.accept(value)
+      remoteCatalogsRelay.onNext(value)
     }
 
   /**
@@ -94,16 +93,16 @@ internal class CatalogRepositoryImpl @Inject constructor(
     CatalogInstallReceiver(InstallationListener(), loader, dispatchers).register(context)
   }
 
-  override fun getInternalCatalogsFlowable(): Flowable<List<CatalogInternal>> {
-    return Flowable.just(internalCatalogs)
+  override fun getInternalCatalogsObservable(): Observable<List<CatalogInternal>> {
+    return Observable.just(internalCatalogs)
   }
 
-  override fun getInstalledCatalogsFlowable(): Flowable<List<CatalogInstalled>> {
-    return installedCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
+  override fun getInstalledCatalogsObservable(): Observable<List<CatalogInstalled>> {
+    return installedCatalogsRelay
   }
 
-  override fun getRemoteCatalogsFlowable(): Flowable<List<CatalogRemote>> {
-    return remoteCatalogsRelay.toFlowable(BackpressureStrategy.LATEST)
+  override fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>> {
+    return remoteCatalogsRelay
   }
 
   private fun initRemoteCatalogs() {
@@ -139,6 +138,10 @@ internal class CatalogRepositoryImpl @Inject constructor(
         remoteCatalogs = newCatalogs
       }
       .ignoreElement()
+  }
+
+  override fun uninstallCatalog(catalog: CatalogInstalled): Completable {
+    return installer.uninstallApk(catalog.pkgName)
   }
 
   /**

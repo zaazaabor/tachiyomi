@@ -12,7 +12,7 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.model.MangaInfo
 
@@ -20,9 +20,9 @@ interface MangaRepository {
 
   fun setFlags(manga: Manga, flags: Int): Completable
 
-  fun subscribeManga(mangaId: Long): Flowable<RxOptional<Manga>>
+  fun subscribeManga(mangaId: Long): Flowable<Optional<Manga>>
 
-  fun subscribeManga(key: String, sourceId: Long): Flowable<RxOptional<Manga>>
+  fun subscribeManga(key: String, sourceId: Long): Flowable<Optional<Manga>>
 
   fun getManga(mangaId: Long): Maybe<Manga>
 

@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
-import tachiyomi.core.rx.RxOptional
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import toothpick.testing.ToothPickRule
@@ -49,7 +49,7 @@ class GetOrAddMangaFromSourceTest {
   @Test
   fun `creates manga when not found in repository`() {
     `when`(mangaRepository.subscribeManga(sourceManga.key, sourceId))
-      .thenReturn(Flowable.just(RxOptional.None))
+      .thenReturn(Flowable.just(Optional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga), anyLong()))
       .thenReturn(Single.just(dbManga))
@@ -62,7 +62,7 @@ class GetOrAddMangaFromSourceTest {
   @Test
   fun `returns manga when found in repository`() {
     `when`(mangaRepository.subscribeManga(sourceManga.key, sourceId))
-      .thenReturn(Flowable.just(RxOptional.of(dbManga)))
+      .thenReturn(Flowable.just(Optional.of(dbManga)))
 
     getOrAddMangaFromSource.interact(sourceManga, sourceId).blockingGet()
 
