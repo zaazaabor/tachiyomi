@@ -15,7 +15,9 @@ import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseListAdapter
 
-class MangaAdapter : BaseListAdapter<Any, RecyclerView.ViewHolder>(Diff()) {
+class MangaAdapter(
+  controller: MangaController
+) : BaseListAdapter<Any, RecyclerView.ViewHolder>() {
 
   override fun getItemViewType(position: Int): Int {
     return when (getItem(position)) {
@@ -42,7 +44,7 @@ class MangaAdapter : BaseListAdapter<Any, RecyclerView.ViewHolder>(Diff()) {
     }
   }
 
-  private class Diff : DiffUtil.ItemCallback<Any>() {
+  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
       return oldItem == newItem
     }

@@ -73,7 +73,7 @@ class MangaController(
     RxToolbar.navigationClicks(manga_toolbar)
       .subscribeWithView { router.handleBack() }
 
-    adapter = MangaAdapter()
+    adapter = MangaAdapter(this)
     manga_recycler.adapter = adapter
     manga_recycler.layoutManager = LinearLayoutManager(view.context)
 
@@ -99,7 +99,7 @@ class MangaController(
 
   private fun renderHeader(header: MangaHeader?) {
     manga_toolbar.title = header?.manga?.title.orEmpty()
-    adapter?.submitList(listOf(header))
+    adapter?.submitList(listOf(header) as List<Any>)
   }
 
   //===========================================================================

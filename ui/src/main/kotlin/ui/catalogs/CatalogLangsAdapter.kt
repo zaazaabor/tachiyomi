@@ -8,18 +8,19 @@
 
 package tachiyomi.ui.catalogs
 
+import android.content.Context
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.ui.base.BaseListAdapter
 
 class CatalogLangsAdapter(
-  controller: CatalogsController,
+  context: Context,
   private val listener: CatalogsAdapter.Listener
-) : BaseListAdapter<LanguageChoice, CatalogLangHolder>(Diff()) {
+) : BaseListAdapter<LanguageChoice, CatalogLangHolder>() {
 
   private var selectedChoice: LanguageChoice? = null
 
-  private val holderTheme = CatalogLangHolder.Theme(controller.activity!!)
+  private val holderTheme = CatalogLangHolder.Theme(context)
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatalogLangHolder {
     return CatalogLangHolder(parent, holderTheme, this)
@@ -40,7 +41,7 @@ class CatalogLangsAdapter(
     listener.onLanguageChoiceClick(choice)
   }
 
-  private class Diff : DiffUtil.ItemCallback<LanguageChoice>() {
+  override val itemCallback = object : DiffUtil.ItemCallback<LanguageChoice>() {
 
     override fun areItemsTheSame(oldItem: LanguageChoice, newItem: LanguageChoice): Boolean {
       return oldItem == newItem

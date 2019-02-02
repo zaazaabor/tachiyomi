@@ -34,9 +34,3 @@ dependencies {
 
   implementation(Deps.androidX.appCompat)
 }
-
-kapt {
-  arguments {
-    arg("toothpick_registry_package_name", "tachiyomi.data")
-  }
-}

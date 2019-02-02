@@ -15,8 +15,12 @@ import javax.inject.Provider
 /**
  * Binds the given [instance] to its class.
  */
-inline fun <reified T> Module.bindInstance(instance: T) {
-  bind(T::class.java).toInstance(instance)
+inline fun <reified B> Module.bindInstance(instance: B) {
+  bind(B::class.java).toInstance(instance)
+}
+
+inline fun <reified B, reified D : B> Module.bindTo(): Binding<B>.BoundStateForClassBinding {
+  return bind(B::class.java).to(D::class.java)
 }
 
 inline fun <reified B, reified P : Provider<B>> Module.bindProvider(): Binding<B>
@@ -24,6 +28,8 @@ inline fun <reified B, reified P : Provider<B>> Module.bindProvider(): Binding<B
   return bind(B::class.java).toProvider(P::class.java)
 }
 
-inline fun <reified B, reified D : B> Module.bindTo(): Binding<B>.BoundStateForClassBinding {
-  return bind(B::class.java).to(D::class.java)
+inline fun <reified B> Module.bindProviderInstance(
+  noinline provider: () -> B
+): Binding<B>.BoundStateForProviderInstanceBinding? {
+  return bind(B::class.java).toProviderInstance(provider)
 }

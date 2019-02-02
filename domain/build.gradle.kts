@@ -22,9 +22,3 @@ dependencies {
   testImplementation(Deps.toothpick.testing)
   kaptTest(Deps.toothpick.compiler)
 }
-
-kapt {
-  arguments {
-    arg("toothpick_registry_package_name", "tachiyomi.domain")
-  }
-}

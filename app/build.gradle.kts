@@ -31,6 +31,7 @@ android {
 
 dependencies {
   implementationProject(Projects.coreAndroid)
+  implementationProject(Projects.coreAndroidUi)
   implementationProject(Projects.domain)
   implementationProject(Projects.data)
   implementationProject(Projects.ui)
@@ -42,12 +43,4 @@ dependencies {
   implementation(Deps.rxAndroid)
   implementation(Deps.cyanea)
   implementation(Deps.androidX.emoji)
-}
-
-kapt {
-  arguments {
-    arg("toothpick_registry_package_name", "tachiyomi.app")
-    arg("toothpick_registry_children_package_names", "tachiyomi.data,tachiyomi.domain," +
-      "tachiyomi.core,tachiyomi.ui")
-  }
 }

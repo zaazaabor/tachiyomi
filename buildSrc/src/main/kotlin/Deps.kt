@@ -1,8 +1,3 @@
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.artifacts.dsl.DependencyHandler
-import org.gradle.kotlin.dsl.DependencyHandlerScope
-import org.gradle.kotlin.dsl.project
-
 object Deps {
 
   object kotlin {
@@ -11,7 +6,7 @@ object Deps {
   }
 
   object coroutines {
-    private const val version = "1.0.1"
+    private const val version = "1.1.1"
     const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
     const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version"
     const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$version"
@@ -45,7 +40,7 @@ object Deps {
   }
 
   object toothpick {
-    private const val version = "1.1.3"
+    private const val version = "2.0.0"
     const val runtime = "com.github.stephanenicolas.toothpick:toothpick-runtime:$version"
     const val smoothie = "com.github.stephanenicolas.toothpick:smoothie:$version"
     const val compiler = "com.github.stephanenicolas.toothpick:toothpick-compiler:$version"

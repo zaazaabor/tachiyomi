@@ -18,6 +18,7 @@ android {
 
 dependencies {
   implementationProject(Projects.coreAndroid)
+  implementationProject(Projects.coreAndroidUi)
   implementationProject(Projects.sourceApi)
   implementationProject(Projects.domain)
   implementationProject(Projects.data)
@@ -52,15 +53,8 @@ dependencies {
 
   implementation(Deps.glide.core)
   implementation(Deps.glide.okhttp)
-  kapt(Deps.glide.compiler)
 
   implementation(Deps.flexbox)
-}
-
-kapt {
-  arguments {
-    arg("toothpick_registry_package_name", "tachiyomi.ui")
-  }
 }
 
 androidExtensions {

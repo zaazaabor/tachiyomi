@@ -15,7 +15,7 @@ import android.widget.ImageView.ScaleType
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
-import tachiyomi.ui.R
+import tachiyomi.core.android.ui.R
 import tachiyomi.util.getColorFromAttr
 import tachiyomi.util.setGone
 import tachiyomi.util.setVisible

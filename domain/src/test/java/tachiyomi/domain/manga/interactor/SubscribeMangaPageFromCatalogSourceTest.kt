@@ -25,7 +25,6 @@ import org.mockito.junit.MockitoJUnitRunner
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import toothpick.testing.ToothPickRule
 import javax.inject.Inject
 
 @RunWith(MockitoJUnitRunner::class)

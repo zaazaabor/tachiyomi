@@ -18,7 +18,7 @@ abstract class MvpController<P : BasePresenter>(
 ) : BaseController(bundle) {
 
   @Suppress("LeakingThis")
-  private val scope = AppScope.subscope(this).also { scope ->
+  protected val scope = AppScope.subscope(this).also { scope ->
     getModule()?.let { scope.installModules(it) }
   }
 

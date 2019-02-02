@@ -17,6 +17,8 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
+import tachiyomi.glide.GlideController
+import tachiyomi.glide.GlideProvider
 import tachiyomi.ui.R
 import tachiyomi.ui.base.MvpController
 import tachiyomi.ui.base.withHorizontalTransition
@@ -26,9 +28,12 @@ import tachiyomi.ui.home.HomeChildController
 
 class CatalogsController : MvpController<CatalogsPresenter>(),
   CatalogsAdapter.Listener,
-  HomeChildController {
+  HomeChildController,
+  GlideController {
 
   private var adapter: CatalogsAdapter? = null
+
+  override val glideProvider = GlideProvider.from(this)
 
   override fun getPresenterClass() = CatalogsPresenter::class.java
 
@@ -46,16 +51,17 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
 
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
-    adapter = CatalogsAdapter(this)
+    adapter = CatalogsAdapter(view.context, this, glideProvider.get())
     catalogs_recycler.adapter = adapter
     catalogs_recycler.addItemDecoration(CatalogDividerDecoration(view.context))
 
     presenter.state
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
+      .subscribeWithView { (state, prevState) -> render(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {
+    catalogs_recycler.adapter = null
     adapter = null
     super.onDestroyView(view)
   }
@@ -64,7 +70,7 @@ class CatalogsController : MvpController<CatalogsPresenter>(),
   // ~ Render
   //===========================================================================
 
-  private fun dispatch(state: CatalogsViewState, prevState: CatalogsViewState?) {
+  private fun render(state: CatalogsViewState, prevState: CatalogsViewState?) {
     if (state.items !== prevState?.items) {
       renderItems(state.items)
     }

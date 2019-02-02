@@ -9,7 +9,7 @@
 package tachiyomi.ui.catalogs
 
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.catalogs_langs_item.*
+import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.inflate
@@ -19,9 +19,12 @@ class CatalogLangsHolder(
   adapter: CatalogLangsAdapter
 ) : BaseViewHolder(parent.inflate(R.layout.catalogs_langs_item)) {
 
+  private val recycler = itemView as RecyclerView
+
   init {
-    catalogs_langs_recycler.itemAnimator = null
-    catalogs_langs_recycler.adapter = adapter
+    recycler.itemAnimator = null
+    recycler.adapter = adapter
+    recycler.isNestedScrollingEnabled = false
   }
 
 }

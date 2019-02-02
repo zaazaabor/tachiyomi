@@ -1,16 +1,17 @@
+
 import org.gradle.api.artifacts.dsl.DependencyHandler
-import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.project
 
 enum class Projects(val path: String) {
   core(":core"),
   coreAndroid(":core-android"),
+  coreAndroidUi(":core-android-ui"),
   domain(":domain"),
   `data`(":data"),
+  glide(":glide"),
   ui(":ui"),
   app(":app"),
-  sourceApi(":source-api"),
-  sourceDeepLink(":source-deeplink")
+  sourceApi(":source-api")
 }
 
 fun DependencyHandler.apiProject(lib: Projects) {

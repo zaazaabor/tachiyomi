@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.catalogs_catalog_item.*
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogRemote
-import tachiyomi.glide.GlideApp
+import tachiyomi.glide.GlideRequests
 import tachiyomi.ui.R
 import tachiyomi.ui.base.BaseViewHolder
 import tachiyomi.util.getColorFromAttr
@@ -32,10 +32,9 @@ import tachiyomi.util.visibleIf
 class CatalogHolder(
   parent: ViewGroup,
   private val theme: Theme,
+  private val glideRequests: GlideRequests,
   adapter: CatalogsAdapter
 ) : BaseViewHolder(parent.inflate(R.layout.catalogs_catalog_item)) {
-
-  val cyanea = Cyanea.instance
 
   init {
     itemView.setOnClickListener {
@@ -67,13 +66,12 @@ class CatalogHolder(
     }
     settings_btn.visibleIf { catalog is CatalogInstalled }
 
-    GlideApp.with(itemView)
-      .load(catalog)
+    glideRequests.load(catalog)
       .into(image)
   }
 
   override fun recycle() {
-    GlideApp.with(itemView).clear(image)
+    glideRequests.clear(image)
   }
 
   private fun getTitleWithVersion(title: String, version: Int): SpannedString {

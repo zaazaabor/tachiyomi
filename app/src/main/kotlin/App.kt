@@ -17,8 +17,6 @@ import tachiyomi.data.di.DataModule
 import tachiyomi.di.UiModule
 import toothpick.Toothpick
 import toothpick.configuration.Configuration
-import toothpick.registries.FactoryRegistryLocator
-import toothpick.registries.MemberInjectorRegistryLocator
 import toothpick.smoothie.module.SmoothieApplicationModule
 
 /**
@@ -32,14 +30,11 @@ class App : Application() {
   override fun onCreate() {
     super.onCreate()
 
-    val config = if (BuildConfig.DEBUG) {
+    Toothpick.setConfiguration(if (BuildConfig.DEBUG) {
       Configuration.forDevelopment()
     } else {
       Configuration.forProduction()
-    }
-    Toothpick.setConfiguration(config.disableReflection())
-    FactoryRegistryLocator.setRootRegistry(FactoryRegistry())
-    MemberInjectorRegistryLocator.setRootRegistry(MemberInjectorRegistry())
+    })
 
     val scope = Toothpick.openScope(AppScope)
     scope.installModules(

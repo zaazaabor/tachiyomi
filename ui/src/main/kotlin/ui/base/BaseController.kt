@@ -8,9 +8,13 @@
 
 package tachiyomi.ui.base
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.CallSuper
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -27,17 +31,66 @@ import timber.log.Timber
 
 abstract class BaseController(
   bundle: Bundle? = null
-) : RestoreViewOnCreateController(bundle), LayoutContainer {
+) : RestoreViewOnCreateController(bundle), LayoutContainer, LifecycleOwner {
+
+  @Suppress("LeakingThis")
+  private val lifecycleRegistry = LifecycleRegistry(this)
 
   private var viewDisposables = CompositeDisposable()
 
   override val containerView: View?
     get() = view
 
+  private var viewLifecycleRegistry: LifecycleRegistry? = null
+  private var viewLifecycleOwner: LifecycleOwner? = null
+
   init {
     addLifecycleListener(object : LifecycleListener() {
+      override fun postContextAvailable(controller: Controller, context: Context) {
+        if (lifecycleRegistry.currentState == Lifecycle.State.INITIALIZED) {
+          lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        }
+      }
+
+      override fun preCreateView(controller: Controller) {
+        viewLifecycleOwner = LifecycleOwner {
+          if (viewLifecycleRegistry == null) {
+            viewLifecycleRegistry = LifecycleRegistry(viewLifecycleOwner!!)
+          }
+          viewLifecycleRegistry!!
+        }
+        viewLifecycleRegistry = null
+      }
+
       override fun postCreateView(controller: Controller, view: View) {
+        // Initialize the LifecycleRegistry if needed
+        viewLifecycleOwner?.lifecycle
+
         onViewCreated(view)
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+      }
+
+      override fun postAttach(controller: Controller, view: View) {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+      }
+
+      override fun preDetach(controller: Controller, view: View) {
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+      }
+
+      override fun preDestroyView(controller: Controller, view: View) {
+        viewLifecycleRegistry?.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+      }
+
+      override fun preDestroy(controller: Controller) {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        super.preDestroy(controller)
       }
 
       override fun onChangeStart(
@@ -65,6 +118,15 @@ abstract class BaseController(
     viewDisposables.dispose()
     clearFindViewByIdCache()
   }
+
+  override fun getLifecycle(): Lifecycle {
+    return lifecycleRegistry
+  }
+
+  val viewLifecycle: Lifecycle
+    get() = viewLifecycleOwner?.lifecycle ?: throw IllegalStateException(
+      "Can't access the Controller View's Lifecycle when getView() is null i.e., " +
+        "before onCreateView() or after onDestroyView()")
 
   fun <T> Observable<T>.subscribeWithView(onNext: (T) -> Unit): Disposable {
     return subscribe(onNext).also { viewDisposables.add(it) }

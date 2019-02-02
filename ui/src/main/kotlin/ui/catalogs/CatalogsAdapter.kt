@@ -8,21 +8,29 @@
 
 package tachiyomi.ui.catalogs
 
+import android.content.Context
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import tachiyomi.data.catalog.installer.InstallStep
 import tachiyomi.domain.catalog.model.Catalog
+import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.glide.GlideRequests
 import tachiyomi.ui.base.BaseListAdapter
 import tachiyomi.ui.base.BaseViewHolder
 
 class CatalogsAdapter(
-  controller: CatalogsController
-) : BaseListAdapter<Any, BaseViewHolder>(Diff()) {
+  context: Context,
+  private val listener: Listener,
+  private val glideRequests: GlideRequests
+) : BaseListAdapter<Any, BaseViewHolder>() {
 
-  private val listener: Listener = controller
+  private val langsAdapter = CatalogLangsAdapter(context, listener)
 
-  private val langsAdapter = CatalogLangsAdapter(controller, listener)
+  private val catalogTheme = CatalogHolder.Theme(context)
 
-  private val catalogTheme = CatalogHolder.Theme(controller.activity!!)
+  private var installingCatalogs = emptyMap<String, InstallStep>()
+  private var adapterInstallingCatalogs = emptyMap<String, InstallStep>()
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
@@ -37,11 +45,11 @@ class CatalogsAdapter(
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
     return when (viewType) {
-      VIEW_TYPE_CATALOG -> CatalogHolder(parent, catalogTheme, this)
+      VIEW_TYPE_CATALOG -> CatalogHolder(parent, catalogTheme, glideRequests, this)
       VIEW_TYPE_LANGUAGES -> CatalogLangsHolder(parent, langsAdapter)
       VIEW_TYPE_HEADER -> CatalogHeaderHolder(parent)
       VIEW_TYPE_SUBHEADER -> CatalogSubheaderHolder(parent)
-      else -> error("TODO")
+      else -> error("Unreachable")
     }
   }
 
@@ -60,11 +68,38 @@ class CatalogsAdapter(
   }
 
   fun submitItems(items: List<Any>) {
+    installingCatalogs = emptyMap() // TODO update from parameter
     submitList(items)
 
     val choices = items.filterIsInstance<LanguageChoices>().firstOrNull()
     if (choices != null) {
       langsAdapter.submitChoices(choices)
+    }
+  }
+
+  override fun onLatchList(newList: List<Any>) {
+    adapterInstallingCatalogs = installingCatalogs
+  }
+
+  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
+    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+      return when {
+        // Handled by child adapter
+        oldItem is LanguageChoices && newItem is LanguageChoices -> true
+        else -> oldItem == newItem
+      }
+    }
+
+    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
+      return when (newItem) {
+        is CatalogInstalled -> {
+          installingCatalogs[newItem.pkgName] == adapterInstallingCatalogs[newItem.pkgName]
+        }
+        is CatalogRemote -> {
+          installingCatalogs[newItem.pkgName] == adapterInstallingCatalogs[newItem.pkgName]
+        }
+        else -> true
+      }
     }
   }
 
@@ -88,20 +123,6 @@ class CatalogsAdapter(
     fun onLanguageChoiceClick(languageChoice: LanguageChoice)
     fun onInstallClick(catalog: Catalog)
     fun onSettingsClick(catalog: Catalog)
-  }
-
-  private class Diff : DiffUtil.ItemCallback<Any>() {
-    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return when {
-        // Handled by child adapter
-        oldItem is LanguageChoices && newItem is LanguageChoices -> true
-        else -> oldItem == newItem
-      }
-    }
-
-    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return true
-    }
   }
 
   companion object {

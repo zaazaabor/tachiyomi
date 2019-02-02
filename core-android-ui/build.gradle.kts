@@ -14,19 +14,19 @@ android {
 }
 
 dependencies {
-  apiProject(Projects.core)
+  implementationProject(Projects.core)
 
-  implementation(Deps.duktape)
-  implementation(Deps.rxPreferences)
-  implementation(Deps.rxAndroid)
-  implementation(Deps.storio)
-  implementation(Deps.androidX.core)
-  implementation(Deps.coroutines.core)
-  implementation(Deps.coroutines.android)
-  implementation(Deps.coroutines.rx2)
-
-  api(Deps.timber)
+  implementation(Deps.kotlin.stdlib)
 
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)
+
+  implementation(Deps.androidX.appCompat)
+  implementation(Deps.androidX.recyclerView)
+  implementation(Deps.androidKTX)
+  implementation(Deps.conductor)
+
+  implementation(Deps.glide.core)
+  implementation(Deps.glide.okhttp)
+  kapt(Deps.glide.compiler)
 }

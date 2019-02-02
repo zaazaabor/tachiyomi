@@ -8,6 +8,10 @@
 
 package tachiyomi.di
 
+import tachiyomi.core.di.bindProvider
+import tachiyomi.core.di.bindTo
+import tachiyomi.glide.GlideInitCallback
+import tachiyomi.glide.TachiyomiGlideInitCallback
 import tachiyomi.prefs.UiPreferences
 import tachiyomi.prefs.UiPreferencesProvider
 import toothpick.config.Module
@@ -15,7 +19,8 @@ import toothpick.config.Module
 object UiModule : Module() {
 
   init {
-    bind(UiPreferences::class.java).toProvider(UiPreferencesProvider::class.java)
+    bindProvider<UiPreferences, UiPreferencesProvider>()
+    bindTo<GlideInitCallback, TachiyomiGlideInitCallback>().singletonInScope()
   }
 
 }
