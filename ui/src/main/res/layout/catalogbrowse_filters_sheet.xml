@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<tachiyomi.ui.catalogbrowse.FiltersBottomSheet xmlns:android="http://schemas.android.com/apk/res/android"
+<tachiyomi.ui.screens.catalogbrowse.FiltersBottomSheet
+  xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:background="?backgroundColor"
@@ -57,4 +58,4 @@
 
   </LinearLayout>
 
-</tachiyomi.ui.catalogbrowse.FiltersBottomSheet>
+</tachiyomi.ui.screens.catalogbrowse.FiltersBottomSheet>

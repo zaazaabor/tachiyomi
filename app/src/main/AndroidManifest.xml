@@ -21,7 +21,7 @@
     android:theme="@style/Theme">
 
     <activity
-      android:name="tachiyomi.ui.MainActivity"
+      android:name="tachiyomi.ui.screens.MainActivity"
       android:launchMode="singleTop">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -33,10 +33,10 @@
     </activity>
 
     <activity
-      android:name="tachiyomi.ui.reader.ReaderActivity" />
+      android:name="tachiyomi.ui.screens.reader.ReaderActivity" />
 
     <activity
-      android:name="tachiyomi.ui.deeplink.DeepLinkHandlerActivity"
+      android:name="tachiyomi.ui.screens.deeplink.DeepLinkHandlerActivity"
       android:label="Extension"
       android:theme="@android:style/Theme.NoDisplay">
       <intent-filter>

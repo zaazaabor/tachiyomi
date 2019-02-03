@@ -6,20 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.di
+package tachiyomi.ui.di
 
-import tachiyomi.core.di.bindProvider
 import tachiyomi.core.di.bindTo
-import tachiyomi.glide.GlideInitCallback
-import tachiyomi.glide.TachiyomiGlideInitCallback
-import tachiyomi.prefs.UiPreferences
-import tachiyomi.prefs.UiPreferencesProvider
+import tachiyomi.ui.glide.GlideInitCallback
+import tachiyomi.ui.glide.TachiyomiGlideInitCallback
 import toothpick.config.Module
 
 object UiModule : Module() {
 
   init {
-    bindProvider<UiPreferences, UiPreferencesProvider>()
     bindTo<GlideInitCallback, TachiyomiGlideInitCallback>().singletonInScope()
   }
 

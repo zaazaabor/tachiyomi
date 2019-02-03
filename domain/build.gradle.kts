@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-  implementationProject(Projects.core)
+  implementationProject(Projects.common)
   implementationProject(Projects.sourceApi)
 
   implementation(Deps.kotlin.stdlib)

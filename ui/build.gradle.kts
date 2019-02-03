@@ -17,8 +17,8 @@ android {
 }
 
 dependencies {
-  implementationProject(Projects.coreAndroid)
-  implementationProject(Projects.coreAndroidUi)
+  implementationProject(Projects.core)
+  implementationProject(Projects.coreUi)
   implementationProject(Projects.sourceApi)
   implementationProject(Projects.domain)
   implementationProject(Projects.data)

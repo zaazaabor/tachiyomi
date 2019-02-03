@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.glide
+package tachiyomi.ui.glide
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -18,8 +18,8 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import tachiyomi.domain.catalog.model.CatalogInternal
-import tachiyomi.util.dpToPx
-import tachiyomi.widget.TextOvalDrawable
+import tachiyomi.ui.util.dpToPx
+import tachiyomi.ui.widget.TextOvalDrawable
 
 internal class CatalogInternalModelLoader : ModelLoader<CatalogInternal, Drawable> {
 

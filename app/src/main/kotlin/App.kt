@@ -14,7 +14,7 @@ import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.HttpModule
 import tachiyomi.core.rx.SchedulersModule
 import tachiyomi.data.di.DataModule
-import tachiyomi.di.UiModule
+import tachiyomi.ui.di.UiModule
 import toothpick.Toothpick
 import toothpick.configuration.Configuration
 import toothpick.smoothie.module.SmoothieApplicationModule

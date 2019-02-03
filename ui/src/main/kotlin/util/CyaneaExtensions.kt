@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.util
+package tachiyomi.ui.util
 
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.utils.ColorUtils

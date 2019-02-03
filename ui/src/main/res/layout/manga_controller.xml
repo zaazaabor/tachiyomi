@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<tachiyomi.widget.StatusBarInsetsViewGroup xmlns:android="http://schemas.android.com/apk/res/android"
+<tachiyomi.ui.widget.StatusBarInsetsViewGroup
+  xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
@@ -26,4 +27,4 @@
 
   </LinearLayout>
 
-</tachiyomi.widget.StatusBarInsetsViewGroup>
+</tachiyomi.ui.widget.StatusBarInsetsViewGroup>

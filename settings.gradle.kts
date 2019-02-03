@@ -1,6 +1,6 @@
+include(":common")
 include(":core")
-include(":core-android")
-include(":core-android-ui")
+include(":core-ui")
 include(":domain")
 include(":data")
 include(":ui")

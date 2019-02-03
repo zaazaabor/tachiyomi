@@ -51,7 +51,7 @@
       tools:text="120"
       tools:visibility="visible" />
 
-    <tachiyomi.widget.PTSansTextView
+    <tachiyomi.ui.widget.PTSansTextView
       android:id="@+id/title"
       style="@style/TextAppearance.Body2.Light"
       android:layout_width="0dp"

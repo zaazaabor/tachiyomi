@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.glide
+package tachiyomi.ui.glide
 
 import android.content.Context
 import android.content.pm.PackageManager
