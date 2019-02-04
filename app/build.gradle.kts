@@ -34,7 +34,7 @@ dependencies {
   implementationProject(Projects.coreUi)
   implementationProject(Projects.domain)
   implementationProject(Projects.data)
-  implementationProject(Projects.ui)
+  implementationProject(Projects.presentation)
 
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.smoothie)

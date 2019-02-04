@@ -2,16 +2,18 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.project
 
 enum class Projects(val path: String) {
-  // Java modules
+  // Core Java modules
   common(":common"),
   domain(":domain"),
   sourceApi(":source-api"),
 
-  // Android modules
+  // Core Android modules
   core(":core"),
   coreUi(":core-ui"),
+
+  // Tachiyomi specific Android modules
   `data`(":data"),
-  ui(":ui"),
+  presentation(":presentation"),
   app(":app")
 }
 
