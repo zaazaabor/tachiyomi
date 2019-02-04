@@ -6,9 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.catalogs
+package tachiyomi.ui.screens.catalog
+
+import tachiyomi.domain.catalog.model.InstallStep
 
 data class CatalogViewState(
   val items: List<Any> = emptyList(),
-  val languageChoice: LanguageChoice = LanguageChoice.All
+  val languageChoice: LanguageChoice = LanguageChoice.All,
+  val installingCatalogs: Map<String, InstallStep> = emptyMap()
 )

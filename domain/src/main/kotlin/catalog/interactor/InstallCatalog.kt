@@ -10,24 +10,16 @@ package tachiyomi.domain.catalog.interactor
 
 import io.reactivex.Observable
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import javax.inject.Inject
 
-class SubscribeRemoteCatalogs @Inject constructor(
+class InstallCatalog @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(
-    withNsfw: Boolean = true
-  ): Observable<List<CatalogRemote>> {
-    return catalogRepository.getRemoteCatalogsObservable()
-      .map { catalogs ->
-        if (withNsfw) {
-          catalogs
-        } else {
-          catalogs.filter { !it.nsfw }
-        }
-      }
+  fun interact(catalog: CatalogRemote): Observable<InstallStep> {
+    return catalogRepository.installCatalog(catalog)
   }
 
 }

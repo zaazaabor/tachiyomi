@@ -25,6 +25,7 @@ import tachiyomi.data.catalog.sql.CatalogTable
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
@@ -140,6 +141,10 @@ internal class CatalogRepositoryImpl @Inject constructor(
       .ignoreElement()
   }
 
+  override fun installCatalog(catalog: CatalogRemote): Observable<InstallStep> {
+    return installer.downloadAndInstall(catalog)
+  }
+
   override fun uninstallCatalog(catalog: CatalogInstalled): Completable {
     return installer.uninstallApk(catalog.pkgName)
   }
@@ -149,11 +154,9 @@ internal class CatalogRepositoryImpl @Inject constructor(
    */
   private inner class InstallationListener : CatalogInstallReceiver.Listener {
 
-    // TODO update checks
-
     @Synchronized
     override fun onCatalogInstalled(catalog: CatalogInstalled) {
-      installedCatalogs += catalog
+      installedCatalogs = installedCatalogs + catalog.withUpdateCheck()
       sourceManager.registerSource(catalog.source)
     }
 
@@ -165,7 +168,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
         mutInstalledCatalogs -= oldCatalog
         sourceManager.unregisterSource(catalog.source)
       }
-      mutInstalledCatalogs += catalog
+      mutInstalledCatalogs += catalog.withUpdateCheck()
       installedCatalogs = mutInstalledCatalogs
       sourceManager.registerSource(catalog.source)
     }
@@ -174,9 +177,17 @@ internal class CatalogRepositoryImpl @Inject constructor(
     override fun onPackageUninstalled(pkgName: String) {
       val installedCatalog = installedCatalogs.find { it.pkgName == pkgName }
       if (installedCatalog != null) {
-        installedCatalogs -= installedCatalog
+        installedCatalogs = installedCatalogs - installedCatalog
         sourceManager.unregisterSource(installedCatalog.source)
       }
+    }
+
+    private fun CatalogInstalled.withUpdateCheck(): CatalogInstalled {
+      val remoteCatalog = remoteCatalogs.find { it.pkgName == pkgName }
+      if (remoteCatalog != null && remoteCatalog.versionCode > versionCode) {
+        return copy(hasUpdate = true)
+      }
+      return this
     }
 
   }

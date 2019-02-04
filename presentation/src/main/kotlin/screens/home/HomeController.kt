@@ -27,7 +27,7 @@ import tachiyomi.ui.controller.BaseController
 import tachiyomi.ui.controller.withFadeTransition
 import tachiyomi.ui.controller.withoutTransition
 import tachiyomi.ui.screens.library.LibraryController
-import tachiyomi.ui.screens.catalogs.CatalogController
+import tachiyomi.ui.screens.catalog.CatalogController
 
 class HomeController : BaseController() {
 

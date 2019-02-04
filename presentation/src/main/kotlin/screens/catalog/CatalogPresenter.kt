@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.catalogs
+package tachiyomi.ui.screens.catalog
 
 import com.freeletics.rxredux.StateAccessor
 import com.freeletics.rxredux.reduxStore
@@ -17,17 +17,21 @@ import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.catalog.interactor.SubscribeLocalCatalogs
-import tachiyomi.domain.catalog.interactor.SubscribeRemoteCatalogs
+import tachiyomi.domain.catalog.interactor.InstallCatalog
+import tachiyomi.domain.catalog.interactor.SubscribeCatalogs
+import tachiyomi.domain.catalog.interactor.UpdateCatalog
+import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val subscribeLocalCatalogs: SubscribeLocalCatalogs,
-  private val subscribeRemoteCatalogs: SubscribeRemoteCatalogs,
+  private val subscribeCatalogs: SubscribeCatalogs,
+  private val installCatalog: InstallCatalog,
+  private val updateCatalog: UpdateCatalog,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
@@ -40,10 +44,14 @@ class CatalogsPresenter @Inject constructor(
       .observeOn(schedulers.io)
       .reduxStore(
         initialState = CatalogViewState(),
-        sideEffects = listOf(::loadCatalogsSideEffect),
+        sideEffects = listOf(
+          ::loadCatalogsSideEffect,
+          ::installCatalogSideEffect
+        ),
         reducer = ::reduce
       )
       .distinctUntilChanged()
+      .logOnNext()
       .observeOn(schedulers.main)
       .subscribe(state::accept)
       .addTo(disposables)
@@ -54,11 +62,7 @@ class CatalogsPresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<CatalogViewState>
   ): Observable<Action> {
-    val localCatalogs = subscribeLocalCatalogs.interact()
-      .subscribeOn(schedulers.io)
-      .observeOn(schedulers.io)
-
-    val remoteCatalogs = subscribeRemoteCatalogs.interact(excludeInstalled = true)
+    val catalogs = subscribeCatalogs.interact(excludeRemoteInstalled = true)
       .subscribeOn(schedulers.io)
       .observeOn(schedulers.io)
 
@@ -68,10 +72,9 @@ class CatalogsPresenter @Inject constructor(
       .startWith(stateFn().languageChoice)
 
     return Observables.combineLatest(
-      localCatalogs,
-      remoteCatalogs,
+      catalogs,
       selectedLanguage
-    ) { local, remote, choice ->
+    ) { (local, remote), choice ->
       val items = mutableListOf<Any>()
 
       if (local.isNotEmpty()) {
@@ -107,6 +110,33 @@ class CatalogsPresenter @Inject constructor(
       items
     }.map(Action::ItemsUpdate)
 
+  }
+
+  @Suppress("unused_parameter")
+  private fun installCatalogSideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<CatalogViewState>
+  ): Observable<Action> {
+    val installCatalogsObservable = actions.ofType<Action.InstallCatalog>()
+      .flatMap { action ->
+        installCatalog.interact(action.catalog).map { action.catalog.pkgName to it }
+      }
+
+    val updateCatalogsObservable = actions.ofType<Action.UpdateCatalog>()
+      .flatMap { action ->
+        updateCatalog.interact(action.catalog).map { action.catalog.pkgName to it }
+      }
+
+    return Observable.merge(installCatalogsObservable, updateCatalogsObservable)
+      .scan(emptyMap<String, InstallStep>()) { state, pkgAndStep ->
+        val (pkgName, step) = pkgAndStep
+        if (step == InstallStep.Installed) {
+          state - pkgName
+        } else {
+          state + pkgAndStep
+        }
+      }
+      .map { Action.InstallingCatalogsUpdate(it) }
   }
 
   private fun getLanguageChoices(
@@ -160,16 +190,28 @@ class CatalogsPresenter @Inject constructor(
     actions.accept(Action.SetLanguageChoice(languageChoice))
   }
 
+  fun installCatalog(catalog: Catalog) {
+    when (catalog) {
+      is CatalogInstalled -> actions.accept(Action.UpdateCatalog(catalog))
+      is CatalogRemote -> actions.accept(Action.InstallCatalog(catalog))
+    }
+  }
+
 }
 
 private sealed class Action {
   data class ItemsUpdate(val items: List<Any>) : Action()
   data class SetLanguageChoice(val choice: LanguageChoice) : Action()
+  data class InstallCatalog(val catalog: CatalogRemote) : Action()
+  data class UpdateCatalog(val catalog: CatalogInstalled) : Action()
+  data class InstallingCatalogsUpdate(val installingCatalogs: Map<String, InstallStep>) : Action()
 }
 
 private fun reduce(state: CatalogViewState, action: Action): CatalogViewState {
   return when (action) {
     is Action.ItemsUpdate -> state.copy(items = action.items)
     is Action.SetLanguageChoice -> state.copy(languageChoice = action.choice)
+    is Action.InstallingCatalogsUpdate -> state.copy(installingCatalogs = action.installingCatalogs)
+    else -> state
   }
 }

@@ -13,6 +13,7 @@ import io.reactivex.Observable
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.model.InstallStep
 
 interface CatalogRepository {
 
@@ -23,6 +24,8 @@ interface CatalogRepository {
   fun getInstalledCatalogsObservable(): Observable<List<CatalogInstalled>>
 
   fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>>
+
+  fun installCatalog(catalog: CatalogRemote): Observable<InstallStep>
 
   fun uninstallCatalog(catalog: CatalogInstalled): Completable
 

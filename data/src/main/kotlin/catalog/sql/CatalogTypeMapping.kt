@@ -63,7 +63,7 @@ internal class CatalogPutResolver : DefaultPutResolver<CatalogRemote>() {
       put(COL_VCODE, obj.versionCode)
       put(COL_VNAME, obj.versionName)
       put(COL_LANG, obj.lang)
-      put(COL_APKURL, obj.apkName)
+      put(COL_APKURL, obj.apkUrl)
       put(COL_ICONURL, obj.iconUrl)
       put(COL_NSFW, if (obj.nsfw) 1 else 0)
     }

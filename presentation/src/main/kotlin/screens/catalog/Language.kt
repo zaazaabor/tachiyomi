@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.catalogs
+package tachiyomi.ui.screens.catalog
 
 inline class Language(val code: String) {
 

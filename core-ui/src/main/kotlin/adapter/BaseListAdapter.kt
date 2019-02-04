@@ -106,11 +106,11 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
    * Submits a new list on this adapter. The diff will be calculated on a background thread, and
    * results will be delivered through [latchList] on the main thread.
    */
-  fun submitList(newList: List<T>?) {
+  fun submitList(newList: List<T>?, forceSubmit: Boolean = false) {
     // incrementing generation means any currently-running diffs are discarded when they finish
     val runGeneration = ++maxScheduledGeneration
 
-    if (newList === list) {
+    if (newList === list && !forceSubmit) {
       // nothing to do (Note - still had to inc generation, since may have ongoing work)
       return
     }

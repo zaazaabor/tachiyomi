@@ -34,6 +34,7 @@ object SchedulersModule : Module() {
       return RxSchedulers(
         io = Schedulers.io(),
         computation = Schedulers.computation(),
+        single = Schedulers.single(),
         main = AndroidSchedulers.mainThread()
       )
     }

@@ -16,5 +16,6 @@ import io.reactivex.Scheduler
 class RxSchedulers(
   val io: Scheduler,
   val computation: Scheduler,
+  val single: Scheduler,
   val main: Scheduler
 )

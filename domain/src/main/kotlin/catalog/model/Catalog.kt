@@ -43,7 +43,7 @@ data class CatalogRemote(
   val versionName: String,
   val versionCode: Int,
   val lang: String,
-  val apkName: String, // TODO this should probably be apkUrl
+  val apkUrl: String,
   val iconUrl: String,
   val nsfw: Boolean
 ) : Catalog()

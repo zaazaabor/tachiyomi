@@ -8,7 +8,6 @@
 
 package tachiyomi.ui.glide
 
-import android.content.Context
 import android.view.View
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
@@ -26,21 +25,16 @@ class GlideControllerProvider(
   private val controller: Controller
 ) : RequestManagerTreeNode, GlideProvider {
 
+  private var requestManager: GlideRequests? = null
   private var lifecycle: ControllerLifecycle? = null
 
-  private var requestManager: GlideRequests? = null
+  private var hasDestroyedGlide = false
+  private var hasExited = false
 
   init {
     controller.addLifecycleListener(object : Controller.LifecycleListener() {
-      var hasDestroyedGlide: Boolean = false
-      var hasExited: Boolean = false
-
-      override fun postContextAvailable(controller: Controller, context: Context) {
-        super.postContextAvailable(controller, context)
-        lifecycle = ControllerLifecycle()
-        requestManager = GlideRequests(Glide.get(context.applicationContext), lifecycle!!,
-          this@GlideControllerProvider, context.applicationContext)
-        hasDestroyedGlide = false
+      override fun preCreateView(controller: Controller) {
+        initGlide()
       }
 
       override fun postAttach(controller: Controller, view: View) {
@@ -52,9 +46,7 @@ class GlideControllerProvider(
       }
 
       override fun postDestroy(controller: Controller) {
-        // Last controllers in the backstack may be destroyed without transition (onChangeEnd() not getting called)
-        val isLast = !controller.router.hasRootController()
-        if ((hasExited || isLast) && !hasDestroyedGlide) {
+        if (hasExited && !hasDestroyedGlide) {
           destroyGlide()
         }
       }
@@ -68,24 +60,36 @@ class GlideControllerProvider(
         // late as possible because releasing Glide clears out all ImageViews and they
         // appear blank during a transition.
         hasExited = !changeType.isEnter
-        val viewDestroyed = controller.view == null
-        if (hasExited && viewDestroyed && !hasDestroyedGlide) {
+        if (changeHandler.removesFromViewOnPush() && (hasExited && !hasDestroyedGlide)) {
           destroyGlide()
         }
       }
 
-      private fun destroyGlide() {
-        lifecycle?.onDestroy()
-        lifecycle = null
-        requestManager = null
-        hasDestroyedGlide = true
-      }
+
     })
+  }
+
+  private fun initGlide() {
+    if (requestManager == null) {
+      val context = controller.applicationContext ?: throw IllegalStateException(
+        "The request manager can't be initialized until the Controller is attached to an Activity")
+      val newLifecycle = ControllerLifecycle()
+      lifecycle = newLifecycle
+      requestManager = GlideRequests(Glide.get(context), newLifecycle, this, context)
+      hasDestroyedGlide = false
+    }
+  }
+
+  private fun destroyGlide() {
+    lifecycle?.onDestroy()
+    lifecycle = null
+    requestManager = null
+    hasDestroyedGlide = true
   }
 
   override fun get(): GlideRequests {
     if (controller.activity == null) {
-      throw IllegalArgumentException(
+      throw IllegalStateException(
         "You cannot start a load until the Controller has been bound to a Context.")
     }
 
@@ -93,7 +97,9 @@ class GlideControllerProvider(
       "requestManager not yet initialized for the given controller")
   }
 
-  override fun getDescendants(): Set<RequestManager> = collectRequestManagers(controller)
+  override fun getDescendants(): Set<RequestManager> {
+    return collectRequestManagers(controller)
+  }
 
   /**
    * Recursively gathers the [RequestManager]s of a given [Controller] and all its child controllers.

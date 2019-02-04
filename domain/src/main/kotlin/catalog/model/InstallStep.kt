@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.catalog.installer
+package tachiyomi.domain.catalog.model
 
 enum class InstallStep {
   Pending, Downloading, Installing, Installed, Error;

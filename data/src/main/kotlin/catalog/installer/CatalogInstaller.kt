@@ -23,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.CompletableSubject
 import tachiyomi.core.util.getUriCompat
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.model.InstallStep
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -65,10 +66,9 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
    * Adds the given extension to the downloads queue and returns an observable containing its
    * step in the installation process.
    *
-   * @param url The url of the apk.
-   * @param extension The extension to install.
+   * @param catalog The catalog to install.
    */
-  fun downloadAndInstall(url: String, catalog: CatalogRemote) = Observable.defer {
+  fun downloadAndInstall(catalog: CatalogRemote) = Observable.defer {
     val pkgName = catalog.pkgName
 
     val oldDownload = activeDownloads[pkgName]
@@ -79,7 +79,7 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
     // Register the receiver after removing (and unregistering) the previous download
     downloadReceiver.register()
 
-    val request = DownloadManager.Request(Uri.parse(url))
+    val request = DownloadManager.Request(Uri.parse(catalog.apkUrl))
       .setTitle(catalog.name)
       .setMimeType(APK_MIME)
       .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)

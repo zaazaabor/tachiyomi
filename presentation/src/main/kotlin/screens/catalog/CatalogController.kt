@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.catalogs
+package tachiyomi.ui.screens.catalog
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,14 +17,15 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
+import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
-import tachiyomi.ui.screens.home.HomeChildController
 import tachiyomi.ui.screens.catalogbrowse.CatalogBrowseController
 import tachiyomi.ui.screens.catalogdetail.CatalogDetailsController
+import tachiyomi.ui.screens.home.HomeChildController
 
 class CatalogController : MvpController<CatalogsPresenter>(),
   CatalogAdapter.Listener,
@@ -71,13 +72,16 @@ class CatalogController : MvpController<CatalogsPresenter>(),
   //===========================================================================
 
   private fun render(state: CatalogViewState, prevState: CatalogViewState?) {
-    if (state.items !== prevState?.items) {
-      renderItems(state.items)
+    if (state.items !== prevState?.items || state.installingCatalogs !== prevState.installingCatalogs) {
+      renderItems(state.items, state.installingCatalogs)
     }
   }
 
-  private fun renderItems(catalogs: List<Any>) {
-    adapter?.submitItems(catalogs)
+  private fun renderItems(
+    catalogs: List<Any>,
+    installingCatalogs: Map<String, InstallStep>
+  ) {
+    adapter?.submitItems(catalogs, installingCatalogs)
   }
 
   //===========================================================================
@@ -97,7 +101,7 @@ class CatalogController : MvpController<CatalogsPresenter>(),
   }
 
   override fun onInstallClick(catalog: Catalog) {
-    // TODO
+    presenter.installCatalog(catalog)
   }
 
   override fun onSettingsClick(catalog: Catalog) {
