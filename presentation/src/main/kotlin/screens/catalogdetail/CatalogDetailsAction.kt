@@ -9,11 +9,8 @@
 package tachiyomi.ui.screens.catalogdetail
 
 import tachiyomi.domain.catalog.model.CatalogInstalled
-import tachiyomi.ui.screens.catalogdetail.CatalogDetailsViewState as ViewState
 
-private typealias Action = CatalogDetailsAction
-
-sealed class CatalogDetailsAction {
+sealed class Action {
 
   class InstalledCatalog(val catalog: CatalogInstalled?) : Action() {
     override fun reduce(state: ViewState): ViewState {

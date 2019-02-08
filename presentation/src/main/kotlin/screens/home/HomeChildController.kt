@@ -20,7 +20,7 @@ interface HomeChildController {
     fun createFAB(container: ViewGroup): FloatingActionButton
   }
 
-  fun Controller.setupToolbarIconWithHomeController(toolbar: Toolbar) {
+  fun Controller.setupToolbarNavWithHomeController(toolbar: Toolbar) {
     val homeCtrl = parentController as? HomeController ?: return
     val homeRouter = homeCtrl.childRouter ?: return
 

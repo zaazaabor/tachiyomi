@@ -56,6 +56,8 @@ class CatalogController : MvpController<CatalogsPresenter>(),
     catalogs_recycler.adapter = adapter
     catalogs_recycler.addItemDecoration(CatalogDividerDecoration(view.context))
 
+    catalogs_swipe_refresh.setOnRefreshListener { onSwipeRefresh() }
+
     presenter.state
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> render(state, prevState) }
@@ -71,9 +73,12 @@ class CatalogController : MvpController<CatalogsPresenter>(),
   // ~ Render
   //===========================================================================
 
-  private fun render(state: CatalogViewState, prevState: CatalogViewState?) {
+  private fun render(state: ViewState, prevState: ViewState?) {
     if (state.items !== prevState?.items || state.installingCatalogs !== prevState.installingCatalogs) {
       renderItems(state.items, state.installingCatalogs)
+    }
+    if (state.isRefreshing != prevState?.isRefreshing) {
+      renderIsRefreshing(state.isRefreshing)
     }
   }
 
@@ -82,6 +87,10 @@ class CatalogController : MvpController<CatalogsPresenter>(),
     installingCatalogs: Map<String, InstallStep>
   ) {
     adapter?.submitItems(catalogs, installingCatalogs)
+  }
+
+  private fun renderIsRefreshing(isRefreshing: Boolean) {
+    catalogs_swipe_refresh.isRefreshing = isRefreshing
   }
 
   //===========================================================================
@@ -107,6 +116,10 @@ class CatalogController : MvpController<CatalogsPresenter>(),
   override fun onSettingsClick(catalog: Catalog) {
     if (catalog !is CatalogInstalled) return
     router.pushController(CatalogDetailsController(catalog.pkgName).withHorizontalTransition())
+  }
+
+  private fun onSwipeRefresh() {
+    presenter.refreshCatalogs()
   }
 
 }

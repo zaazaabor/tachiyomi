@@ -16,6 +16,8 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.screens.home.HomeChildController
+import timber.log.Timber
+import timber.log.warn
 
 class LibraryController : MvpController<LibraryPresenter>(),
   HomeChildController {
@@ -44,8 +46,8 @@ class LibraryController : MvpController<LibraryPresenter>(),
       .subscribeWithView { (state, prevState) -> render(state, prevState) }
   }
 
-  private fun render(state: LibraryViewState, prevState: LibraryViewState?) {
-
+  private fun render(state: ViewState, prevState: ViewState?) {
+    Timber.warn { state.library.toString() }
   }
 
 }

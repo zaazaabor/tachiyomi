@@ -11,9 +11,15 @@ package tachiyomi.ui.screens.catalogbrowse
 import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
-import tachiyomi.ui.screens.catalogbrowse.CatalogBrowseViewState as ViewState
-
-private typealias Action = CatalogBrowseAction
+import tachiyomi.ui.screens.catalogbrowse.Action.DisplayModeUpdated
+import tachiyomi.ui.screens.catalogbrowse.Action.ErrorDelivered
+import tachiyomi.ui.screens.catalogbrowse.Action.LoadMore
+import tachiyomi.ui.screens.catalogbrowse.Action.Loading
+import tachiyomi.ui.screens.catalogbrowse.Action.LoadingError
+import tachiyomi.ui.screens.catalogbrowse.Action.MangaInitialized
+import tachiyomi.ui.screens.catalogbrowse.Action.PageReceived
+import tachiyomi.ui.screens.catalogbrowse.Action.QueryModeUpdated
+import tachiyomi.ui.screens.catalogbrowse.Action.SwapDisplayMode
 
 /**
  * List of actions that can be used to request and mutate the view state.
@@ -33,11 +39,13 @@ private typealias Action = CatalogBrowseAction
  * [Loading] sets the loading state, and also sets an empty list of manga if it's the first page.
  * [LoadingError] sets the error that can occur when the requested page fails to load.
  */
-sealed class CatalogBrowseAction {
+sealed class Action {
 
   object SwapDisplayMode : Action()
 
   object LoadMore : Action()
+
+  data class ToggleFavorite(val manga: Manga) : Action()
 
   sealed class SetSearchMode : Action() {
     data class Listing(val index: Int) : SetSearchMode()

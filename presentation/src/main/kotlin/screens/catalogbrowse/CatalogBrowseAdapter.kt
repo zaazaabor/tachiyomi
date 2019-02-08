@@ -10,14 +10,13 @@ package tachiyomi.ui.screens.catalogbrowse
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.AdapterListUpdateCallback
-import androidx.recyclerview.widget.AsyncDifferConfig
-import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.R
+import tachiyomi.ui.adapter.BaseListAdapter
+import tachiyomi.ui.glide.GlideRequests
 import tachiyomi.ui.widget.AutofitRecyclerView
 
 /**
@@ -25,35 +24,9 @@ import tachiyomi.ui.widget.AutofitRecyclerView
  * handle clicks.
  */
 class CatalogBrowseAdapter(
-  private val listener: Listener? = null
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-  /**
-   * Differ to dispatch list updates to the adapter.
-   */
-  private val differ = AsyncListDiffer(AdapterListUpdateCallback(this),
-    AsyncDifferConfig.Builder(ItemDiff()).build())
-
-  /**
-   * Returns the number of items in the adapter.
-   */
-  override fun getItemCount(): Int {
-    return differ.currentList.size
-  }
-
-  /**
-   * Returns the item at the given [position] or throws [IndexOutOfBoundsException].
-   */
-  fun getItem(position: Int): Any {
-    return differ.currentList[position]
-  }
-
-  /**
-   * Returns the item at the given [position] or null.
-   */
-  fun getItemOrNull(position: Int): Any? {
-    return differ.currentList.getOrNull(position)
-  }
+  private val listener: Listener? = null,
+  private val glideRequests: GlideRequests
+) : BaseListAdapter<Any, RecyclerView.ViewHolder>() {
 
   /**
    * Submits an update on the items. It receives a list of [mangas], whether [isLoading] more
@@ -69,7 +42,7 @@ class CatalogBrowseAdapter(
       items += EndReached
     }
 
-    differ.submitList(items)
+    submitList(items)
   }
 
   /**
@@ -92,10 +65,10 @@ class CatalogBrowseAdapter(
         val isGridMode = (parent as? AutofitRecyclerView)?.layoutManager is GridLayoutManager
         if (isGridMode) {
           val view = inflater.inflate(R.layout.manga_grid_item, parent, false)
-          MangaGridHolder(view, this)
+          MangaGridHolder(view, this, glideRequests)
         } else {
           val view = inflater.inflate(R.layout.manga_list_item, parent, false)
-          MangaListHolder(view, this)
+          MangaListHolder(view, this, glideRequests)
         }
       }
       FOOTER_VIEWTYPE -> {
@@ -111,7 +84,7 @@ class CatalogBrowseAdapter(
    * Binds this [holder] with the item on this [position].
    */
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-    onBindViewHolder(holder, position, emptyList())
+    // Unused
   }
 
   /**
@@ -128,8 +101,14 @@ class CatalogBrowseAdapter(
         val manga = getItem(position) as Manga
         if (payloads.isEmpty()) {
           holder.bind(manga)
-        } else if (CoverChange in payloads) {
-          holder.bindImage(manga)
+        } else {
+          val payload = payloads.first { it is MangaPayload } as MangaPayload
+          if (payload.coverChange) {
+            holder.bindImage(manga)
+          }
+          if (payload.favoriteChange) {
+            holder.bindFavorite(manga)
+          }
         }
       }
       is FooterHolder -> {
@@ -155,6 +134,15 @@ class CatalogBrowseAdapter(
   }
 
   /**
+   * Handles a user long click on the element at the given [position]. The click is delegated to
+   * the listener of this adapter.
+   */
+  fun handleLongClick(position: Int) {
+    val manga = getItemOrNull(position) as? Manga ?: return
+    listener?.onMangaLongClick(manga)
+  }
+
+  /**
    * Returns the span size for the item at the given [position]. Only used when in grid mode.
    */
   fun getSpanSize(position: Int): Int? {
@@ -170,16 +158,21 @@ class CatalogBrowseAdapter(
   interface Listener {
 
     /**
-     * Called when this [manga] was clicked.
+     * Called when this [manga] is clicked.
      */
     fun onMangaClick(manga: Manga)
+
+    /**
+     * Called when this [manga] is long clicked.
+     */
+    fun onMangaLongClick(manga: Manga)
 
   }
 
   /**
    * Diff implementation for all the items on this adapter.
    */
-  private class ItemDiff : DiffUtil.ItemCallback<Any>() {
+  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
 
     /**
      * Returns whether [oldItem] and [newItem] are the same.
@@ -202,14 +195,16 @@ class CatalogBrowseAdapter(
     /**
      * Returns an optional payload to describe partial updates.
      */
-    override fun getChangePayload(oldItem: Any, newItem: Any): Any? {
-      return if (oldItem is Manga && newItem is Manga && oldItem.cover != newItem.cover) {
-        CoverChange
-      } else {
-        null
+    override fun getChangePayload(oldItem: Any, newItem: Any) = when (newItem) {
+      is Manga -> {
+        oldItem as Manga
+        MangaPayload(
+          coverChange = oldItem.cover != newItem.cover,
+          favoriteChange = oldItem.favorite != newItem.favorite
+        )
       }
+      else -> null
     }
-
   }
 
   /**
@@ -223,9 +218,12 @@ class CatalogBrowseAdapter(
   private object EndReached
 
   /**
-   * A payload used to notify the adapter that only the cover url of the manga changed.
+   * A payload used to notify the adapter of the manga data that changed.
    */
-  private object CoverChange
+  private data class MangaPayload(
+    val coverChange: Boolean,
+    val favoriteChange: Boolean
+  )
 
   private companion object {
     /**

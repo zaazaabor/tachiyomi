@@ -28,4 +28,6 @@ abstract class MangaHolder(view: View) : BaseViewHolder(view) {
    */
   abstract fun bindImage(manga: Manga)
 
+  abstract fun bindFavorite(manga: Manga)
+
 }

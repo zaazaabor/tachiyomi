@@ -11,18 +11,24 @@ package tachiyomi.ui.screens.catalogbrowse
 import android.view.View
 import kotlinx.android.synthetic.main.manga_list_item.*
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.ui.glide.GlideRequests
 
 /**
  * Holder to use when displaying a [Manga] from a [CatalogBrowseAdapter].
  */
 class MangaListHolder(
   private val view: View,
-  private val adapter: CatalogBrowseAdapter
+  private val adapter: CatalogBrowseAdapter,
+  private val glideRequests: GlideRequests
 ) : MangaHolder(view) {
 
   init {
     view.setOnClickListener {
       adapter.handleClick(adapterPosition)
+    }
+    view.setOnLongClickListener {
+      adapter.handleLongClick(adapterPosition)
+      true
     }
   }
 
@@ -31,11 +37,9 @@ class MangaListHolder(
    */
   override fun bind(manga: Manga) {
     // Set manga title
-    title.text = manga.title
+    catalog_title.text = manga.title
 
-    // Set alpha of thumbnail.
-    thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
-
+    bindFavorite(manga)
     bindImage(manga)
   }
 
@@ -44,6 +48,11 @@ class MangaListHolder(
    */
   override fun bindImage(manga: Manga) {
     // TODO
+  }
+
+  override fun bindFavorite(manga: Manga) {
+    // Set alpha of thumbnail.
+    thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
   }
 
   override fun recycle() {

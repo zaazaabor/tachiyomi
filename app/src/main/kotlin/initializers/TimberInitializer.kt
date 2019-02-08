@@ -9,6 +9,7 @@
 package tachiyomi.app.initializers
 
 import tachiyomi.app.BuildConfig
+import timber.log.LogcatTree
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -16,7 +17,7 @@ class TimberInitializer @Inject constructor() {
 
   init {
     if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
+      Timber.plant(LogcatTree())
     }
   }
 

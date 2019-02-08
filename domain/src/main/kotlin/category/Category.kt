@@ -13,4 +13,9 @@ data class Category(
   val name: String = "",
   val order: Int = 0,
   val flags: Int = 0
-)
+) {
+
+  companion object {
+    val Uncategorized = Category(0, "Uncategorized", 0, 0)
+  }
+}

@@ -21,7 +21,6 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.model.MangaInfo
 import tachiyomi.ui.presenter.BasePresenter
-import timber.log.Timber
 import javax.inject.Inject
 
 class MangaPresenter @Inject constructor(
@@ -68,8 +67,6 @@ class MangaPresenter @Inject constructor(
         val source = sourceManager.get(manga.source)!!
         Single.fromCallable { source.fetchChapterList(info) }
           .flatMap { syncChaptersFromSource.interact(it, manga, source) }
-          .doOnSuccess { Timber.e(it.toString()) }
-          .doOnError { Timber.e(it) }
       }
       .subscribe()
   }

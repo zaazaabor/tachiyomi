@@ -13,6 +13,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
+import timber.log.debug
 
 abstract class BasePresenter {
 
@@ -24,11 +25,11 @@ abstract class BasePresenter {
   }
 
   fun <T> Flowable<T>.logOnNext(): Flowable<T> {
-    return doOnNext { Timber.d(it.toString()) }
+    return doOnNext { Timber.debug { it.toString() } }
   }
 
   fun <T> Observable<T>.logOnNext(): Observable<T> {
-    return doOnNext { Timber.d(it.toString()) }
+    return doOnNext { Timber.debug { it.toString() } }
   }
 
 }

@@ -25,6 +25,7 @@ import tachiyomi.core.util.getUriCompat
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 import timber.log.Timber
+import timber.log.error
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
@@ -259,7 +260,7 @@ internal class CatalogInstaller @Inject constructor(private val context: Applica
       if (uri != null) {
         downloadsRelay.accept(id to InstallStep.Installing)
       } else {
-        Timber.e("Couldn't locate downloaded APK")
+        Timber.error { "Couldn't locate downloaded APK" }
         downloadsRelay.accept(id to InstallStep.Error)
         return
       }

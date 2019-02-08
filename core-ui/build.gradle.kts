@@ -20,15 +20,18 @@ dependencies {
   implementationProject(Projects.common)
 
   implementation(Deps.kotlin.stdlib)
-  implementation(Deps.timber)
 
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)
 
   implementation(Deps.androidX.appCompat)
   implementation(Deps.androidX.recyclerView)
+  implementation(Deps.androidX.preference)
   implementation(Deps.androidKTX)
+  implementation(Deps.rxBinding.appcompat)
   implementation(Deps.conductor)
+  implementation(Deps.conductorPreference)
+  implementation(Deps.cyanea)
 
   implementation(Deps.glide.core)
   kapt(Deps.glide.compiler)

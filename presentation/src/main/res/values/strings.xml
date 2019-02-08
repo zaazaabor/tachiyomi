@@ -505,4 +505,7 @@
   <string name="lang_all">All</string>
   <string name="lang_others">Others</string>
 
+  <string name="toolbar_appearance">Appearance</string>
+  <string name="toolbar_themepicker">Theme picker</string>
+
 </resources>

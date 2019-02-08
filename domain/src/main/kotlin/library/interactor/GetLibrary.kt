@@ -47,7 +47,16 @@ class GetLibrary @Inject constructor(
 
   private fun toLibrary(categories: List<Category>, mangas: List<LibraryManga>): Library {
     val byCategory = mangas.groupBy { it.category }
-    return categories.map { LibraryCategory(it, byCategory[it.id].orEmpty()) }
+    val categorized = categories.map { LibraryCategory(it, byCategory[it.id].orEmpty()) }
+    val uncategorized = byCategory[Category.Uncategorized.id]?.let {
+      LibraryCategory(Category.Uncategorized, it)
+    }
+
+    return if (uncategorized != null) {
+      categorized.toMutableList().apply { add(0, uncategorized) }
+    } else {
+      categorized
+    }
   }
 
   private fun applyFilters(library: Library, filters: List<LibraryFilter>): Library {

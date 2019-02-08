@@ -13,20 +13,21 @@ import com.freeletics.rxredux.reduxStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
+import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.data.catalog.prefs.CatalogPreferences
+import tachiyomi.domain.library.interactor.ChangeMangaFavorite
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.ListMangaPageFromCatalogSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SearchMangaPageFromCatalogSource
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Filter
 import tachiyomi.ui.presenter.BasePresenter
-import timber.log.Timber
 import javax.inject.Inject
-import tachiyomi.ui.screens.catalogbrowse.CatalogBrowseViewState as ViewState
-import tachiyomi.ui.screens.catalogbrowse.CatalogBrowseAction as Action
 
 /**
  * Presenter of the catalog that interacts with the backend through use cases and also handles
@@ -49,6 +50,8 @@ class CatalogBrowsePresenter @Inject constructor(
   private val listMangaPageFromCatalogSource: ListMangaPageFromCatalogSource,
   private val searchMangaPageFromCatalogSource: SearchMangaPageFromCatalogSource,
   private val mangaInitializer: MangaInitializer,
+  private val getManga: GetManga,
+  private val changeMangaFavorite: ChangeMangaFavorite,
   private val catalogPreferences: CatalogPreferences,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
@@ -88,7 +91,8 @@ class CatalogBrowsePresenter @Inject constructor(
           ::setListingSideEffect,
           ::setFiltersSideEffect,
           ::setDisplayModeSideEffect,
-          ::loadNextSideEffect
+          ::loadNextSideEffect,
+          ::toggleFavoriteSideEffect
         ),
         reducer = { state, action -> action.reduce(state) }
       )
@@ -121,7 +125,7 @@ class CatalogBrowsePresenter @Inject constructor(
     actions: Observable<Action>,
     state: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType(Action.SetSearchMode.Listing::class.java)
+    return actions.ofType<Action.SetSearchMode.Listing>()
       .flatMap { action ->
         val currentState = state()
         val type = currentState.listings.getOrNull(action.index)
@@ -144,7 +148,7 @@ class CatalogBrowsePresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType(Action.SetSearchMode.Filters::class.java)
+    return actions.ofType<Action.SetSearchMode.Filters>()
       .flatMap { action ->
         // Get the filters to apply, update their inner value and ignore the ones with the default
         // value.
@@ -191,7 +195,6 @@ class CatalogBrowsePresenter @Inject constructor(
         }
 
         mangasPageSingle
-          .doOnSubscribe { Timber.w("Requesting page $nextPage") }
           .subscribeOn(schedulers.io)
           .toObservable()
           .flatMap { mangasPage ->
@@ -217,11 +220,25 @@ class CatalogBrowsePresenter @Inject constructor(
     actions: Observable<Action>,
     state: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType(Action.SwapDisplayMode::class.java)
+    return actions.ofType<Action.SwapDisplayMode>()
       .flatMap {
         val newValue = !state().isGridMode
         gridPreference.set(newValue)
         Observable.just(Action.DisplayModeUpdated(newValue))
+      }
+  }
+
+  private fun toggleFavoriteSideEffect(
+    actions: Observable<Action>,
+    state: StateAccessor<ViewState>
+  ): Observable<Action> {
+    return actions.ofType<Action.ToggleFavorite>()
+      .flatMap { action ->
+        changeMangaFavorite.interact(action.manga)
+          .andThen(getManga.interact(action.manga.id)
+            .toObservable()
+            .map(Action::MangaInitialized)
+          )
       }
   }
 
@@ -267,6 +284,10 @@ class CatalogBrowsePresenter @Inject constructor(
    */
   fun setFilters(filters: List<FilterWrapper<*>>) {
     actions.accept(Action.SetSearchMode.Filters(filters))
+  }
+
+  fun toggleFavorite(manga: Manga) {
+    actions.accept(Action.ToggleFavorite(manga))
   }
 
 }

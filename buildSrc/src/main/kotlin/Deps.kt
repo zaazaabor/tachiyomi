@@ -16,7 +16,8 @@ object Deps {
     const val core = "androidx.core:core:1.0.0"
     const val design = "com.google.android.material:material:1.0.0"
     const val appCompat = "androidx.appcompat:appcompat:1.0.0"
-    const val recyclerView =  "androidx.recyclerview:recyclerview:1.0.0"
+    const val recyclerView = "androidx.recyclerview:recyclerview:1.0.0"
+    const val preference = "androidx.preference:preference:1.0.0"
     const val card = "androidx.cardview:cardview:1.0.0"
     const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
   }
@@ -52,13 +53,19 @@ object Deps {
   const val gson = "com.google.code.gson:gson:2.8.5"
   const val kotson = "com.github.salomonbrys.kotson:kotson:2.5.0"
   const val jsoup = "org.jsoup:jsoup:1.11.3"
-  const val timber = "com.jakewharton.timber:timber:4.7.1"
+
+  object timber {
+    private const val version = "5.0.0-SNAPSHOT"
+    const val jdk = "com.jakewharton.timber:timber-jdk:$version"
+    const val android = "com.jakewharton.timber:timber-android:$version"
+  }
 
   const val conductor = "com.bluelinelabs:conductor:2.1.5"
+  const val conductorPreference = "com.github.inorichi:conductor-support-preference:78e2344"
   const val materialDimens = "com.dmitrymalkovich.android:material-design-dimens:1.4"
   const val materialDialog = "com.afollestad.material-dialogs:core:0.9.6.0"
   const val constraint = "com.android.support.constraint:constraint-layout:1.1.3"
-  const val cyanea = "com.jaredrummler:cyanea:1.0.1"
+  const val cyanea = "com.github.jaredrummler:Cyanea:a1c14cad4b"
 
   object glide {
     private const val version = "4.8.0"

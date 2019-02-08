@@ -30,7 +30,6 @@ import tachiyomi.ui.util.getColorFromAttr
 import tachiyomi.ui.util.inflate
 import tachiyomi.ui.util.setGone
 import tachiyomi.ui.util.setVisible
-import tachiyomi.ui.util.visibleIf
 
 class CatalogHolder(
   parent: ViewGroup,
@@ -43,53 +42,73 @@ class CatalogHolder(
     itemView.setOnClickListener {
       adapter.handleRowClick(adapterPosition)
     }
-    install_btn.setOnClickListener {
+    catalog_install_btn.setOnClickListener {
       adapter.handleInstallClick(adapterPosition)
     }
-    settings_btn.setOnClickListener {
+    catalog_settings_btn.setOnClickListener {
       adapter.handleSettingsClick(adapterPosition)
     }
 
-    install_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
-    settings_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
+    catalog_install_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
+    catalog_settings_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
   }
 
   fun bind(catalog: CatalogInternal) {
-    title.text = catalog.name
-    description.text = catalog.description
-    glideRequests.load(catalog).into(image)
-    settings_btn.setGone()
-    install_btn.setGone()
+    catalog_title.text = catalog.name
+    catalog_description.text = catalog.description
+    glideRequests.load(catalog).into(catalog_icon)
+    catalog_settings_btn.setGone()
+    catalog_install_btn.setGone()
   }
 
   fun bind(catalog: CatalogInstalled, installStep: InstallStep?) {
-    title.text = getTitleWithVersion(catalog.name, catalog.versionCode)
-    description.text = catalog.description
-    glideRequests.load(catalog).into(image)
-    settings_btn.setVisible()
-    partialBindInstallButton(catalog, installStep)
+    catalog_title.text = getTitleWithVersion(catalog.name, catalog.versionCode)
+    catalog_description.text = catalog.description
+    glideRequests.load(catalog).into(catalog_icon)
+    catalog_settings_btn.setVisible()
+    bindInstallButton(catalog, installStep)
   }
 
   fun bind(catalog: CatalogRemote, installStep: InstallStep?) {
-    title.text = getTitleWithVersion(catalog.name, catalog.versionCode)
-    description.text = catalog.description
-    glideRequests.load(catalog).into(image)
-    settings_btn.setGone()
-    partialBindInstallButton(catalog, installStep)
+    catalog_title.text = getTitleWithVersion(catalog.name, catalog.versionCode)
+    catalog_description.text = catalog.description
+    glideRequests.load(catalog).into(catalog_icon)
+    catalog_settings_btn.setGone()
+    bindInstallButton(catalog, installStep)
   }
 
-  fun partialBindInstallButton(catalog: CatalogInstalled, step: InstallStep?) {
-    install_btn.visibleIf {
-      catalog.hasUpdate && (step == null || step.isCompleted())
+  fun bindInstallButton(catalog: CatalogInstalled, step: InstallStep?) {
+    when {
+      step != null && !step.isCompleted() -> showInstalling()
+      catalog.hasUpdate -> showInstall()
+      else -> hideInstall()
     }
   }
 
-  fun partialBindInstallButton(catalog: CatalogRemote, step: InstallStep?) {
-    install_btn.visibleIf { step == null || step.isCompleted() }
+  fun bindInstallButton(catalog: CatalogRemote, step: InstallStep?) {
+    if (step != null && !step.isCompleted()) {
+      showInstalling()
+    } else {
+      showInstall()
+    }
   }
 
   override fun recycle() {
-    glideRequests.clear(image)
+    glideRequests.clear(catalog_icon)
+  }
+
+  private fun showInstalling() {
+    catalog_install_flip.setVisible()
+    catalog_install_flip.run { if (displayedChild != 1) displayedChild = 1 }
+  }
+
+  private fun showInstall() {
+    catalog_install_flip.setVisible()
+    catalog_install_flip.run { if (displayedChild != 0) displayedChild = 0 }
+  }
+
+  private fun hideInstall() {
+    catalog_install_flip.setGone()
   }
 
   private fun getTitleWithVersion(title: String, version: Int): SpannedString {

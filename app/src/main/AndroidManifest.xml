@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
   package="tachiyomi.app">
 
   <uses-permission android:name="android.permission.INTERNET" />
@@ -50,6 +51,24 @@
     <activity
       android:name="tachiyomi.data.catalog.installer.CatalogInstallActivity"
       android:theme="@style/Theme.Translucent" />
+
+    <activity
+      android:name="com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity"
+      tools:node="remove" />
+
+    <activity
+      android:name="com.jaredrummler.cyanea.prefs.CyaneaThemePickerActivity"
+      tools:node="remove" />
+
+    <activity
+      android:name="tachiyomi.ui.screens.settings.AppearanceActivity"
+      android:label="@string/toolbar_appearance"
+      android:theme="@style/Theme.Cyanea.Light.DarkActionBar" />
+
+    <activity
+      android:name="tachiyomi.ui.screens.settings.ThemePickerActivity"
+      android:label="@string/toolbar_themepicker"
+      android:theme="@style/Theme.Cyanea.Light.DarkActionBar" />
 
   </application>
 </manifest>

@@ -64,9 +64,9 @@ class CatalogAdapter(
     if (holder is CatalogHolder && Payload.Install in payloads) {
       when (item) {
         is CatalogInstalled ->
-          holder.partialBindInstallButton(item, newInstalling[item.pkgName])
+          holder.bindInstallButton(item, newInstalling[item.pkgName])
         is CatalogRemote ->
-          holder.partialBindInstallButton(item, newInstalling[item.pkgName])
+          holder.bindInstallButton(item, newInstalling[item.pkgName])
       }
     }
   }
@@ -178,15 +178,15 @@ class CatalogAdapter(
     fun onSettingsClick(catalog: Catalog)
   }
 
+  sealed class Payload {
+    object Install : Payload()
+  }
+
   companion object {
     const val VIEW_TYPE_CATALOG = 1
     const val VIEW_TYPE_LANGUAGES = 2
     const val VIEW_TYPE_HEADER = 3
     const val VIEW_TYPE_SUBHEADER = 4
-  }
-
-  sealed class Payload {
-    object Install : Payload()
   }
 
 }

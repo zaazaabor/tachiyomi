@@ -9,9 +9,10 @@
 package tachiyomi.ui.screens.catalogbrowse
 
 import android.view.View
-import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.manga_grid_item.*
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.ui.glide.GlideRequests
 import tachiyomi.ui.widget.StateImageViewTarget
 
 /**
@@ -19,12 +20,17 @@ import tachiyomi.ui.widget.StateImageViewTarget
  */
 class MangaGridHolder(
   private val view: View,
-  private val adapter: CatalogBrowseAdapter
+  private val adapter: CatalogBrowseAdapter,
+  private val glideRequests: GlideRequests
 ) : MangaHolder(view) {
 
   init {
     view.setOnClickListener {
       adapter.handleClick(adapterPosition)
+    }
+    view.setOnLongClickListener {
+      adapter.handleLongClick(adapterPosition)
+      true
     }
   }
 
@@ -33,11 +39,10 @@ class MangaGridHolder(
    */
   override fun bind(manga: Manga) {
     // Set manga title
-    title.text = manga.title
+    catalog_title.text = manga.title
 
     // Set alpha of thumbnail.
-    thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
-
+    bindFavorite(manga)
     bindImage(manga)
   }
 
@@ -46,18 +51,21 @@ class MangaGridHolder(
    */
   override fun bindImage(manga: Manga) {
     if (!manga.cover.isEmpty()) {
-      Glide.with(view.context)
-        .load(manga.cover)
-        // TODO currently Glide's APT doesn't work with Jetifier
-        //.diskCacheStrategy(DiskCacheStrategy.DATA)
-        //.centerCrop()
-        //.placeholder(android.R.color.transparent)
+      glideRequests.load(manga.cover)
+        .diskCacheStrategy(DiskCacheStrategy.DATA)
+        .centerCrop()
+        .placeholder(android.R.color.transparent)
         .into(StateImageViewTarget(thumbnail, progress))
     }
   }
 
+  override fun bindFavorite(manga: Manga) {
+    // Set alpha of thumbnail.
+    thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
+  }
+
   override fun recycle() {
-    Glide.with(view.context).clear(thumbnail)
+    glideRequests.clear(thumbnail)
   }
 
 }

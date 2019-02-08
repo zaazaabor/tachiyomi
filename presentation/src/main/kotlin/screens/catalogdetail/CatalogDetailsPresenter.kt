@@ -21,8 +21,6 @@ import tachiyomi.domain.catalog.interactor.SubscribeInstalledCatalog
 import tachiyomi.domain.catalog.interactor.UninstallCatalog
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
-import tachiyomi.ui.screens.catalogdetail.CatalogDetailsViewState as ViewState
-import tachiyomi.ui.screens.catalogdetail.CatalogDetailsAction as Action
 
 class CatalogDetailsPresenter @Inject constructor(
   private val params: CatalogDetailsParams,

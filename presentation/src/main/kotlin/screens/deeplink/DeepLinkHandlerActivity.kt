@@ -19,6 +19,7 @@ import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Source
 import tachiyomi.ui.screens.MainActivity
 import timber.log.Timber
+import timber.log.warn
 import javax.inject.Inject
 
 class DeepLinkHandlerActivity : Activity() {
@@ -37,7 +38,7 @@ class DeepLinkHandlerActivity : Activity() {
     // Get caller extension
     val referrer = intent.getStringExtra(Intent.EXTRA_REFERRER)
     if (referrer == null || referrer.isEmpty()) {
-      Timber.w("Received an intent from an extension without a receiver")
+      Timber.warn { "Received an intent from an extension without a receiver" }
       finish()
       return
     }
@@ -48,14 +49,14 @@ class DeepLinkHandlerActivity : Activity() {
     // Find caller extension
     val catalog = catalogRepository.installedCatalogs.find { it.pkgName == referrer }
     if (catalog == null) {
-      Timber.w("Extension not found: $referrer")
+      Timber.warn { "Extension not found: $referrer" }
       finish()
       return
     }
 
     val urlToHandle = intent?.data?.toString()
     if (urlToHandle == null) {
-      Timber.w("Url to handle not found in intent")
+      Timber.warn { "Url to handle not found in intent" }
       finish()
       return
     }
@@ -68,7 +69,7 @@ class DeepLinkHandlerActivity : Activity() {
     }
 
     if (sourceHandler == null) {
-      Timber.w("No source could handle link $urlToHandle")
+      Timber.warn { "No source could handle link $urlToHandle" }
       finish()
       return
     }

@@ -25,6 +25,8 @@ interface CatalogRepository {
 
   fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>>
 
+  fun refreshRemoteCatalogs(forceRefresh: Boolean): Completable
+
   fun installCatalog(catalog: CatalogRemote): Observable<InstallStep>
 
   fun uninstallCatalog(catalog: CatalogInstalled): Completable

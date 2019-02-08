@@ -13,13 +13,11 @@ import com.freeletics.rxredux.reduxStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
+import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.data.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.interactor.GetLibrary
-import tachiyomi.domain.library.model.LibraryCategory
-import tachiyomi.domain.library.model.LibraryFilter
-import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 
@@ -29,7 +27,7 @@ class LibraryPresenter @Inject constructor(
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
-  val state = BehaviorRelay.create<LibraryViewState>()
+  val state = BehaviorRelay.create<ViewState>()
 
   private val actions = PublishRelay.create<Action>()
 
@@ -42,7 +40,11 @@ class LibraryPresenter @Inject constructor(
       .observeOn(schedulers.io)
       .reduxStore(
         initialState = getInitialViewState(),
-        sideEffects = listOf(::librarySideEffect, ::setFiltersSideEffect, ::setSortSideEffect),
+        sideEffects = listOf(
+          ::librarySideEffect,
+          ::setFiltersSideEffect,
+          ::setSortSideEffect
+        ),
         reducer = { state, action -> action.reduce(state) }
       )
       .distinctUntilChanged()
@@ -52,9 +54,9 @@ class LibraryPresenter @Inject constructor(
       .addTo(disposables)
   }
 
-  private fun getInitialViewState(): LibraryViewState {
+  private fun getInitialViewState(): ViewState {
     val lastSort = lastSortPreference.get()
-    return LibraryViewState(
+    return ViewState(
       emptyList(),
       filters = emptyList(),
       sort = lastSort
@@ -64,7 +66,7 @@ class LibraryPresenter @Inject constructor(
   @Suppress("unused_parameter")
   private fun librarySideEffect(
     actions: Observable<Action>,
-    stateFn: StateAccessor<LibraryViewState>
+    stateFn: StateAccessor<ViewState>
   ): Observable<Action.LibraryUpdate> {
     val state = stateFn()
     getLibrary.setFilters(state.filters)
@@ -79,9 +81,9 @@ class LibraryPresenter @Inject constructor(
   @Suppress("unused_parameter")
   private fun setFiltersSideEffect(
     actions: Observable<Action>,
-    stateFn: StateAccessor<LibraryViewState>
+    stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType(Action.SetFilters::class.java)
+    return actions.ofType<Action.SetFilters>()
       .flatMap { action ->
         filtersPreference.set(action.filters)
         getLibrary.setFilters(action.filters)
@@ -92,9 +94,9 @@ class LibraryPresenter @Inject constructor(
   @Suppress("unused_parameter")
   private fun setSortSideEffect(
     actions: Observable<Action>,
-    stateFn: StateAccessor<LibraryViewState>
+    stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType(Action.SetSorting::class.java)
+    return actions.ofType<Action.SetSorting>()
       .flatMap { action ->
         lastSortPreference.set(action.sort)
         getLibrary.setSorting(action.sort)
@@ -102,24 +104,4 @@ class LibraryPresenter @Inject constructor(
       }
   }
 
-}
-
-private sealed class Action {
-
-  data class SetFilters(val filters: List<LibraryFilter>) : Action() {
-    override fun reduce(state: LibraryViewState) =
-      state.copy(filters = filters)
-  }
-
-  data class SetSorting(val sort: LibrarySort) : Action() {
-    override fun reduce(state: LibraryViewState) =
-      state.copy(sort = sort)
-  }
-
-  data class LibraryUpdate(val library: List<LibraryCategory>) : Action() {
-    override fun reduce(state: LibraryViewState) =
-      state.copy(library = library)
-  }
-
-  open fun reduce(state: LibraryViewState) = state
 }

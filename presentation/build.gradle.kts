@@ -26,6 +26,7 @@ dependencies {
   implementation(Deps.androidX.design)
   implementation(Deps.androidX.appCompat)
   implementation(Deps.androidX.recyclerView)
+  implementation(Deps.androidX.preference)
   implementation(Deps.androidX.card)
   implementation(Deps.androidX.emoji)
   implementation(Deps.constraint)
@@ -33,6 +34,7 @@ dependencies {
   implementation(Deps.androidKTX)
 
   implementation(Deps.conductor)
+  implementation(Deps.conductorPreference)
 
   implementation(Deps.rxJava)
   implementation(Deps.rxKotlin)

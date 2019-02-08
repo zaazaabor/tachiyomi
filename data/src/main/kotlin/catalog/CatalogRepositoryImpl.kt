@@ -9,6 +9,7 @@
 package tachiyomi.data.catalog
 
 import android.app.Application
+import android.os.SystemClock
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
@@ -29,6 +30,7 @@ import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 internal class CatalogRepositoryImpl @Inject constructor(
@@ -63,7 +65,12 @@ internal class CatalogRepositoryImpl @Inject constructor(
     private set(value) {
       field = value
       remoteCatalogsRelay.onNext(value)
+      setUpdateFieldOfInstalledCatalogs(value)
     }
+
+  private var lastTimeApiChecked: Long? = null
+
+  private var minTimeApiCheck = TimeUnit.MINUTES.toMillis(5)
 
   /**
    * The source manager where the sources of the catalogs are added.
@@ -116,12 +123,19 @@ internal class CatalogRepositoryImpl @Inject constructor(
       .prepare()
       .asRxSingle()
       .doOnSuccess { remoteCatalogs = it }
-      .flatMapCompletable { refreshAvailableCatalogs() }
+      .flatMapCompletable { refreshRemoteCatalogs(false) }
       .onErrorComplete()
       .subscribe()
   }
 
-  fun refreshAvailableCatalogs(): Completable {
+  override fun refreshRemoteCatalogs(forceRefresh: Boolean): Completable {
+    val lastCheck = lastTimeApiChecked
+    if (!forceRefresh && lastCheck != null
+      && lastCheck - SystemClock.elapsedRealtime() < minTimeApiCheck) {
+      return Completable.complete()
+    }
+    lastTimeApiChecked = SystemClock.elapsedRealtime()
+
     return api.findCatalogs()
       .doOnSuccess { newCatalogs ->
         storio.inTransaction {
@@ -139,6 +153,30 @@ internal class CatalogRepositoryImpl @Inject constructor(
         remoteCatalogs = newCatalogs
       }
       .ignoreElement()
+  }
+
+  /**
+   * Sets the update field of the installed extensions with the given [remoteCatalogs].
+   *
+   * @param remoteCatalogs The list of catalogs given by the [api].
+   */
+  private fun setUpdateFieldOfInstalledCatalogs(remoteCatalogs: List<CatalogRemote>) {
+    val mutInstalledCatalogs = installedCatalogs.toMutableList()
+    var changed = false
+
+    for ((index, installedCatalog) in mutInstalledCatalogs.withIndex()) {
+      val pkgName = installedCatalog.pkgName
+      val remoteCatalog = remoteCatalogs.find { it.pkgName == pkgName } ?: continue
+
+      val hasUpdate = remoteCatalog.versionCode > installedCatalog.versionCode
+      if (installedCatalog.hasUpdate != hasUpdate) {
+        mutInstalledCatalogs[index] = installedCatalog.copy(hasUpdate = hasUpdate)
+        changed = true
+      }
+    }
+    if (changed) {
+      installedCatalogs = mutInstalledCatalogs
+    }
   }
 
   override fun installCatalog(catalog: CatalogRemote): Observable<InstallStep> {

@@ -25,8 +25,6 @@ dependencies {
   implementation(Deps.coroutines.android)
   implementation(Deps.coroutines.rx2)
 
-  api(Deps.timber)
-
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)
 }

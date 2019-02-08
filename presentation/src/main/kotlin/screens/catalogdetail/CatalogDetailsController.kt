@@ -68,7 +68,7 @@ class CatalogDetailsController(
     super.onViewCreated(view)
 
     // Setup back navigation
-    setupToolbarIconWithHomeController(catalogdetail_toolbar)
+    setupToolbarNavWithHomeController(catalogdetail_toolbar)
     RxToolbar.navigationClicks(catalogdetail_toolbar)
       .subscribeWithView { router.handleBack() }
 
@@ -80,7 +80,7 @@ class CatalogDetailsController(
       .subscribeWithView { (state, prevState) -> render(state, prevState) }
   }
 
-  private fun render(state: CatalogDetailsViewState, prevState: CatalogDetailsViewState?) {
+  private fun render(state: ViewState, prevState: ViewState?) {
     if (state.isUninstalled) {
       router.popController(this)
     }

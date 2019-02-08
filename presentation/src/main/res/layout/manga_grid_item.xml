@@ -52,7 +52,7 @@
       tools:visibility="visible" />
 
     <tachiyomi.ui.widget.PTSansTextView
-      android:id="@+id/title"
+      android:id="@+id/catalog_title"
       style="@style/TextAppearance.Body2.Light"
       android:layout_width="0dp"
       android:layout_height="wrap_content"

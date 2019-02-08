@@ -32,6 +32,8 @@ import tachiyomi.source.model.Listing
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.controller.withFadeTransition
+import tachiyomi.ui.glide.GlideController
+import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.screens.home.HomeChildController
 import tachiyomi.ui.screens.manga.MangaController
 import tachiyomi.ui.util.inflate
@@ -40,7 +42,7 @@ import tachiyomi.ui.widget.EndlessRecyclerViewScrollListener
 
 /**
  * Controller to handle the UI and user events on the catalog. It follows the MVI pattern, using a
- * dispatcher that renders the updates made to [CatalogBrowseViewState]. User events are usually
+ * dispatcher that renders the updates made to [ViewState]. User events are usually
  * delegated to [CatalogBrowsePresenter] which updates the view state and the dispatcher receives
  * this new state.
  */
@@ -49,7 +51,8 @@ class CatalogBrowseController(
 ) : MvpController<CatalogBrowsePresenter>(bundle),
   CatalogBrowseAdapter.Listener,
   EndlessRecyclerViewScrollListener.Callback,
-  HomeChildController.FAB {
+  HomeChildController.FAB,
+  GlideController {
 
   /**
    * Adapter containing the list of manga from the catalogue. This field is set to null when the
@@ -62,6 +65,11 @@ class CatalogBrowseController(
    * null when the view is destroyed.
    */
   private var filtersAdapter: FiltersAdapter? = null
+
+  /**
+   * Glide provider used to load images with the lifecycle of this controller.
+   */
+  override val glideProvider = GlideProvider.from(this)
 
   /**
    * Constructor that takes a [sourceId] as parameter.
@@ -114,10 +122,10 @@ class CatalogBrowseController(
     catalogbrowse_recycler.setHasFixedSize(true)
 
     // Initialize manga adapter
-    adapter = CatalogBrowseAdapter(this)
+    adapter = CatalogBrowseAdapter(this, glideProvider.get())
 
     // Setup back navigation
-    setupToolbarIconWithHomeController(catalogbrowse_toolbar)
+    setupToolbarNavWithHomeController(catalogbrowse_toolbar)
     RxToolbar.navigationClicks(catalogbrowse_toolbar)
       .subscribeWithView { router.handleBack() }
 
@@ -169,7 +177,7 @@ class CatalogBrowseController(
    * Dispatcher of [state] updates, [prevState] is also provided to compare with the previous
    * state and render only the components that have changed.
    */
-  private fun dispatch(state: CatalogBrowseViewState, prevState: CatalogBrowseViewState?) {
+  private fun dispatch(state: ViewState, prevState: ViewState?) {
     if (state.source != null && state.source != prevState?.source) {
       renderSource(state.source)
     }
@@ -403,6 +411,11 @@ class CatalogBrowseController(
    */
   override fun onMangaClick(manga: Manga) {
     findRootRouter().pushController(MangaController(manga.id).withFadeTransition())
+  }
+
+  override fun onMangaLongClick(manga: Manga) {
+    // TODO show popup or bottom sheet
+    presenter.toggleFavorite(manga)
   }
 
   private companion object {

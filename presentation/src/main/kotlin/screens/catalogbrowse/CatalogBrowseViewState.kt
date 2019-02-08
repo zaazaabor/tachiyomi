@@ -25,7 +25,7 @@ import tachiyomi.source.model.Listing
  * [hasMorePages] whether the catalog has more pages that can be loaded.
  * [error] contains any error that could occur when loading, or null if there's no error.
  */
-data class CatalogBrowseViewState(
+data class ViewState(
   val source: CatalogSource? = null,
   val mangas: List<Manga> = emptyList(),
   val queryMode: QueryMode? = null,

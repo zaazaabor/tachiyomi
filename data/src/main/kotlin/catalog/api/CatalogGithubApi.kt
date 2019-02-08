@@ -23,6 +23,7 @@ import tachiyomi.core.http.Http
 import tachiyomi.core.http.asSingleSuccess
 import tachiyomi.domain.catalog.model.CatalogRemote
 import timber.log.Timber
+import timber.log.warn
 import javax.inject.Inject
 
 internal class CatalogGithubApi @Inject constructor(private val http: Http) {
@@ -31,14 +32,14 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
 
   // TODO create a new branch for 1.x extensions
 //  private val repoUrl = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"
-  private val repoUrl = "https://share.kanade.eu/repo"
+  private val repoUrl = "https://tachiyomi.kanade.eu/repo"
 
   fun findCatalogs(): Single<List<CatalogRemote>> {
     val call = GET("$repoUrl/index.min.json")
 
     return http.defaultClient.newCall(call).asSingleSuccess()
       .map(::parseResponse)
-      .doOnError { Timber.w(it) }
+      .doOnError { Timber.warn(it) { it.message.orEmpty() } }
   }
 
   private fun parseResponse(response: Response): List<CatalogRemote> {

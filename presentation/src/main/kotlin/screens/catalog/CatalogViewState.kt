@@ -10,8 +10,9 @@ package tachiyomi.ui.screens.catalog
 
 import tachiyomi.domain.catalog.model.InstallStep
 
-data class CatalogViewState(
+data class ViewState(
   val items: List<Any> = emptyList(),
   val languageChoice: LanguageChoice = LanguageChoice.All,
-  val installingCatalogs: Map<String, InstallStep> = emptyMap()
+  val installingCatalogs: Map<String, InstallStep> = emptyMap(),
+  val isRefreshing: Boolean = false
 )

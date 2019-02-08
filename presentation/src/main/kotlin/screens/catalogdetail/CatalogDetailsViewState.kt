@@ -10,7 +10,7 @@ package tachiyomi.ui.screens.catalogdetail
 
 import tachiyomi.domain.catalog.model.CatalogInstalled
 
-data class CatalogDetailsViewState(
+data class ViewState(
   val catalog: CatalogInstalled? = null,
   val isUninstalled: Boolean = false
 )

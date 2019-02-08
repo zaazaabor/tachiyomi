@@ -22,6 +22,7 @@ import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.source.Dependencies
 import tachiyomi.source.Source
 import timber.log.Timber
+import timber.log.error
 import javax.inject.Inject
 
 /**
@@ -128,7 +129,7 @@ internal class CatalogLoader @Inject constructor(
 
       obj as? Source ?: throw Exception("Unknown source class type! ${obj.javaClass}")
     } catch (e: Throwable) {
-      Timber.e(e, "Extension load error: $extName.")
+      Timber.error(e) { "Extension load error: $extName." }
       return Result.Error(e)
     }
 

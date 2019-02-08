@@ -14,6 +14,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 import timber.log.Timber
+import timber.log.warn
 import java.io.IOException
 import java.net.SocketException
 import javax.inject.Inject
@@ -42,7 +43,7 @@ class RxJavaInitializer @Inject constructor() {
             error)
         }
         else -> {
-          Timber.w(error, "Undeliverable exception received, not sure what to do")
+          Timber.warn(error) { "Undeliverable exception received, not sure what to do" }
         }
       }
     }
