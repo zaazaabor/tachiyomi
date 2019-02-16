@@ -15,7 +15,7 @@ import com.bluelinelabs.conductor.Conductor
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import tachiyomi.core.ui.R
 import tachiyomi.ui.controller.withoutTransition
-import tachiyomi.ui.theme.CyaneaThemePickerController
+import tachiyomi.ui.cyanea.CyaneaThemePickerController
 
 open class ThemePickerActivity : CyaneaAppCompatActivity() {
 

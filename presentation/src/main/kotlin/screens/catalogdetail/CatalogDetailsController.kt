@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.catalogdetail_controller.*
 import tachiyomi.core.rx.scanWithPrevious
@@ -69,8 +68,6 @@ class CatalogDetailsController(
 
     // Setup back navigation
     setupToolbarNavWithHomeController(catalogdetail_toolbar)
-    RxToolbar.navigationClicks(catalogdetail_toolbar)
-      .subscribeWithView { router.handleBack() }
 
     catalogdetail_uninstall_button.clicks()
       .subscribeWithView { uninstallCatalog() }

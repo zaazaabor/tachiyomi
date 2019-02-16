@@ -41,7 +41,7 @@ class FadeTransition : SimpleTransitionChangeHandler() {
     to: View?,
     isPush: Boolean
   ): Transition? {
-    return Fade(Fade.MODE_OUT)
+    return null
   }
 
   override fun getEnterTransition(

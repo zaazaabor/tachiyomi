@@ -10,8 +10,9 @@ package tachiyomi.ui.screens.home
 
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
-import com.bluelinelabs.conductor.Controller
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
+import tachiyomi.ui.controller.BaseController
 import tachiyomi.ui.util.getDrawableAttr
 
 interface HomeChildController {
@@ -20,12 +21,13 @@ interface HomeChildController {
     fun createFAB(container: ViewGroup): FloatingActionButton
   }
 
-  fun Controller.setupToolbarNavWithHomeController(toolbar: Toolbar) {
+  fun BaseController.setupToolbarNavWithHomeController(toolbar: Toolbar) {
     val homeCtrl = parentController as? HomeController ?: return
-    val homeRouter = homeCtrl.childRouter ?: return
+    val homeRouter = homeCtrl.childRouters.firstOrNull() ?: return
 
-    if (homeRouter.backstackSize != 1) {
+    if (homeRouter.backstackSize > 1) {
       toolbar.navigationIcon = toolbar.context.getDrawableAttr(android.R.attr.homeAsUpIndicator)
+      toolbar.navigationClicks().subscribeWithView { router.handleBack() }
     }
   }
 

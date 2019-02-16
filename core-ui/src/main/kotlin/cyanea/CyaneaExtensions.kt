@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.util
+package tachiyomi.ui.cyanea
 
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.utils.ColorUtils
-import tachiyomi.ui.R
+import tachiyomi.core.ui.R
 
 @Suppress("DEPRECATION")
 val Cyanea.textColorForAccent: Int

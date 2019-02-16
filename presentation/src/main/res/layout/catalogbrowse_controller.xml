@@ -12,8 +12,7 @@
     android:layout_height="wrap_content"
     android:background="?attr/colorPrimary"
     android:elevation="4dp"
-    android:theme="?actionBarTheme"
-    app:navigationIcon="?attr/homeAsUpIndicator" />
+    android:theme="?actionBarTheme" />
 
   <FrameLayout
     android:layout_width="match_parent"

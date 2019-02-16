@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.library
+package tachiyomi.ui.screens.category
 
-import toothpick.config.Module
+import tachiyomi.domain.category.Category
 
-class LibraryModule(private val controller: LibraryController) : Module() {
-
-}
+data class ViewState(
+  val categories: List<Category> = emptyList(),
+  val error: Throwable? = null
+)

@@ -30,9 +30,6 @@ import tachiyomi.ui.screens.settings.SettingsController
 
 class HomeController : BaseController() {
 
-  var childRouter: Router? = null
-    private set
-
   private val childRouterChangeListener = HomeControllerChangeListener()
 
   init {
@@ -51,20 +48,20 @@ class HomeController : BaseController() {
     super.onViewCreated(view)
 
     val router = getChildRouter(view.findViewById(R.id.home_controller_container))
-    childRouter = router
     router.addChangeListener(childRouterChangeListener)
 
     home_bottomnav?.setOnNavigationItemSelectedListener { onSetSelectedItem(it.itemId, router) }
 
     if (!router.hasRootController()) {
-      performSetSelectedItem(R.id.nav_drawer_catalogues)
+      performSetSelectedItem(R.id.nav_drawer_library)
+    } else {
+      syncTopController(null, router.backstack.last().controller(), true)
     }
   }
 
   override fun onDestroyView(view: View) {
     home_bottomnav?.setOnNavigationItemSelectedListener(null)
-    childRouter?.removeChangeListener(childRouterChangeListener)
-    childRouter = null
+    childRouters.forEach { it.removeChangeListener(childRouterChangeListener) }
     super.onDestroyView(view)
   }
 
@@ -97,6 +94,25 @@ class HomeController : BaseController() {
     router.setRoot(transaction.tag("$id"))
   }
 
+  private fun syncTopController(from: Controller?, to: Controller?, isPush: Boolean) {
+    if (from is HomeChildController.FAB) {
+      view?.findViewById<ViewGroup>(R.id.home_fab_container)?.removeAllViews()
+    }
+    if (to is HomeChildController.FAB) {
+      view?.findViewById<ViewGroup>(R.id.home_fab_container)?.let { it.addView(to.createFAB(it)) }
+    }
+    // If going back, restore bottom nav visibility, in case the new view can't scroll
+    if (!isPush) {
+      val nav = home_bottomnav
+      if (nav != null) {
+        val params = nav.layoutParams as CoordinatorLayout.LayoutParams
+        val behavior = params.behavior as? HideBottomViewOnScrollBehavior
+        behavior?.onNestedScroll(home_coordinator_bottomnav, nav, nav,
+          0, -1, 0, 0, ViewCompat.TYPE_TOUCH)
+      }
+    }
+  }
+
   inner class HomeControllerChangeListener : ControllerChangeHandler.ControllerChangeListener {
 
     override fun onChangeStarted(
@@ -106,22 +122,7 @@ class HomeController : BaseController() {
       container: ViewGroup,
       handler: ControllerChangeHandler
     ) {
-      if (from is HomeChildController.FAB) {
-        view?.findViewById<ViewGroup>(R.id.home_fab_container)?.removeAllViews()
-      }
-      if (to is HomeChildController.FAB) {
-        view?.findViewById<ViewGroup>(R.id.home_fab_container)?.let { it.addView(to.createFAB(it)) }
-      }
-      // If going back, restore bottom nav visibility, in case the new view can't scroll
-      if (!isPush) {
-        val nav = home_bottomnav
-        if (nav != null) {
-          val params = nav.layoutParams as CoordinatorLayout.LayoutParams
-          val behavior = params.behavior as? HideBottomViewOnScrollBehavior
-          behavior?.onNestedScroll(home_coordinator_bottomnav, nav, nav,
-            0, -1, 0, 0, ViewCompat.TYPE_TOUCH)
-        }
-      }
+      syncTopController(from, to, isPush)
     }
 
     override fun onChangeCompleted(

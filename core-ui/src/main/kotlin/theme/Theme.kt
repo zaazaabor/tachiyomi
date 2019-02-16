@@ -6,10 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.library
+package tachiyomi.ui.theme
 
-import toothpick.config.Module
+import com.jaredrummler.cyanea.Cyanea
 
-class LibraryModule(private val controller: LibraryController) : Module() {
+internal interface Theme {
+
+  val cyanea: Cyanea get() = Cyanea.instance
 
 }

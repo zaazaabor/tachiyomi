@@ -31,7 +31,7 @@ import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Listing
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
-import tachiyomi.ui.controller.withFadeTransition
+import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.screens.home.HomeChildController
@@ -126,8 +126,6 @@ class CatalogBrowseController(
 
     // Setup back navigation
     setupToolbarNavWithHomeController(catalogbrowse_toolbar)
-    RxToolbar.navigationClicks(catalogbrowse_toolbar)
-      .subscribeWithView { router.handleBack() }
 
     // Initialize toolbar menu
     catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
@@ -410,7 +408,7 @@ class CatalogBrowseController(
    * Called from the adapter's listener when a [manga] is clicked.
    */
   override fun onMangaClick(manga: Manga) {
-    findRootRouter().pushController(MangaController(manga.id).withFadeTransition())
+    findRootRouter().pushController(MangaController(manga.id).withHorizontalTransition())
   }
 
   override fun onMangaLongClick(manga: Manga) {

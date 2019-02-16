@@ -17,7 +17,7 @@ import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.jaredrummler.cyanea.prefs.CyaneaThemePickerLauncher
 import tachiyomi.core.ui.R
 import tachiyomi.ui.controller.withoutTransition
-import tachiyomi.ui.theme.CyaneaSettingsController
+import tachiyomi.ui.cyanea.CyaneaSettingsController
 
 open class AppearanceActivity : CyaneaAppCompatActivity(), CyaneaThemePickerLauncher {
 

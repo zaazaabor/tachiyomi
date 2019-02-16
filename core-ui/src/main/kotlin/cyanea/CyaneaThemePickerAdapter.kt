@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tachiyomi.ui.theme
+package tachiyomi.ui.cyanea
 
 import android.content.res.ColorStateList
 import android.graphics.Color

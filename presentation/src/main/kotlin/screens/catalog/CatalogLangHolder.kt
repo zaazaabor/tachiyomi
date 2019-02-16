@@ -9,17 +9,13 @@
 package tachiyomi.ui.screens.catalog
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.view.ViewGroup
 import androidx.emoji.text.EmojiCompat
 import com.google.android.material.chip.Chip
-import com.jaredrummler.cyanea.Cyanea
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseViewHolder
-import tachiyomi.ui.util.getColorFromAttr
+import tachiyomi.ui.theme.ChipTheme
 import tachiyomi.ui.util.inflate
-import tachiyomi.ui.util.backgroundColorAlt
-import tachiyomi.ui.util.textColorForAccent
 
 class CatalogLangHolder(
   parent: ViewGroup,
@@ -33,8 +29,8 @@ class CatalogLangHolder(
 
   init {
     chip.setOnClickListener { adapter.handleClick(adapterPosition) }
-    chip.chipBackgroundColor = theme.chipBackgroundColor
-    chip.setTextColor(theme.chipTextColor)
+    chip.chipBackgroundColor = theme.chip.backgroundColor
+    chip.setTextColor(theme.chip.textColor)
   }
 
   fun bind(choice: LanguageChoice, isSelected: Boolean) {
@@ -51,22 +47,7 @@ class CatalogLangHolder(
   }
 
   class Theme(context: Context) {
-    private val cyanea: Cyanea get() = Cyanea.instance
-
-    private val chipStates = arrayOf(intArrayOf(android.R.attr.state_selected), intArrayOf())
-
-    val chipBackgroundColor = ColorStateList(
-      chipStates,
-      intArrayOf(cyanea.accent, cyanea.backgroundColorAlt)
-    )
-
-    val chipTextColor = ColorStateList(
-      chipStates,
-      intArrayOf(
-        cyanea.textColorForAccent,
-        context.getColorFromAttr(android.R.attr.textColorPrimary)
-      )
-    )
+    val chip = ChipTheme.SelectedAccent(context)
   }
 
 }

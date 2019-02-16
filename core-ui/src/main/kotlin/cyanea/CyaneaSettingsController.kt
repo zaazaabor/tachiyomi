@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.theme
+package tachiyomi.ui.cyanea
 
 import android.annotation.SuppressLint
 import android.content.Intent

@@ -9,15 +9,12 @@
 package tachiyomi.ui.screens.catalog
 
 import android.content.Context
-import android.graphics.PorterDuff
 import android.text.SpannedString
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
-import com.jaredrummler.cyanea.Cyanea
 import kotlinx.android.synthetic.main.catalogs_catalog_item.*
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
@@ -26,6 +23,7 @@ import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseViewHolder
 import tachiyomi.ui.glide.GlideRequests
+import tachiyomi.ui.theme.IconTheme
 import tachiyomi.ui.util.getColorFromAttr
 import tachiyomi.ui.util.inflate
 import tachiyomi.ui.util.setGone
@@ -49,8 +47,8 @@ class CatalogHolder(
       adapter.handleSettingsClick(adapterPosition)
     }
 
-    catalog_install_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
-    catalog_settings_btn.setColorFilter(theme.iconColor, PorterDuff.Mode.SRC_IN)
+    theme.icon.apply(catalog_install_btn)
+    theme.icon.apply(catalog_settings_btn)
   }
 
   fun bind(catalog: CatalogInternal) {
@@ -122,14 +120,7 @@ class CatalogHolder(
   }
 
   class Theme(context: Context) {
-    private val cyanea: Cyanea get() = Cyanea.instance
-
-    val iconColor = ContextCompat.getColor(context, if (cyanea.isDark) {
-      R.color.textColorIconInverse
-    } else {
-      R.color.textColorIcon
-    })
-
+    val icon = IconTheme(context)
     val textColorSecondary = context.getColorFromAttr(android.R.attr.textColorSecondary)
   }
 
