@@ -36,11 +36,6 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
   private val updateCallback = AdapterListUpdateCallback(this)
 
   /**
-   * Item callback used to calculate the differences between the items of two lists.
-   */
-  protected abstract val itemCallback: DiffUtil.ItemCallback<T>
-
-  /**
    * List of items contained in the adapter. Note this list isn't updated until the diff result
    * is available.
    */
@@ -138,7 +133,7 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
 
     launch(start = CoroutineStart.UNDISPATCHED) {
       val result = withContext(dispatchers.computation) {
-        calculateDiff(oldList, newList)
+        DiffUtil.calculateDiff(getDiffCallback(oldList, newList))
       }
 
       if (maxScheduledGeneration == runGeneration) {
@@ -148,59 +143,9 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
   }
 
   /**
-   * Calculates the diff between the old and new list. This method should be called on a
-   * background thread.
+   * Returns the callback to be used for a diff between [oldList] and [newList].
    */
-  private fun calculateDiff(oldList: List<T>, newList: List<T>): DiffUtil.DiffResult {
-    return DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-      override fun getOldListSize(): Int {
-        return oldList.size
-      }
-
-      override fun getNewListSize(): Int {
-        return newList.size
-      }
-
-      override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
-        if (oldItem != null && newItem != null) {
-          return itemCallback.areItemsTheSame(oldItem, newItem)
-        }
-        // If both items are null we consider them the same.
-        return oldItem == null && newItem == null
-      }
-
-      override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
-        if (oldItem != null && newItem != null) {
-          return itemCallback.areContentsTheSame(oldItem, newItem)
-        }
-        if (oldItem == null && newItem == null) {
-          return true
-        }
-        // There is an implementation bug if we reach this point. Per the docs, this
-        // method should only be invoked when areItemsTheSame returns true. That
-        // only occurs when both items are non-null or both are null and both of
-        // those cases are handled above.
-        throw AssertionError()
-      }
-
-      override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
-        if (oldItem != null && newItem != null) {
-          return itemCallback.getChangePayload(oldItem, newItem)
-        }
-        // There is an implementation bug if we reach this point. Per the docs, this
-        // method should only be invoked when areItemsTheSame returns true AND
-        // areContentsTheSame returns false. That only occurs when both items are
-        // non-null which is the only case handled above.
-        throw AssertionError()
-      }
-    })
-  }
+  abstract fun getDiffCallback(oldList: List<T>, newList: List<T>): DiffUtil.Callback
 
   /**
    * Called from [submitList] when the diff results are ready. It sets the given list as primary

@@ -16,7 +16,7 @@ internal class ReorderCategoriesPutResolver : CategoryUpdateResolver() {
 
   override fun mapToContentValues(category: Category): ContentValues {
     return ContentValues(1).apply {
-      put(CategoryTable.COL_NAME, category.name)
+      put(CategoryTable.COL_ORDER, category.order)
     }
   }
 }

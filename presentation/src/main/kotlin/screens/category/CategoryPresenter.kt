@@ -16,7 +16,11 @@ import io.reactivex.Observable
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
+import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
+import tachiyomi.domain.category.interactor.DeleteCategory
+import tachiyomi.domain.category.interactor.RenameCategory
+import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.interactor.SubscribeCategories
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
@@ -24,6 +28,9 @@ import javax.inject.Inject
 class CategoryPresenter @Inject constructor(
   private val subscribeCategories: SubscribeCategories,
   private val createCategoryWithName: CreateCategoryWithName,
+  private val deleteCategory: DeleteCategory,
+  private val renameCategory: RenameCategory,
+  private val reorderCategory: ReorderCategory,
   private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
@@ -50,7 +57,10 @@ class CategoryPresenter @Inject constructor(
         initialState = getInitialViewState(),
         sideEffects = listOf(
           ::loadCategoriesSideEffect,
-          ::createCategorySideEffect
+          ::createCategorySideEffect,
+          ::deleteCategorySideEffect,
+          ::renameCategorySideEffect,
+          ::reorderCategorySideEffect
         ),
         reducer = { state, action -> action.reduce(state) }
       )
@@ -73,7 +83,7 @@ class CategoryPresenter @Inject constructor(
     return subscribeCategories.interact()
       .onBackpressureLatest()
       .toObservable()
-      .map(Action::CategoriesUpdate)
+      .map { Action.CategoriesUpdate(it) }
   }
 
   @Suppress("unused_parameter")
@@ -89,8 +99,53 @@ class CategoryPresenter @Inject constructor(
       }
   }
 
+  @Suppress("unused_parameter")
+  private fun deleteCategorySideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<ViewState>
+  ): Observable<Action> {
+    return actions.ofType<Action.DeleteCategory>()
+      .flatMap {
+        deleteCategory.interact(it.category).toObservable<Action>()
+      }
+  }
+
+  @Suppress("unused_parameter")
+  private fun renameCategorySideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<ViewState>
+  ): Observable<Action> {
+    return actions.ofType<Action.RenameCategory>()
+      .flatMap {
+        renameCategory.interact(it.category, it.newName).toObservable<Action>()
+      }
+  }
+
+  @Suppress("unused_parameter")
+  private fun reorderCategorySideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<ViewState>
+  ): Observable<Action> {
+    return actions.ofType<Action.ReorderCategory>()
+      .flatMap {
+        reorderCategory.interact(it.category, it.newPosition).toObservable<Action>()
+      }
+  }
+
   fun createCategory(name: String) {
     actions.accept(Action.CreateCategory(name))
+  }
+
+  fun deleteCategory(category: Category) {
+    actions.accept(Action.DeleteCategory(category))
+  }
+
+  fun renameCategory(category: Category, newName: String) {
+    actions.accept(Action.RenameCategory(category, newName))
+  }
+
+  fun reorderCategory(category: Category, newPosition: Int) {
+    actions.accept(Action.ReorderCategory(category, newPosition))
   }
 
 }

@@ -18,6 +18,12 @@ sealed class Action {
 
   data class CreateCategory(val name: String) : Action()
 
+  data class DeleteCategory(val category: Category) : Action()
+
+  data class RenameCategory(val category: Category, val newName: String) : Action()
+
+  data class ReorderCategory(val category: Category, val newPosition: Int) : Action()
+
   data class Error(val error: Throwable? = null) : Action() {
     override fun reduce(state: ViewState) = state.copy(error = error)
   }

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseListAdapter
+import tachiyomi.ui.adapter.ItemCallback
 import tachiyomi.ui.glide.GlideRequests
 import tachiyomi.ui.widget.AutofitRecyclerView
 
@@ -172,38 +173,39 @@ class CatalogBrowseAdapter(
   /**
    * Diff implementation for all the items on this adapter.
    */
-  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
-
-    /**
-     * Returns whether [oldItem] and [newItem] are the same.
-     */
-    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return when {
-        oldItem === newItem -> true
-        oldItem is Manga && newItem is Manga -> oldItem.id == newItem.id
-        else -> false
+  override fun getDiffCallback(oldList: List<Any>, newList: List<Any>): DiffUtil.Callback {
+    return object : ItemCallback<Any>(oldList, newList) {
+      /**
+       * Returns whether [oldItem] and [newItem] are the same.
+       */
+      override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+        return when {
+          oldItem === newItem -> true
+          oldItem is Manga && newItem is Manga -> oldItem.id == newItem.id
+          else -> false
+        }
       }
-    }
 
-    /**
-     * Returns whether the contents of [oldItem] and [newItem] are the same.
-     */
-    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return oldItem == newItem
-    }
-
-    /**
-     * Returns an optional payload to describe partial updates.
-     */
-    override fun getChangePayload(oldItem: Any, newItem: Any) = when (newItem) {
-      is Manga -> {
-        oldItem as Manga
-        MangaPayload(
-          coverChange = oldItem.cover != newItem.cover,
-          favoriteChange = oldItem.favorite != newItem.favorite
-        )
+      /**
+       * Returns whether the contents of [oldItem] and [newItem] are the same.
+       */
+      override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
+        return oldItem == newItem
       }
-      else -> null
+
+      /**
+       * Returns an optional payload to describe partial updates.
+       */
+      override fun getChangePayload(oldItem: Any, newItem: Any) = when (newItem) {
+        is Manga -> {
+          oldItem as Manga
+          MangaPayload(
+            coverChange = oldItem.cover != newItem.cover,
+            favoriteChange = oldItem.favorite != newItem.favorite
+          )
+        }
+        else -> null
+      }
     }
   }
 

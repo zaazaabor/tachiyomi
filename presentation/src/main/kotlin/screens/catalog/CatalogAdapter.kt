@@ -18,6 +18,7 @@ import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.adapter.BaseListAdapter
 import tachiyomi.ui.adapter.BaseViewHolder
+import tachiyomi.ui.adapter.ItemCallback
 import tachiyomi.ui.glide.GlideRequests
 
 class CatalogAdapter(
@@ -30,8 +31,8 @@ class CatalogAdapter(
 
   private val catalogTheme = CatalogHolder.Theme(context)
 
-  private var oldInstalling = emptyMap<String, InstallStep>()
-  private var newInstalling = emptyMap<String, InstallStep>()
+  private var installing = emptyMap<String, InstallStep>()
+  private var latchInstalling = emptyMap<String, InstallStep>()
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
@@ -64,9 +65,9 @@ class CatalogAdapter(
     if (holder is CatalogHolder && Payload.Install in payloads) {
       when (item) {
         is CatalogInstalled ->
-          holder.bindInstallButton(item, newInstalling[item.pkgName])
+          holder.bindInstallButton(item, latchInstalling[item.pkgName])
         is CatalogRemote ->
-          holder.bindInstallButton(item, newInstalling[item.pkgName])
+          holder.bindInstallButton(item, latchInstalling[item.pkgName])
       }
     }
   }
@@ -76,10 +77,10 @@ class CatalogAdapter(
     when (item) {
       is CatalogInternal -> (holder as CatalogHolder).bind(item)
       is CatalogInstalled -> {
-        (holder as CatalogHolder).bind(item, newInstalling[item.pkgName])
+        (holder as CatalogHolder).bind(item, latchInstalling[item.pkgName])
       }
       is CatalogRemote -> {
-        (holder as CatalogHolder).bind(item, newInstalling[item.pkgName])
+        (holder as CatalogHolder).bind(item, latchInstalling[item.pkgName])
       }
       is CatalogHeader -> (holder as CatalogHeaderHolder).bind(item)
       is CatalogSubheader -> (holder as CatalogSubheaderHolder).bind(item)
@@ -94,7 +95,7 @@ class CatalogAdapter(
     items: List<Any>,
     installingCatalogs: Map<String, InstallStep>
   ) {
-    this.oldInstalling = installingCatalogs
+    this.installing = installingCatalogs
     submitList(items, forceSubmit = true)
 
     val choices = items.filterIsInstance<LanguageChoices>().firstOrNull()
@@ -104,10 +105,35 @@ class CatalogAdapter(
   }
 
   override fun onLatchList(newList: List<Any>) {
-    newInstalling = oldInstalling
+    latchInstalling = installing
   }
 
-  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
+  override fun getDiffCallback(oldList: List<Any>, newList: List<Any>): DiffUtil.Callback {
+    return Callback(oldList, newList, latchInstalling, installing)
+  }
+
+  fun handleRowClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onCatalogClick(item)
+  }
+
+  fun handleInstallClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onInstallClick(item)
+  }
+
+  fun handleSettingsClick(position: Int) {
+    val item = getItemOrNull(position) as? Catalog ?: return
+    listener.onSettingsClick(item)
+  }
+
+  class Callback(
+    oldList: List<Any>,
+    newList: List<Any>,
+    private val latchInstalling: Map<String, InstallStep>,
+    private val installing: Map<String, InstallStep>
+  ) : ItemCallback<Any>(oldList, newList) {
+
     override fun areItemsTheSame(oldItem: Any, newItem: Any) = when (newItem) {
       // Consider same item if package name matches for improved animations
       is CatalogInstalled -> {
@@ -127,10 +153,10 @@ class CatalogAdapter(
 
     override fun areContentsTheSame(oldItem: Any, newItem: Any) = when (newItem) {
       is CatalogInstalled -> {
-        oldItem == newItem && oldInstalling[newItem.pkgName] == newInstalling[newItem.pkgName]
+        oldItem == newItem && installing[newItem.pkgName] == latchInstalling[newItem.pkgName]
       }
       is CatalogRemote -> {
-        oldItem == newItem && oldInstalling[newItem.pkgName] == newInstalling[newItem.pkgName]
+        oldItem == newItem && installing[newItem.pkgName] == latchInstalling[newItem.pkgName]
       }
       else -> true
     }
@@ -138,7 +164,7 @@ class CatalogAdapter(
     override fun getChangePayload(oldItem: Any, newItem: Any) = when (newItem) {
       is CatalogInstalled -> {
         if (oldItem == newItem
-          && oldInstalling[newItem.pkgName] == newInstalling[newItem.pkgName]) {
+          && installing[newItem.pkgName] == latchInstalling[newItem.pkgName]) {
           Payload.Install
         } else {
           null
@@ -146,7 +172,7 @@ class CatalogAdapter(
       }
       is CatalogRemote -> {
         if (oldItem == newItem
-          && oldInstalling[newItem.pkgName] == newInstalling[newItem.pkgName]) {
+          && installing[newItem.pkgName] == latchInstalling[newItem.pkgName]) {
           Payload.Install
         } else {
           null
@@ -154,21 +180,6 @@ class CatalogAdapter(
       }
       else -> null
     }
-  }
-
-  fun handleRowClick(position: Int) {
-    val item = getItemOrNull(position) as? Catalog ?: return
-    listener.onCatalogClick(item)
-  }
-
-  fun handleInstallClick(position: Int) {
-    val item = getItemOrNull(position) as? Catalog ?: return
-    listener.onInstallClick(item)
-  }
-
-  fun handleSettingsClick(position: Int) {
-    val item = getItemOrNull(position) as? Catalog ?: return
-    listener.onSettingsClick(item)
   }
 
   interface Listener {

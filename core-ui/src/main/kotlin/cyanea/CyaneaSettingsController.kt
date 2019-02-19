@@ -167,16 +167,13 @@ class CyaneaSettingsController : PreferenceController(),
     prefColorNavBar.isChecked = cyanea.shouldTintNavBar || isColored
     val sysBarConfig = SystemBarTint(activity!!).sysBarConfig
     if (!sysBarConfig.hasNavigationBar) {
-      findPreference<PreferenceCategory>(PREF_CATEGORY).run {
-        removePreference(prefColorNavBar)
-      }
+      preferenceScreen.removePreference(prefColorNavBar)
     }
   }
 
   private inline fun <reified T : Preference> findPreference(key: String): T = super.findPreference(key) as T
 
   private companion object {
-    const val PREF_CATEGORY = "cyanea_preference_category"
     const val PREF_THEME_PICKER = "pref_theme_picker"
     const val PREF_COLOR_PRIMARY = "pref_color_primary"
     const val PREF_COLOR_ACCENT = "pref_color_accent"

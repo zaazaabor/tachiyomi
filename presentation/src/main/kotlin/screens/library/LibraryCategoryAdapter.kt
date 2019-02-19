@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.adapter.BaseListAdapter
+import tachiyomi.ui.adapter.ItemCallback
 import tachiyomi.ui.glide.GlideRequests
 
 class LibraryCategoryAdapter(
@@ -32,16 +33,21 @@ class LibraryCategoryAdapter(
   }
 
   // TODO
-  override val itemCallback = object : DiffUtil.ItemCallback<LibraryManga>() {
+  override fun getDiffCallback(
+    oldList: List<LibraryManga>,
+    newList: List<LibraryManga>
+  ): DiffUtil.Callback {
+    return object : ItemCallback<LibraryManga>(oldList, newList) {
 
-    override fun areItemsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
-      return oldItem == newItem
+      override fun areItemsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
+        return oldItem == newItem
+      }
+
+      override fun areContentsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
+        return true
+      }
+
     }
-
-    override fun areContentsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
-      return true
-    }
-
   }
 
   fun handleMangaClick(position: Int) {

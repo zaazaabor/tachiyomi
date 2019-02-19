@@ -23,7 +23,8 @@ import tachiyomi.ui.screens.home.HomeChildController
 class CategoryController : MvpController<CategoryPresenter>(),
   HomeChildController,
   HomeChildController.FAB,
-  CategoryCreateDialog.Listener {
+  CategoryCreateDialog.Listener,
+  CategoryAdapter.Listener {
 
   private var adapter: CategoryAdapter? = null
 
@@ -42,7 +43,7 @@ class CategoryController : MvpController<CategoryPresenter>(),
 
     setupToolbarNavWithHomeController(category_toolbar)
 
-    adapter = CategoryAdapter()
+    adapter = CategoryAdapter(this)
     category_recycler.adapter = adapter
 
     presenter.stateObserver
@@ -78,6 +79,10 @@ class CategoryController : MvpController<CategoryPresenter>(),
 
   override fun createCategory(name: String) {
     presenter.createCategory(name)
+  }
+
+  override fun onCategoryMoved(category: Category, newPosition: Int) {
+    presenter.reorderCategory(category, newPosition)
   }
 
 }

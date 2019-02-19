@@ -13,34 +13,33 @@ import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
-class ReorderCategories @Inject constructor(
+class ReorderCategory @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
   fun interact(categories: List<Category>): Completable {
     return categoryRepository.reorderCategories(categories)
-      .onErrorComplete()
   }
 
-  fun interact(from: Long, to: Long): Completable {
+  fun interact(categoryId: Long, newPosition: Int): Completable {
     return categoryRepository.getCategories()
       .take(1)
       .flatMapCompletable { categories ->
-        val fromPosition = categories.indexOfFirst { it.id == from }
-        val toPosition = categories.indexOfFirst { it.id == to }
+        val currPosition = categories.indexOfFirst { it.id == categoryId }
+        if (currPosition == newPosition || currPosition == -1) {
+          return@flatMapCompletable Completable.complete()
+        }
 
         val mutCategories = categories.toMutableList()
-        val aux = categories[fromPosition]
-
-        mutCategories[fromPosition] = mutCategories[toPosition]
-        mutCategories[toPosition] = aux
+        val category = mutCategories.removeAt(currPosition)
+        mutCategories.add(newPosition, category)
 
         interact(mutCategories)
       }
   }
 
-  fun interact(from: Category, to: Category): Completable {
-    return interact(from.id, to.id)
+  fun interact(category: Category, newPosition: Int): Completable {
+    return interact(category.id, newPosition)
   }
 
 }

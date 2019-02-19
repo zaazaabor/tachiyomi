@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseListAdapter
+import tachiyomi.ui.adapter.ItemCallback
 
 class MangaAdapter(
   controller: MangaController
@@ -44,13 +45,15 @@ class MangaAdapter(
     }
   }
 
-  override val itemCallback = object : DiffUtil.ItemCallback<Any>() {
-    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return oldItem == newItem
-    }
+  override fun getDiffCallback(oldList: List<Any>, newList: List<Any>): DiffUtil.Callback {
+    return object : ItemCallback<Any>(oldList, newList) {
+      override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+        return oldItem == newItem
+      }
 
-    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-      return true // TODO
+      override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
+        return true // TODO
+      }
     }
   }
 

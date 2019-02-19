@@ -20,16 +20,29 @@ class CategoryHolder(
   parent: ViewGroup
 ) : BaseViewHolder(parent.inflate(R.layout.category_item)) {
 
-  fun bind(category: Category) {
-    category_text.text = category.name
+  init {
+    itemView.setOnClickListener {  }
+  }
 
-    val initial = category.name.firstOrNull()?.toUpperCase()?.toString() ?: ""
+  fun bind(category: Category, isSelected: Boolean) {
+    bindName(category.name)
+    bindIsSelected(isSelected)
+  }
+
+  fun bindName(name: String) {
+    category_text.text = name
+
+    val initial = name.firstOrNull()?.toUpperCase()?.toString() ?: ""
     val drawable = TextOvalDrawable(
       text = initial,
       backgroundColor = TextOvalDrawable.Colors.getColor(initial)
     )
 
     category_icon.setImageDrawable(drawable)
+  }
+
+  fun bindIsSelected(isSelected: Boolean) {
+    itemView.isActivated = isSelected
   }
 
 }
