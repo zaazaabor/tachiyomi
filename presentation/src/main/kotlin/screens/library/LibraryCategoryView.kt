@@ -23,7 +23,8 @@ class LibraryCategoryView @JvmOverloads constructor(
 
   private lateinit var adapter: LibraryCategoryAdapter
 
-  var category: LibraryCategory? = null
+  lateinit var libCategory: LibraryCategory
+    private set
 
   private val recycler by lazy(LazyThreadSafetyMode.NONE) {
     (getChildAt(0) as RecyclerView).also {
@@ -31,17 +32,19 @@ class LibraryCategoryView @JvmOverloads constructor(
     }
   }
 
-  fun bind(
-    category: LibraryCategory,
+  fun create(
     pool: RecyclerView.RecycledViewPool,
     glideRequests: GlideRequests,
     listener: LibraryAdapter.Listener
   ) {
-    this.category = category
     recycler.setRecycledViewPool(pool)
     adapter = LibraryCategoryAdapter(glideRequests, listener)
     recycler.adapter = adapter
-    adapter.submitList(category.mangas)
+  }
+
+  fun bind(category: LibraryCategory, selectedManga: Set<Long>) {
+    this.libCategory = category
+    adapter.submitManga(category.mangas, selectedManga)
   }
 
 }

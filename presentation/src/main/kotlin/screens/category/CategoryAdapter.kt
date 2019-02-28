@@ -20,12 +20,15 @@ class CategoryAdapter(
   private val listener: Listener
 ) : BaseListAdapter<Category, CategoryHolder>() {
 
-  private var selectedCategoryIds = emptySet<Long>()
+  private var selectedIds = emptySet<Long>()
+  private var nowSelectedIds = emptySet<Long>()
 
   private var dragging: Category? = null
 
+  private val touchHelper = ItemTouchHelper(TouchHelperCallback())
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryHolder {
-    return CategoryHolder(parent)
+    return CategoryHolder(parent, this)
   }
 
   override fun onBindViewHolder(holder: CategoryHolder, position: Int) {
@@ -36,7 +39,7 @@ class CategoryAdapter(
     val category = getItem(position)
 
     if (payloads.isEmpty()) {
-      val isSelected = category.id in selectedCategoryIds //|| category.id == newDragging?.id
+      val isSelected = category.id in nowSelectedIds
       holder.bind(category, isSelected)
     } else {
       val payload = payloads.first { it is Payload } as Payload
@@ -44,7 +47,7 @@ class CategoryAdapter(
         holder.bindName(category.name)
       }
       if (payload.selectionChanged) {
-        val isSelected = category.id in selectedCategoryIds //|| category.id == newDragging?.id
+        val isSelected = category.id in nowSelectedIds
         holder.bindIsSelected(isSelected)
       }
     }
@@ -55,14 +58,66 @@ class CategoryAdapter(
     touchHelper.attachToRecyclerView(recyclerView)
   }
 
+  fun submitCategories(categories: List<Category>, selectedCategories: Set<Long>) {
+    selectedIds = selectedCategories
+    submitList(categories, forceSubmit = true)
+  }
+
+  override fun onListUpdated() {
+    nowSelectedIds = selectedIds
+  }
+
   override fun getDiffCallback(
     oldList: List<Category>,
     newList: List<Category>
   ): DiffUtil.Callback {
-    return Callback(oldList, newList /*, dragging, newDragging*/)
+    return DiffCallback(oldList, newList, nowSelectedIds, selectedIds)
   }
 
-  private val touchHelperCallback = object : ItemTouchHelper.SimpleCallback(
+  fun handleClick(position: Int) {
+    val category = getItemOrNull(position) ?: return
+    if (nowSelectedIds.isNotEmpty()) {
+      listener.onCategoryClick(category)
+    }
+  }
+
+  fun handleLongClick(position: Int) {
+    val category = getItemOrNull(position) ?: return
+    listener.onCategoryLongClick(category)
+  }
+
+  fun handleReorderTouchDown(holder: CategoryHolder) {
+    touchHelper.startDrag(holder)
+  }
+
+  private class DiffCallback(
+    oldList: List<Category>,
+    newList: List<Category>,
+    val oldSelected: Set<Long>,
+    val newSelected: Set<Long>
+  ) : ItemCallback<Category>(oldList, newList) {
+
+    override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
+      return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
+      return oldItem.name == newItem.name && !selectionChanged(newItem)
+    }
+
+    override fun getChangePayload(oldItem: Category, newItem: Category): Any? {
+      return Payload(
+        nameChanged = oldItem.name != newItem.name,
+        selectionChanged = selectionChanged(newItem)
+      )
+    }
+
+    private fun selectionChanged(category: Category): Boolean {
+      return category.id in oldSelected != category.id in newSelected
+    }
+  }
+
+  inner class TouchHelperCallback : ItemTouchHelper.SimpleCallback(
     ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
   ) {
 
@@ -101,7 +156,7 @@ class CategoryAdapter(
       super.onSelectedChanged(viewHolder, actionState)
 
       if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && viewHolder != null) {
-        viewHolder.itemView.isActivated = true
+        viewHolder.itemView.isPressed = true
       }
     }
 
@@ -111,45 +166,23 @@ class CategoryAdapter(
       val dragList = dragList
       if (dragList != null && dragging != null && dragTo != -1) {
         val categoryMoved = dragList[dragTo]
-        listener.onCategoryMoved(categoryMoved, dragTo)
+        listener.reorderCategory(categoryMoved, dragTo)
       }
 
-      viewHolder.itemView.isActivated = false
+      viewHolder.itemView.isPressed = false
 
       this.dragList = null
       dragging = null
       dragTo = -1
     }
-  }
 
-  private val touchHelper = ItemTouchHelper(touchHelperCallback)
-
-  private class Callback(
-    oldList: List<Category>,
-    newList: List<Category>
-//    val oldDragging: Category?,
-//    val newDragging: Category?
-  ) : ItemCallback<Category>(oldList, newList) {
-
-    override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
-      return oldItem.id == newItem.id
+    override fun isLongPressDragEnabled(): Boolean {
+      return false
     }
 
-    override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
-      return oldItem.name == newItem.name //&& !draggingChanged(newItem)
+    override fun isItemViewSwipeEnabled(): Boolean {
+      return false
     }
-
-    override fun getChangePayload(oldItem: Category, newItem: Category): Any? {
-      return Payload(
-        nameChanged = oldItem.name != newItem.name,
-        selectionChanged = false //draggingChanged(newItem)
-      )
-    }
-
-//    private fun draggingChanged(category: Category): Boolean {
-//      return newDragging == null && oldDragging?.id == category.id ||
-//        oldDragging == null && newDragging?.id == category.id
-//    }
   }
 
   private data class Payload(
@@ -158,7 +191,9 @@ class CategoryAdapter(
   )
 
   interface Listener {
-    fun onCategoryMoved(category: Category, newPosition: Int)
+    fun reorderCategory(category: Category, newPosition: Int)
+    fun onCategoryClick(category: Category)
+    fun onCategoryLongClick(category: Category)
   }
 
 }

@@ -20,39 +20,92 @@ class LibraryCategoryAdapter(
   private val listener: LibraryAdapter.Listener
 ) : BaseListAdapter<LibraryManga, MangaHolder>() {
 
+  private var selectedManga = emptySet<Long>()
+  private var nowSelectedManga = emptySet<Long>()
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MangaHolder {
     return MangaHolder(parent, glideRequests)
   }
 
   override fun onBindViewHolder(holder: MangaHolder, position: Int) {
-    holder.bind(getItem(position), this)
+    error("Unused")
+  }
+
+  override fun onBindViewHolder(holder: MangaHolder, position: Int, payloads: MutableList<Any>) {
+    val item = getItem(position)
+    val isSelected by lazy { item.mangaId in nowSelectedManga }
+
+    if (payloads.isEmpty()) {
+      holder.bind(item, isSelected, this)
+    } else {
+      val payload = payloads.first { it is Payload } as Payload
+      if (payload.selectionChanged) {
+        holder.bindIsSelected(isSelected)
+      }
+    }
   }
 
   override fun onViewRecycled(holder: MangaHolder) {
     holder.recycle()
   }
 
-  // TODO
+  fun submitManga(mangas: List<LibraryManga>, selectedManga: Set<Long>) {
+    this.selectedManga = selectedManga
+    submitList(mangas, forceSubmit = true)
+  }
+
+  override fun onListUpdated() {
+    nowSelectedManga = selectedManga
+  }
+
   override fun getDiffCallback(
     oldList: List<LibraryManga>,
     newList: List<LibraryManga>
   ): DiffUtil.Callback {
-    return object : ItemCallback<LibraryManga>(oldList, newList) {
-
-      override fun areItemsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
-        return oldItem == newItem
-      }
-
-      override fun areContentsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
-        return true
-      }
-
-    }
+    return DiffCallback(oldList, newList, nowSelectedManga, selectedManga)
   }
 
   fun handleMangaClick(position: Int) {
     val manga = getItemOrNull(position) ?: return
     listener.onMangaClick(manga)
   }
+
+  fun handleMangaLongClick(position: Int) {
+    val manga = getItemOrNull(position) ?: return
+    listener.onMangaLongClick(manga)
+  }
+
+  private class DiffCallback(
+    oldList: List<LibraryManga>,
+    newList: List<LibraryManga>,
+    private val oldSelected: Set<Long>,
+    private val newSelected: Set<Long>
+  ) : ItemCallback<LibraryManga>(oldList, newList) {
+
+    override fun areItemsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
+      return oldItem.mangaId == newItem.mangaId
+    }
+
+    // TODO improve this
+    override fun areContentsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
+      return !selectionChanged(newItem)
+    }
+
+    // TODO improve this
+    override fun getChangePayload(oldItem: LibraryManga, newItem: LibraryManga): Any? {
+      return Payload(
+        selectionChanged = selectionChanged(newItem)
+      )
+    }
+
+    private fun selectionChanged(manga: LibraryManga): Boolean {
+      return manga.mangaId in oldSelected != manga.mangaId in newSelected
+    }
+
+  }
+
+  private data class Payload(
+    val selectionChanged: Boolean
+  )
 
 }

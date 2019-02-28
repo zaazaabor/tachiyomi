@@ -106,7 +106,7 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .asRxCompletable()
   }
 
-  override fun deleteCategories(categoryIds: List<Long>): Completable {
+  override fun deleteCategories(categoryIds: Collection<Long>): Completable {
     return storio.delete()
       .withIds(CategoryTable.TABLE, CategoryTable.COL_ID, categoryIds)
       .prepare()

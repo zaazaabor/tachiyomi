@@ -8,6 +8,7 @@
 
 package tachiyomi.ui.screens.category
 
+import android.view.MotionEvent
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.category_item.*
 import tachiyomi.domain.category.Category
@@ -17,11 +18,24 @@ import tachiyomi.ui.util.inflate
 import tachiyomi.ui.widget.TextOvalDrawable
 
 class CategoryHolder(
-  parent: ViewGroup
+  parent: ViewGroup,
+  adapter: CategoryAdapter
 ) : BaseViewHolder(parent.inflate(R.layout.category_item)) {
 
   init {
-    itemView.setOnClickListener {  }
+    itemView.setOnClickListener {
+      adapter.handleClick(adapterPosition)
+    }
+    itemView.setOnLongClickListener {
+      adapter.handleLongClick(adapterPosition)
+      true
+    }
+    category_reorder.setOnTouchListener { _, event ->
+      if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+        adapter.handleReorderTouchDown(this)
+      }
+      true
+    }
   }
 
   fun bind(category: Category, isSelected: Boolean) {

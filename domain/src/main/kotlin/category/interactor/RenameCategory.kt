@@ -26,7 +26,10 @@ class RenameCategory @Inject constructor(
     return categoryRepository.getCategories()
       .take(1)
       .flatMapCompletable { categories ->
-        if (categories.none { newName.equals(it.name, ignoreCase = true) }) {
+        val categoryWithSameName = categories.find { newName.equals(it.name, ignoreCase = true) }
+
+        // Allow to rename if it doesn't exist or it's the same category
+        if (categoryWithSameName == null || categoryWithSameName.id == categoryId) {
           categoryRepository.renameCategory(categoryId, newName)
         } else {
           Completable.error(CategoryAlreadyExists(newName))

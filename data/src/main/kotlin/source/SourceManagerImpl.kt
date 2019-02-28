@@ -9,10 +9,8 @@
 package tachiyomi.data.source
 
 import android.app.Application
-import tachiyomi.data.BuildConfig
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.Source
-import tachiyomi.source.TestSource
 import javax.inject.Inject
 
 class SourceManagerImpl @Inject constructor(
@@ -20,12 +18,6 @@ class SourceManagerImpl @Inject constructor(
 ) : SourceManager {
 
   private val sources = mutableMapOf<Long, Source>()
-
-  init {
-    if (BuildConfig.DEBUG) {
-      registerSource(TestSource())
-    }
-  }
 
   override fun get(key: Long): Source? {
     return sources[key]

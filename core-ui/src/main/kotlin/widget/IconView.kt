@@ -61,6 +61,7 @@ class IconView @JvmOverloads constructor(
 
     val colorStateList = ColorStateList(states, colors)
 
+    // TODO check if mutation is needed (most probably)
     ImageViewCompat.setImageTintList(this, colorStateList)
   }
 

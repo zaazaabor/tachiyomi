@@ -14,6 +14,7 @@ import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.Source
 import tachiyomi.source.model.MangaInfo
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class MangaInitializer @Inject internal constructor(
@@ -22,7 +23,7 @@ class MangaInitializer @Inject internal constructor(
 ) {
 
   fun interact(source: Source, manga: Manga, force: Boolean = false): Maybe<Manga> {
-    if (!force && manga.initialized) return Maybe.empty()
+    if (!force && lastInitBelowMinInterval(manga)) return Maybe.empty()
 
     val stubManga = MangaInfo(
       key = manga.key,
@@ -32,8 +33,7 @@ class MangaInitializer @Inject internal constructor(
       description = manga.description,
       genres = manga.genres,
       status = manga.status,
-      cover = manga.cover,
-      initialized = manga.initialized
+      cover = manga.cover
     )
     return Maybe.fromCallable { source.fetchMangaDetails(stubManga) }
       .flatMap { sourceManga ->
@@ -46,7 +46,7 @@ class MangaInitializer @Inject internal constructor(
           genres = sourceManga.genres,
           status = sourceManga.status,
           cover = sourceManga.cover,
-          initialized = true
+          lastInit = System.currentTimeMillis()
         )
         mangaRepository.updateMangaDetails(updatedManga)
           .andThen(Maybe.just(updatedManga))
@@ -56,6 +56,14 @@ class MangaInitializer @Inject internal constructor(
   fun interact(manga: Manga, force: Boolean = false): Maybe<Manga> {
     val source = sourceManager.get(manga.source) ?: return Maybe.empty()
     return interact(source, manga, force)
+  }
+
+  private fun lastInitBelowMinInterval(manga: Manga): Boolean {
+    return System.currentTimeMillis() - manga.lastInit < INIT_MIN_INTERVAL
+  }
+
+  private companion object {
+    val INIT_MIN_INTERVAL = TimeUnit.DAYS.toMillis(30)
   }
 
 }

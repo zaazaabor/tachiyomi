@@ -15,11 +15,12 @@ import javax.inject.Inject
 
 class ChangeMangaFavorite @Inject constructor(private val libraryRepository: LibraryRepository) {
 
-  fun interact(manga: Manga): Completable {
-    return if (manga.favorite) {
-      libraryRepository.removeFromLibrary(manga)
+  fun interact(manga: Manga) = Completable.defer {
+    val updatedManga = if (manga.favorite) {
+      manga.copy(favorite = false)
     } else {
-      libraryRepository.addToLibrary(manga)
+      manga.copy(favorite = true, dateAdded = System.currentTimeMillis())
     }
+    libraryRepository.updateFavorite(updatedManga)
   }
 }

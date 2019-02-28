@@ -18,13 +18,13 @@ data class Manga(
   val artist: String = "",
   val author: String = "",
   val description: String = "",
-  val genres: String = "",
+  val genres: List<String> = emptyList(),
   val status: Int = MangaInfo.UNKNOWN,
   val cover: String = "",
   val favorite: Boolean = false,
   val lastUpdate: Long = 0,
+  val lastInit: Long = 0,
   val dateAdded: Long = 0,
-  val initialized: Boolean = false,
   val viewer: Int = 0,
   val flags: Int = 0
 )

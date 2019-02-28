@@ -20,9 +20,9 @@ sealed class CatalogLocal : Catalog() {
 }
 
 data class CatalogInternal(
-  override val name: String,
+  override val source: Source,
   override val description: String = "",
-  override val source: Source
+  override val name: String = source.name
 ) : CatalogLocal()
 
 data class CatalogInstalled(

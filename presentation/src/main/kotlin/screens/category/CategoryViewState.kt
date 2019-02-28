@@ -12,5 +12,6 @@ import tachiyomi.domain.category.Category
 
 data class ViewState(
   val categories: List<Category> = emptyList(),
+  val selectedCategories: Set<Long> = emptySet(),
   val error: Throwable? = null
 )

@@ -52,7 +52,7 @@ fun PreparedDelete.Builder.withId(
 fun PreparedDelete.Builder.withIds(
   table: String,
   columnName: String,
-  ids: List<Long>
+  ids: Collection<Long>
 ): PreparedDeleteByQuery.Builder {
   return byQuery(DeleteQuery.builder()
     .table(table)

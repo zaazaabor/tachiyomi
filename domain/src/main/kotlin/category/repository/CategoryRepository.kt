@@ -30,7 +30,7 @@ interface CategoryRepository {
 
   fun deleteCategory(categoryId: Long): Completable
 
-  fun deleteCategories(categoryIds: List<Long>): Completable
+  fun deleteCategories(categoryIds: Collection<Long>): Completable
 
   fun setCategoriesForMangas(categoryIds: List<Long>, mangaIds: List<Long>): Completable
 }

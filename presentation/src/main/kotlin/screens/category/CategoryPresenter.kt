@@ -18,7 +18,7 @@ import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
-import tachiyomi.domain.category.interactor.DeleteCategory
+import tachiyomi.domain.category.interactor.DeleteCategories
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.interactor.SubscribeCategories
@@ -28,7 +28,7 @@ import javax.inject.Inject
 class CategoryPresenter @Inject constructor(
   private val subscribeCategories: SubscribeCategories,
   private val createCategoryWithName: CreateCategoryWithName,
-  private val deleteCategory: DeleteCategory,
+  private val deleteCategories: DeleteCategories,
   private val renameCategory: RenameCategory,
   private val reorderCategory: ReorderCategory,
   private val schedulers: RxSchedulers
@@ -83,7 +83,7 @@ class CategoryPresenter @Inject constructor(
     return subscribeCategories.interact()
       .onBackpressureLatest()
       .toObservable()
-      .map { Action.CategoriesUpdate(it) }
+      .map(Action::CategoriesUpdate)
   }
 
   @Suppress("unused_parameter")
@@ -104,9 +104,10 @@ class CategoryPresenter @Inject constructor(
     actions: Observable<Action>,
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
-    return actions.ofType<Action.DeleteCategory>()
+    return actions.ofType<Action.DeleteCategories>()
       .flatMap {
-        deleteCategory.interact(it.category).toObservable<Action>()
+        deleteCategories.interact(it.categoryIds)
+          .andThen(Observable.just(Action.UnselectCategories))
       }
   }
 
@@ -117,7 +118,8 @@ class CategoryPresenter @Inject constructor(
   ): Observable<Action> {
     return actions.ofType<Action.RenameCategory>()
       .flatMap {
-        renameCategory.interact(it.category, it.newName).toObservable<Action>()
+        renameCategory.interact(it.categoryId, it.newName)
+          .andThen(Observable.just(Action.UnselectCategories))
       }
   }
 
@@ -136,16 +138,28 @@ class CategoryPresenter @Inject constructor(
     actions.accept(Action.CreateCategory(name))
   }
 
-  fun deleteCategory(category: Category) {
-    actions.accept(Action.DeleteCategory(category))
+  fun deleteCategories(categories: Set<Long>) {
+    actions.accept(Action.DeleteCategories(categories))
   }
 
-  fun renameCategory(category: Category, newName: String) {
-    actions.accept(Action.RenameCategory(category, newName))
+  fun renameCategory(categoryId: Long, newName: String) {
+    actions.accept(Action.RenameCategory(categoryId, newName))
   }
 
   fun reorderCategory(category: Category, newPosition: Int) {
     actions.accept(Action.ReorderCategory(category, newPosition))
+  }
+
+  fun toggleCategorySelection(category: Category) {
+    actions.accept(Action.ToggleCategorySelection(category))
+  }
+
+  fun unselectCategories() {
+    actions.accept(Action.UnselectCategories)
+  }
+
+  fun getCategory(id: Long): Category? {
+    return state.value?.categories?.find { it.id == id }
   }
 
 }

@@ -20,7 +20,5 @@ interface LibraryRepository {
 
   fun getFavoriteSourceIds(): Single<List<Long>>
 
-  fun addToLibrary(manga: Manga): Completable
-
-  fun removeFromLibrary(manga: Manga): Completable
+  fun updateFavorite(manga: Manga): Completable
 }

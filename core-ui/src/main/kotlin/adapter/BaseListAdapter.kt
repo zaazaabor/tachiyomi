@@ -40,6 +40,10 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
    * is available.
    */
   private var list: List<T>? = null
+    set(value) {
+      field = value
+      onListUpdated()
+    }
 
   /**
    * Non-null, unmodifiable version of [list].
@@ -92,9 +96,9 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
   }
 
   /**
-   * Called when the given [newList] is being set as the new list of items of this adapter.
+   * Called when the internal list of the adapter is updated.
    */
-  open fun onLatchList(newList: List<T>) {
+  open fun onListUpdated() {
   }
 
   /**
@@ -153,7 +157,6 @@ abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> :
    */
   private fun latchList(newList: List<T>, diffResult: DiffUtil.DiffResult) {
     list = newList
-    onLatchList(newList)
     // notify last, after list is updated
     currentList = Collections.unmodifiableList(newList)
     diffResult.dispatchUpdatesTo(updateCallback)

@@ -18,6 +18,7 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import tachiyomi.core.db.inTransaction
 import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.data.BuildConfig
 import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver
 import tachiyomi.data.catalog.installer.CatalogInstaller
@@ -29,7 +30,7 @@ import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
-import tachiyomi.source.CatalogSource
+import tachiyomi.source.TestSource
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -59,14 +60,14 @@ internal class CatalogRepositoryImpl @Inject constructor(
       installedCatalogsRelay.onNext(value)
     }
 
-  private val remoteCatalogsRelay = BehaviorSubject.create<List<CatalogRemote>>()
-
   var remoteCatalogs = emptyList<CatalogRemote>()
     private set(value) {
       field = value
       remoteCatalogsRelay.onNext(value)
       setUpdateFieldOfInstalledCatalogs(value)
     }
+
+  private val remoteCatalogsRelay = BehaviorSubject.createDefault(remoteCatalogs)
 
   private var lastTimeApiChecked: Long? = null
 
@@ -89,9 +90,8 @@ internal class CatalogRepositoryImpl @Inject constructor(
 
     this.sourceManager = sourceManager
 
-    internalCatalogs = sourceManager.getSources()
-      .filterIsInstance<CatalogSource>()
-      .map { CatalogInternal(it.name, "Internal source description", it) }
+    internalCatalogs = initInternalCatalogs()
+      .onEach { sourceManager.registerSource(it.source) }
 
     installedCatalogs = loader.loadExtensions()
       .filterIsInstance<CatalogLoader.Result.Success>()
@@ -111,6 +111,14 @@ internal class CatalogRepositoryImpl @Inject constructor(
 
   override fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>> {
     return remoteCatalogsRelay
+  }
+
+  private fun initInternalCatalogs(): List<CatalogInternal> {
+    val catalogs = mutableListOf<CatalogInternal>()
+    if (BuildConfig.DEBUG) {
+      catalogs.add(CatalogInternal(TestSource(), "Source used for testing"))
+    }
+    return catalogs
   }
 
   private fun initRemoteCatalogs() {

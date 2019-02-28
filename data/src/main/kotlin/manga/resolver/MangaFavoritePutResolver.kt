@@ -35,8 +35,11 @@ internal class MangaFavoritePutResolver : PutResolver<Manga>() {
   }
 
   fun mapToContentValues(manga: Manga): ContentValues {
-    return ContentValues(1).apply {
+    return ContentValues(2).apply {
       put(MangaTable.COL_FAVORITE, manga.favorite)
+      if (manga.favorite) {
+        put(MangaTable.COL_DATE_ADDED, manga.dateAdded)
+      }
     }
   }
 

@@ -63,9 +63,14 @@ object Deps {
   const val conductor = "com.bluelinelabs:conductor:2.1.5"
   const val conductorPreference = "com.github.inorichi:conductor-support-preference:78e2344"
   const val materialDimens = "com.dmitrymalkovich.android:material-design-dimens:1.4"
-  const val materialDialog = "com.afollestad.material-dialogs:core:0.9.6.0"
   const val constraint = "com.android.support.constraint:constraint-layout:1.1.3"
   const val cyanea = "com.github.jaredrummler:Cyanea:a1c14cad4b"
+
+  object materialDialog {
+    private const val version = "2.0.0"
+    const val core = "com.afollestad.material-dialogs:core:$version"
+    const val input = "com.afollestad.material-dialogs:input:$version"
+  }
 
   object glide {
     private const val version = "4.8.0"

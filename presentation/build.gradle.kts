@@ -50,7 +50,8 @@ dependencies {
   kapt(Deps.toothpick.compiler)
 
   implementation(Deps.materialDimens)
-  implementation(Deps.materialDialog)
+  implementation(Deps.materialDialog.core)
+  implementation(Deps.materialDialog.input)
   implementation(Deps.cyanea)
 
   implementation(Deps.glide.core)

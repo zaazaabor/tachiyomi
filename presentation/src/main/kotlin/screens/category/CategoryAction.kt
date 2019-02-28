@@ -18,14 +18,35 @@ sealed class Action {
 
   data class CreateCategory(val name: String) : Action()
 
-  data class DeleteCategory(val category: Category) : Action()
-
-  data class RenameCategory(val category: Category, val newName: String) : Action()
+  data class RenameCategory(val categoryId: Long, val newName: String) : Action()
 
   data class ReorderCategory(val category: Category, val newPosition: Int) : Action()
 
+  data class DeleteCategories(val categoryIds: Set<Long>) : Action()
+
   data class Error(val error: Throwable? = null) : Action() {
     override fun reduce(state: ViewState) = state.copy(error = error)
+  }
+
+  data class ToggleCategorySelection(val category: Category) : Action() {
+    override fun reduce(state: ViewState): ViewState {
+      val selectedCategories = state.selectedCategories.toMutableSet()
+      if (category.id in selectedCategories) {
+        selectedCategories -= category.id
+      } else {
+        selectedCategories += category.id
+      }
+
+      // Make sure only existing categories can be selected
+      val currCategoryIds = state.categories.asSequence().map { it.id }.toSet()
+      selectedCategories.retainAll { it in currCategoryIds }
+
+      return state.copy(selectedCategories = selectedCategories)
+    }
+  }
+
+  object UnselectCategories : Action() {
+    override fun reduce(state: ViewState) = state.copy(selectedCategories = emptySet())
   }
 
   open fun reduce(state: ViewState) = state

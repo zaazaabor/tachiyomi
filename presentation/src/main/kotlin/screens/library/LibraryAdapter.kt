@@ -11,6 +11,7 @@ package tachiyomi.ui.screens.library
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import tachiyomi.domain.library.model.Library
 import tachiyomi.domain.library.model.LibraryCategory
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.R
@@ -24,36 +25,67 @@ class LibraryAdapter(
 ) : ViewPagerAdapter() {
 
   private var items = emptyList<LibraryCategory>()
+  private var selectedManga = emptySet<Long>()
 
   private val pool = RecyclerView.RecycledViewPool()
 
+  private var boundViews = mutableListOf<LibraryCategoryView>()
+
   override fun createView(container: ViewGroup, position: Int): View {
     val view = container.inflate(R.layout.library_category_view) as LibraryCategoryView
-    view.bind(items[position], pool, glideRequests, listener)
+    view.create(pool, glideRequests, listener)
+    view.bind(items[position], selectedManga)
+    boundViews.add(view)
     return view
+  }
+
+  override fun destroyView(container: ViewGroup, position: Int, view: View) {
+    boundViews.remove(container as LibraryCategoryView)
+    super.destroyView(container, position, view)
   }
 
   override fun getCount(): Int {
     return items.size
   }
 
-  fun setItems(items: List<LibraryCategory>) {
+  fun setItems(items: Library, selectedManga: Set<Long>) {
+    val categoriesChanged = categoriesChanged(this.items, items)
     this.items = items
-    notifyDataSetChanged()
-  }
+    this.selectedManga = selectedManga
 
-  override fun getPageTitle(position: Int): CharSequence? {
-    return items[position].category.name
+    if (categoriesChanged) {
+      notifyDataSetChanged()
+    }
+
+    for (view in boundViews) {
+      val libCategory = items.find { it.category.id == view.libCategory.category.id }
+      if (libCategory != null) {
+        view.bind(libCategory, selectedManga)
+      }
+    }
   }
 
   override fun getItemPosition(obj: Any): Int {
     val view = obj as? LibraryCategoryView ?: return POSITION_NONE
-    val index = items.indexOfFirst { it.category.id == view.category?.category?.id }
+    val index = items.indexOfFirst { it.category.id == view.libCategory.category.id }
     return if (index == -1) POSITION_NONE else index
+  }
+
+  private fun categoriesChanged(oldLibrary: Library, newLibrary: Library): Boolean {
+    if (oldLibrary === newLibrary) return false
+    if (oldLibrary.size != newLibrary.size) return true
+
+    oldLibrary.forEachIndexed { i, oldCategory ->
+      val newCategory = newLibrary[i]
+      if (oldCategory.category.id != newCategory.category.id) return true
+    }
+
+    return false
   }
 
   interface Listener {
     fun onMangaClick(manga: LibraryManga)
+    fun onMangaLongClick(manga: LibraryManga)
   }
 
 }

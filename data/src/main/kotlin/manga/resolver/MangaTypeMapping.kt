@@ -21,13 +21,14 @@ import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.data.manga.table.MangaTable.COL_ARTIST
 import tachiyomi.data.manga.table.MangaTable.COL_AUTHOR
 import tachiyomi.data.manga.table.MangaTable.COL_COVER
+import tachiyomi.data.manga.table.MangaTable.COL_DATE_ADDED
 import tachiyomi.data.manga.table.MangaTable.COL_DESCRIPTION
 import tachiyomi.data.manga.table.MangaTable.COL_FAVORITE
 import tachiyomi.data.manga.table.MangaTable.COL_FLAGS
-import tachiyomi.data.manga.table.MangaTable.COL_GENRE
+import tachiyomi.data.manga.table.MangaTable.COL_GENRES
 import tachiyomi.data.manga.table.MangaTable.COL_ID
-import tachiyomi.data.manga.table.MangaTable.COL_INITIALIZED
 import tachiyomi.data.manga.table.MangaTable.COL_KEY
+import tachiyomi.data.manga.table.MangaTable.COL_LAST_INIT
 import tachiyomi.data.manga.table.MangaTable.COL_LAST_UPDATE
 import tachiyomi.data.manga.table.MangaTable.COL_SOURCE
 import tachiyomi.data.manga.table.MangaTable.COL_STATUS
@@ -67,12 +68,12 @@ internal class MangaPutResolver : DefaultPutResolver<Manga>() {
       put(COL_ARTIST, obj.artist)
       put(COL_AUTHOR, obj.author)
       put(COL_DESCRIPTION, obj.description)
-      put(COL_GENRE, obj.genres)
+      put(COL_GENRES, obj.genres.joinToString(separator = ";"))
       put(COL_STATUS, obj.status)
       put(COL_COVER, obj.cover)
       put(COL_FAVORITE, obj.favorite)
       put(COL_LAST_UPDATE, obj.lastUpdate)
-      put(COL_INITIALIZED, obj.initialized)
+      put(COL_LAST_INIT, obj.lastInit)
       put(COL_VIEWER, obj.viewer)
       put(COL_FLAGS, obj.flags)
     }
@@ -88,19 +89,19 @@ internal class MangaGetResolver : DefaultGetResolver<Manga>() {
     val artist = cursor.getString(cursor.getColumnIndex(COL_ARTIST))
     val author = cursor.getString(cursor.getColumnIndex(COL_AUTHOR))
     val description = cursor.getString(cursor.getColumnIndex(COL_DESCRIPTION))
-    val genre = cursor.getString(cursor.getColumnIndex(COL_GENRE))
+    val genres = cursor.getString(cursor.getColumnIndex(COL_GENRES)).split(";")
     val status = cursor.getInt(cursor.getColumnIndex(COL_STATUS))
     val cover = cursor.getString(cursor.getColumnIndex(COL_COVER))
     val favorite = cursor.getInt(cursor.getColumnIndex(COL_FAVORITE)) == 1
     val lastUpdate = cursor.getLong(cursor.getColumnIndex(COL_LAST_UPDATE))
-    val initialized = cursor.getInt(cursor.getColumnIndex(COL_INITIALIZED)) == 1
+    val lastInit = cursor.getLong(cursor.getColumnIndex(COL_LAST_INIT))
+    val dateAdded = cursor.getLong(cursor.getColumnIndex(COL_DATE_ADDED))
     val viewer = cursor.getInt(cursor.getColumnIndex(COL_VIEWER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
-    val dateAdded = 0L // TODO
 
     return Manga(
-      id, source, key, title, artist, author, description, genre, status,
-      cover, favorite, lastUpdate, dateAdded, initialized, viewer, flags
+      id, source, key, title, artist, author, description, genres, status,
+      cover, favorite, lastUpdate, dateAdded, lastInit, viewer, flags
     )
   }
 }

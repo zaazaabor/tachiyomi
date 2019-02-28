@@ -2,6 +2,8 @@ package tachiyomi.source.model
 
 /**
  * Model for a manga given by a source
+ *
+ * TODO: we should avoid data class due to possible incompatibilities across versions
  */
 data class MangaInfo(
   val key: String,
@@ -9,10 +11,9 @@ data class MangaInfo(
   val artist: String = "",
   val author: String = "",
   val description: String = "",
-  val genres: String = "",
+  val genres: List<String> = emptyList(),
   val status: Int = UNKNOWN,
-  val cover: String = "",
-  val initialized: Boolean = false
+  val cover: String = ""
 ) {
 
   companion object {

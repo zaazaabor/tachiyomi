@@ -25,9 +25,13 @@ class MangaHolder(
 
   init {
     itemView.setOnClickListener { currentAdapter?.handleMangaClick(adapterPosition) }
+    itemView.setOnLongClickListener {
+      currentAdapter?.handleMangaLongClick(adapterPosition)
+      true
+    }
   }
 
-  fun bind(manga: LibraryManga, adapter: LibraryCategoryAdapter) {
+  fun bind(manga: LibraryManga, isSelected: Boolean, adapter: LibraryCategoryAdapter) {
     currentAdapter = adapter
     catalog_title.text = manga.title
 
@@ -36,6 +40,12 @@ class MangaHolder(
       glideRequests.load(manga.cover)
         .into(thumbnail)
     }
+
+    bindIsSelected(isSelected)
+  }
+
+  fun bindIsSelected(isSelected: Boolean) {
+    itemView.isActivated = isSelected
   }
 
   override fun recycle() {

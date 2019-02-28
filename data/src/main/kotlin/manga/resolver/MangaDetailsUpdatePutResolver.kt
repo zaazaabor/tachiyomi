@@ -41,10 +41,10 @@ internal class MangaDetailsUpdatePutResolver : PutResolver<Manga>() {
       put(MangaTable.COL_ARTIST, manga.artist)
       put(MangaTable.COL_AUTHOR, manga.author)
       put(MangaTable.COL_DESCRIPTION, manga.description)
-      put(MangaTable.COL_GENRE, manga.genres)
+      put(MangaTable.COL_GENRES, manga.genres.joinToString(separator = ";"))
       put(MangaTable.COL_STATUS, manga.status)
       put(MangaTable.COL_COVER, manga.cover)
-      put(MangaTable.COL_INITIALIZED, manga.initialized)
+      put(MangaTable.COL_LAST_INIT, manga.lastInit)
     }
   }
 

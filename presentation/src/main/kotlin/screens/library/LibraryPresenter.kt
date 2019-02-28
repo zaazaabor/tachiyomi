@@ -18,6 +18,7 @@ import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.data.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.interactor.GetLibrary
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 
@@ -102,6 +103,14 @@ class LibraryPresenter @Inject constructor(
         getLibrary.setSorting(action.sort)
         Observable.empty<Action>()
       }
+  }
+
+  fun toggleMangaSelection(manga: LibraryManga) {
+    actions.accept(Action.ToggleSelection(manga))
+  }
+
+  fun unselectMangas() {
+    actions.accept(Action.UnselectMangas)
   }
 
 }

@@ -23,9 +23,9 @@ internal fun MangaInfo.asDbManga(sourceId: Long): Manga {
     genres = genres,
     status = status,
     cover = cover,
-    initialized = initialized,
     favorite = false,
     lastUpdate = 0,
+    lastInit = 0,
     viewer = 0,
     flags = 0
   )

@@ -67,19 +67,12 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .asRxSingle()
   }
 
-  override fun addToLibrary(manga: Manga): Completable {
-    return setFavorite(manga, true)
-  }
-
-  override fun removeFromLibrary(manga: Manga): Completable {
-    return setFavorite(manga, false)
-  }
-
-  private fun setFavorite(manga: Manga, favorite: Boolean): Completable {
+  override fun updateFavorite(manga: Manga): Completable {
     return storio.put()
-      .`object`(manga.copy(favorite = favorite))
+      .`object`(manga)
       .withPutResolver(MangaFavoritePutResolver())
       .prepare()
       .asRxCompletable()
   }
+
 }

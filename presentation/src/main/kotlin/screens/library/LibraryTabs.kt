@@ -18,6 +18,7 @@ import tachiyomi.domain.library.model.Library
 import tachiyomi.ui.R
 import tachiyomi.ui.theme.ChipTheme
 import tachiyomi.ui.util.dpToPx
+import tachiyomi.ui.util.visibleIf
 import tachiyomi.ui.widget.CustomViewTabLayout
 import tachiyomi.ui.widget.IconView
 
@@ -40,12 +41,17 @@ class LibraryTabs @JvmOverloads constructor(
 
   private val theme = ChipTheme.SelectedAccent(context)
 
+  private var currentLibrary: Library? = null
+
   init {
     scrollContainer.addView(settingsTab)
   }
 
   @SuppressLint("InflateParams")
   fun submitList(library: Library) {
+    if (currentLibrary == library) return
+    currentLibrary = library
+
     val inflater by lazy { LayoutInflater.from(context) }
 
     library.forEachIndexed { i, (category, _) ->
@@ -61,6 +67,7 @@ class LibraryTabs @JvmOverloads constructor(
         chip.text = category.name
       }
     }
+    settingsTab.visibleIf { library.isNotEmpty() }
   }
 
   fun setOnSettingsClickListener(listener: () -> Unit) {

@@ -13,7 +13,7 @@ import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
-class DeleteCategory @Inject constructor(
+class DeleteCategories @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
@@ -26,5 +26,9 @@ class DeleteCategory @Inject constructor(
     return interact(category.id)
   }
 
+  fun interact(categoryIds: Collection<Long>): Completable {
+    return categoryRepository.deleteCategories(categoryIds)
+      .onErrorComplete()
+  }
 
 }

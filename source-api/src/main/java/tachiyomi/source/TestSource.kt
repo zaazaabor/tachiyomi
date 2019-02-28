@@ -17,7 +17,7 @@ class TestSource : CatalogSource {
     Thread.sleep(1000)
     val noHipstersOffset = 10
     val picId = manga.title.split(" ")[1].toInt() + noHipstersOffset
-    return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId", initialized = true)
+    return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId")
   }
 
   override fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo {
@@ -123,10 +123,9 @@ class TestSource : CatalogSource {
       "",
       "",
       "",
-      "",
+      emptyList(),
       0,
-      "",
-      false
+      ""
     )
     list += manga1
 

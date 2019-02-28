@@ -10,6 +10,7 @@ package tachiyomi.ui.screens.library
 
 import tachiyomi.domain.library.model.LibraryCategory
 import tachiyomi.domain.library.model.LibraryFilter
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 
 sealed class Action {
@@ -27,6 +28,20 @@ sealed class Action {
   data class LibraryUpdate(val library: List<LibraryCategory>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(library = library)
+  }
+
+  data class ToggleSelection(val manga: LibraryManga) : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(selectedManga = if (manga.mangaId in state.selectedManga) {
+        state.selectedManga - manga.mangaId
+      } else {
+        state.selectedManga + manga.mangaId
+      })
+  }
+
+  object UnselectMangas : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(selectedManga = emptySet())
   }
 
   open fun reduce(state: ViewState) = state
