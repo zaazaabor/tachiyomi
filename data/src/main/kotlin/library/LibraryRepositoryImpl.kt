@@ -14,48 +14,45 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
-import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.library.resolver.FavoriteSourceIdsGetResolver
+import tachiyomi.data.library.resolver.LibraryMangaForCategoryGetResolver
 import tachiyomi.data.library.resolver.LibraryMangaGetResolver
 import tachiyomi.data.manga.resolver.MangaFavoritePutResolver
 import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.domain.category.repository.CategoryRepository
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 internal class LibraryRepositoryImpl @Inject constructor(
-  private val storio: StorIOSQLite,
-  private val categoryRepository: CategoryRepository
+  private val storio: StorIOSQLite
 ) : LibraryRepository {
-
-//  override fun getLibraryManga(): Flowable<List<Manga>> {
-//    return storio.get()
-//      .listOfObjects(Manga::class.java)
-//      .withQuery(Query.builder()
-//        .table(MangaTable.TABLE)
-//        .where("${MangaTable.COL_FAVORITE} = ?")
-//        .whereArgs(1)
-//        .orderBy(MangaTable.COL_TITLE)
-//        .build())
-//      .prepare()
-//      .asRxFlowable(BackpressureStrategy.BUFFER)
-//  }
 
   override fun getLibraryMangas(): Flowable<List<LibraryManga>> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
         .query(LibraryMangaGetResolver.query)
-        .observesTables(MangaTable.TABLE, ChapterTable.TABLE,
-          MangaCategoryTable.TABLE, CategoryTable.TABLE)
+        .observesTables(MangaTable.TABLE, ChapterTable.TABLE)
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.BUFFER)
+      .asRxFlowable(BackpressureStrategy.LATEST)
+  }
+
+  override fun getLibraryMangasForCategory(categoryId: Long): Flowable<List<LibraryManga>> {
+    return storio.get()
+      .listOfObjects(LibraryManga::class.java)
+      .withQuery(RawQuery.builder()
+        .query(LibraryMangaForCategoryGetResolver.query)
+        .args(categoryId)
+        .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE)
+        .build())
+      .withGetResolver(LibraryMangaForCategoryGetResolver)
+      .prepare()
+      .asRxFlowable(BackpressureStrategy.LATEST)
   }
 
   override fun getFavoriteSourceIds(): Single<List<Long>> {
@@ -68,11 +65,13 @@ internal class LibraryRepositoryImpl @Inject constructor(
   }
 
   override fun updateFavorite(manga: Manga): Completable {
-    return storio.put()
-      .`object`(manga)
-      .withPutResolver(MangaFavoritePutResolver())
-      .prepare()
-      .asRxCompletable()
+    return Completable.fromAction {
+      storio.put()
+        .`object`(manga)
+        .withPutResolver(MangaFavoritePutResolver())
+        .prepare()
+        .executeAsBlocking()
+    }
   }
 
 }

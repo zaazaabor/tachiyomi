@@ -16,9 +16,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.library_controller.*
 import tachiyomi.core.rx.scanWithPrevious
-import tachiyomi.domain.library.model.Library
+import tachiyomi.domain.category.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
@@ -28,13 +29,15 @@ import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.screens.category.CategoryController
 import tachiyomi.ui.screens.home.HomeChildController
 import tachiyomi.ui.screens.manga.MangaController
+import tachiyomi.ui.widget.CustomViewTabLayout
 
 class LibraryController : MvpController<LibraryPresenter>(),
   HomeChildController,
   GlideController,
-  LibraryAdapter.Listener {
+  LibraryAdapter.Listener,
+  LibraryChangeCategoriesDialog.Listener {
 
-  private var adapter: LibraryAdapter? = null
+  private var adapter: LibraryCategoryAdapter? = null
 
   override val glideProvider = GlideProvider.from(this)
 
@@ -60,10 +63,22 @@ class LibraryController : MvpController<LibraryPresenter>(),
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
 
-    adapter = LibraryAdapter(this, glideProvider.get())
-    library_pager.adapter = adapter
-    library_tabs.setupWithViewPager(library_pager)
+    adapter = LibraryCategoryAdapter(glideProvider.get(), this)
+    library_recycler.layoutManager = GridLayoutManager(view.context, 2)
+    library_recycler.adapter = adapter
+//    library_tabs.setupWithViewPager(library_pager)
     library_tabs.setOnSettingsClickListener(::onCategorySettingsClick)
+    library_tabs.addOnTabSelectedListener(object : CustomViewTabLayout.OnTabSelectedListener {
+      override fun onTabSelected(tab: CustomViewTabLayout.Tab) {
+        presenter.setSelectedCategory(tab.position)
+      }
+
+      override fun onTabUnselected(tab: CustomViewTabLayout.Tab) {}
+
+      override fun onTabReselected(tab: CustomViewTabLayout.Tab) {}
+
+    })
+    //library_tabs.setOnChipClickListener(::onChipClick)
 
     presenter.state
       .scanWithPrevious()
@@ -77,6 +92,11 @@ class LibraryController : MvpController<LibraryPresenter>(),
   }
 
   private fun render(state: ViewState, prevState: ViewState?) {
+    if (state.categories !== prevState?.categories ||
+      state.selectedCategoryId != prevState.selectedCategoryId
+    ) {
+      renderCategories(state.categories, state.selectedCategoryId)
+    }
     if (state.library !== prevState?.library || state.selectedManga !== prevState.selectedManga) {
       renderLibrary(state.library, state.selectedManga)
     }
@@ -85,9 +105,12 @@ class LibraryController : MvpController<LibraryPresenter>(),
     }
   }
 
-  private fun renderLibrary(library: Library, selectedManga: Set<Long>) {
-    adapter?.setItems(library, selectedManga)
-    library_tabs.submitList(library)
+  private fun renderCategories(categories: List<Category>, selectedCategoryId: Long?) {
+    library_tabs.setCategories(categories, selectedCategoryId)
+  }
+
+  private fun renderLibrary(library: List<LibraryManga>, selectedManga: Set<Long>) {
+    adapter?.submitManga(library, selectedManga)
   }
 
   private fun renderSelectedManga(selectedManga: Set<Long>) {
@@ -121,6 +144,19 @@ class LibraryController : MvpController<LibraryPresenter>(),
     router.pushController(CategoryController().withHorizontalTransition())
   }
 
+  private fun showSetCategoriesDialog(selectedManga: Set<Long>) {
+    val categories = presenter.getCategories().takeUnless { it.isEmpty() } ?: return
+    val preselected = emptyArray<Int>() // TODO
+    LibraryChangeCategoriesDialog(this, selectedManga, categories, preselected).showDialog(router)
+  }
+
+  override fun updateCategoriesForMangas(
+    categoryIds: Collection<Long>,
+    mangaIds: Collection<Long>
+  ) {
+    presenter.setCategoriesForMangas(categoryIds, mangaIds)
+  }
+
   private inner class ActionModeCallback : ActionMode.Callback {
 
     private var selectedManga: Set<Long> = emptySet()
@@ -136,6 +172,11 @@ class LibraryController : MvpController<LibraryPresenter>(),
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+      when (item.itemId) {
+        R.id.action_set_categories -> {
+          showSetCategoriesDialog(selectedManga)
+        }
+      }
       return true
     }
 

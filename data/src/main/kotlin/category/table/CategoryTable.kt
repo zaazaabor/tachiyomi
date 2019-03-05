@@ -10,6 +10,7 @@ package tachiyomi.data.category.table
 
 import android.database.sqlite.SQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
+import tachiyomi.domain.category.Category
 
 internal object CategoryTable : DbOpenCallback {
 
@@ -22,14 +23,34 @@ internal object CategoryTable : DbOpenCallback {
 
   private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
-            $COL_ID INTEGER NOT NULL PRIMARY KEY,
-            $COL_NAME TEXT NOT NULL,
-            $COL_ORDER INTEGER NOT NULL,
-            $COL_FLAGS INTEGER NOT NULL
-            )"""
+      $COL_ID INTEGER NOT NULL PRIMARY KEY,
+      $COL_NAME TEXT NOT NULL,
+      $COL_ORDER INTEGER NOT NULL,
+      $COL_FLAGS INTEGER NOT NULL
+      )"""
+
+  private val createAllCategoryQuery: String
+    get() = """INSERT INTO $TABLE VALUES (${Category.ALL_ID}, "", 0, 0)"""
+
+  private val createUncategorizedCategoryQuery: String
+    get() = """INSERT INTO $TABLE VALUES (${Category.UNCATEGORIZED_ID}, "", 0, 0)"""
+
+  private val deleteCategoryTrigger: String
+    get() = """CREATE TRIGGER system_categories_deletion_trigger
+      BEFORE DELETE
+      ON $TABLE
+      BEGIN
+      SELECT CASE
+      WHEN OLD.$COL_ID <= 0
+      THEN RAISE(ABORT, 'System category cant be deleted')
+      END;
+      END;"""
 
   override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(createTableQuery)
+    db.execSQL(deleteCategoryTrigger)
+    db.execSQL(createAllCategoryQuery)
+    db.execSQL(createUncategorizedCategoryQuery)
   }
 
 }

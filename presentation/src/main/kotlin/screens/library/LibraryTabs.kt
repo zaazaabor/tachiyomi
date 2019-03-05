@@ -10,12 +10,14 @@ package tachiyomi.ui.screens.library
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Handler
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.google.android.material.chip.Chip
-import tachiyomi.domain.library.model.Library
+import tachiyomi.domain.category.Category
 import tachiyomi.ui.R
+import tachiyomi.ui.screens.category.getVisibleName
 import tachiyomi.ui.theme.ChipTheme
 import tachiyomi.ui.util.dpToPx
 import tachiyomi.ui.util.visibleIf
@@ -41,21 +43,38 @@ class LibraryTabs @JvmOverloads constructor(
 
   private val theme = ChipTheme.SelectedAccent(context)
 
-  private var currentLibrary: Library? = null
+  private var currentCategories: List<Category>? = null
 
   init {
     scrollContainer.addView(settingsTab)
   }
 
-  @SuppressLint("InflateParams")
-  fun submitList(library: Library) {
-    if (currentLibrary == library) return
-    currentLibrary = library
+  fun setCategories(categories: List<Category>, selectedCategoryId: Long?) {
+    if (currentCategories !== categories) {
+      currentCategories = categories
+      populateCategories(categories)
+    }
 
+    val categoryPosition = categories.indexOfFirst { it.id == selectedCategoryId }
+    if (categoryPosition != -1) {
+      getTabAt(categoryPosition)?.let {
+        if (isLaidOut) {
+          selectTab(it)
+        } else {
+          Handler().post { selectTab(it) }
+        }
+      }
+    }
+  }
+
+  @SuppressLint("InflateParams")
+  private fun populateCategories(categories: List<Category>) {
     val inflater by lazy { LayoutInflater.from(context) }
 
-    library.forEachIndexed { i, (category, _) ->
-      val tab = getTabAt(i)!!
+    removeAllTabs()
+
+    for (category in categories) {
+      val tab = newTab()
       if (tab.customView !is Chip) {
         val chip = inflater.inflate(R.layout.library_tab_chip, null) as Chip
         chip.chipBackgroundColor = theme.backgroundColor
@@ -63,11 +82,14 @@ class LibraryTabs @JvmOverloads constructor(
         tab.customView = chip
       }
       val chip = tab.customView as Chip
-      if (chip.text != category.name) {
-        chip.text = category.name
+      val name = category.getVisibleName(context)
+      if (chip.text != name) {
+        chip.text = name
       }
+      addTab(tab, setSelected = false)
     }
-    settingsTab.visibleIf { library.isNotEmpty() }
+
+    settingsTab.visibleIf { categories.isNotEmpty() }
   }
 
   fun setOnSettingsClickListener(listener: () -> Unit) {

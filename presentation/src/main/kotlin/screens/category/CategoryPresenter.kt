@@ -117,9 +117,10 @@ class CategoryPresenter @Inject constructor(
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
     return actions.ofType<Action.RenameCategory>()
-      .flatMap {
-        renameCategory.interact(it.categoryId, it.newName)
-          .andThen(Observable.just(Action.UnselectCategories))
+      .flatMap { action ->
+        renameCategory.interact(action.categoryId, action.newName)
+          .filter { it is RenameCategory.Result.Success }
+          .flatMapObservable { Observable.just(Action.UnselectCategories) }
       }
   }
 

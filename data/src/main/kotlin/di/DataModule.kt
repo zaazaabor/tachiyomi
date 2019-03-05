@@ -9,6 +9,8 @@
 package tachiyomi.data.di
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
+import tachiyomi.core.db.StorIOTransaction
+import tachiyomi.core.db.Transaction
 import tachiyomi.core.di.bindProvider
 import tachiyomi.core.di.bindTo
 import tachiyomi.data.catalog.CatalogRepositoryImpl
@@ -34,6 +36,7 @@ object DataModule : Module() {
 
   init {
     bindProvider<StorIOSQLite, StorIOProvider>()
+    bindTo<Transaction, StorIOTransaction>()
 
     bindProvider<SourceManager, SourceManagerProvider>()
 

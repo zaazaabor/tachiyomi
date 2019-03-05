@@ -58,8 +58,14 @@ internal object MangaTable : DbOpenCallback {
   val createFavoriteIndexQuery: String
     get() = "CREATE INDEX ${TABLE}_${COL_FAVORITE}_index ON $TABLE($COL_FAVORITE)"
 
+  val createFavoriteViewQuery: String
+    get() = "CREATE VIEW library AS SELECT * FROM $TABLE WHERE $COL_FAVORITE = 1"
+
   override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(createTableQuery)
+    db.execSQL(createFavoriteViewQuery)
+    db.execSQL(createFavoriteIndexQuery)
+    db.execSQL(createUrlIndexQuery)
   }
 
 }

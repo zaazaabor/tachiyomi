@@ -11,10 +11,13 @@ package tachiyomi.domain.category.repository
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryWithCount
 
 interface CategoryRepository {
 
   fun getCategories(): Flowable<List<Category>>
+
+  fun getCategoriesWithCount(): Flowable<List<CategoryWithCount>>
 
   fun getCategoriesForManga(mangaId: Long): Flowable<List<Category>>
 
@@ -32,5 +35,8 @@ interface CategoryRepository {
 
   fun deleteCategories(categoryIds: Collection<Long>): Completable
 
-  fun setCategoriesForMangas(categoryIds: List<Long>, mangaIds: List<Long>): Completable
+  fun setCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>): Completable
+
+  fun deleteCategoriesForMangas(mangaIds: Collection<Long>): Completable
+
 }

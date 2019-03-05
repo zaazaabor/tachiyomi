@@ -508,4 +508,7 @@
   <string name="toolbar_appearance">Appearance</string>
   <string name="toolbar_themepicker">Theme picker</string>
 
+  <string name="category_all_name">All</string>
+  <string name="category_uncategorized_name">Uncategorized</string>
+
 </resources>

@@ -8,10 +8,8 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Completable
+import io.reactivex.Single
 import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.exception.CategoryAlreadyExists
-import tachiyomi.domain.category.exception.EmptyCategoryName
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
@@ -19,25 +17,43 @@ class RenameCategory @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(categoryId: Long, newName: String): Completable {
+  fun interact(categoryId: Long, newName: String): Single<Result> {
     if (newName.isBlank()) {
-      return Completable.error(EmptyCategoryName())
+      return Single.just(Result.EmptyNameError)
     }
     return categoryRepository.getCategories()
-      .take(1)
-      .flatMapCompletable { categories ->
-        val categoryWithSameName = categories.find { newName.equals(it.name, ignoreCase = true) }
+      .firstOrError()
+      .flatMap { categories ->
+        val category = categories.find { it.id == categoryId }
+          ?: return@flatMap Single.just(Result.NotFoundError)
+
+        if (category.isSystemCategory) {
+          return@flatMap Single.just(Result.CantBeRenamedError)
+        }
 
         // Allow to rename if it doesn't exist or it's the same category
-        if (categoryWithSameName == null || categoryWithSameName.id == categoryId) {
-          categoryRepository.renameCategory(categoryId, newName)
-        } else {
-          Completable.error(CategoryAlreadyExists(newName))
+        val categoryWithSameName = categories.find { it.name == newName }
+        if (categoryWithSameName != null && categoryWithSameName.id != categoryId) {
+          return@flatMap Single.just(Result.NameAlreadyExistsError)
         }
+
+        categoryRepository.renameCategory(categoryId, newName)
+          .andThen(Single.just<Result>(Result.Success))
+          .onErrorReturn { Result.InternalError(it) }
       }
   }
 
-  fun interact(category: Category, newName: String): Completable {
+  fun interact(category: Category, newName: String): Single<Result> {
     return interact(category.id, newName)
   }
+
+  sealed class Result {
+    object Success : Result()
+    object EmptyNameError : Result()
+    object NameAlreadyExistsError : Result()
+    object CantBeRenamedError : Result()
+    object NotFoundError : Result()
+    data class InternalError(val error: Throwable) : Result()
+  }
+
 }

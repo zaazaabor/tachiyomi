@@ -39,11 +39,12 @@ class CategoryHolder(
   }
 
   fun bind(category: Category, isSelected: Boolean) {
-    bindName(category.name)
+    bindName(category)
     bindIsSelected(isSelected)
   }
 
-  fun bindName(name: String) {
+  fun bindName(category: Category) {
+    val name = category.getVisibleName(itemView.context)
     category_text.text = name
 
     val initial = name.firstOrNull()?.toUpperCase()?.toString() ?: ""

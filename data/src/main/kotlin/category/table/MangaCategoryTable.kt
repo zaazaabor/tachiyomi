@@ -22,17 +22,19 @@ internal object MangaCategoryTable : DbOpenCallback {
 
   private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
-            $COL_ID INTEGER NOT NULL PRIMARY KEY,
-            $COL_MANGA_ID INTEGER NOT NULL,
-            $COL_CATEGORY_ID INTEGER NOT NULL,
-            FOREIGN KEY($COL_CATEGORY_ID) REFERENCES ${CategoryTable.TABLE} (${CategoryTable.COL_ID})
-            ON DELETE CASCADE,
-            FOREIGN KEY($COL_MANGA_ID) REFERENCES ${MangaTable.TABLE} (${MangaTable.COL_ID})
-            ON DELETE CASCADE
-            )"""
+      $COL_MANGA_ID INTEGER NOT NULL,
+      $COL_CATEGORY_ID INTEGER NOT NULL,
+      PRIMARY KEY($COL_MANGA_ID, $COL_CATEGORY_ID),
+      FOREIGN KEY($COL_CATEGORY_ID) REFERENCES ${CategoryTable.TABLE} ON DELETE CASCADE,
+      FOREIGN KEY($COL_MANGA_ID) REFERENCES ${MangaTable.TABLE} ON DELETE CASCADE
+      )"""
+
+  private val createCategoryIndex: String
+    get() = "CREATE INDEX ${COL_CATEGORY_ID}_index ON $TABLE($COL_CATEGORY_ID)"
 
   override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(createTableQuery)
+    db.execSQL(createCategoryIndex)
   }
 
 }

@@ -235,10 +235,11 @@ class CatalogBrowsePresenter @Inject constructor(
     return actions.ofType<Action.ToggleFavorite>()
       .flatMap { action ->
         changeMangaFavorite.interact(action.manga)
-          .andThen(getManga.interact(action.manga.id)
-            .toObservable()
-            .map(Action::MangaInitialized)
-          )
+          .flatMapObservable {
+            getManga.interact(action.manga.id)
+              .toObservable()
+              .map(Action::MangaInitialized)
+          }
       }
   }
 

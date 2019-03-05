@@ -18,7 +18,10 @@ interface LibraryRepository {
 
   fun getLibraryMangas(): Flowable<List<LibraryManga>>
 
+  fun getLibraryMangasForCategory(categoryId: Long): Flowable<List<LibraryManga>>
+
   fun getFavoriteSourceIds(): Single<List<Long>>
 
   fun updateFavorite(manga: Manga): Completable
+
 }

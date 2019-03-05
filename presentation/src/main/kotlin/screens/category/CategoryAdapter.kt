@@ -44,7 +44,7 @@ class CategoryAdapter(
     } else {
       val payload = payloads.first { it is Payload } as Payload
       if (payload.nameChanged) {
-        holder.bindName(category.name)
+        holder.bindName(category)
       }
       if (payload.selectionChanged) {
         val isSelected = category.id in nowSelectedIds

@@ -6,15 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.domain.library.model
+package tachiyomi.domain.category
 
-data class LibraryManga(
-  val mangaId: Long,
-  val source: Long,
-  val key: String,
-  val title: String,
-  val status: Int,
-  val cover: String,
-  val lastUpdate: Long = 0,
-  val unread: Int
-)
+data class CategoryWithCount(val category: Category, val mangaCount: Int)

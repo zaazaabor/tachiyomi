@@ -40,7 +40,7 @@ class LibraryAdapter(
   }
 
   override fun destroyView(container: ViewGroup, position: Int, view: View) {
-    boundViews.remove(container as LibraryCategoryView)
+    boundViews.remove(view as LibraryCategoryView)
     super.destroyView(container, position, view)
   }
 

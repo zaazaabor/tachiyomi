@@ -8,12 +8,15 @@
 
 package tachiyomi.ui.screens.library
 
-import tachiyomi.domain.library.model.LibraryCategory
+import tachiyomi.domain.category.Category
 import tachiyomi.domain.library.model.LibraryFilter
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 
 data class ViewState(
-  val library: List<LibraryCategory> = emptyList(),
+  val categories: List<Category> = emptyList(),
+  val selectedCategoryId: Long? = null,
+  val library: List<LibraryManga> = emptyList(),
   val filters: List<LibraryFilter> = emptyList(),
   val sort: LibrarySort = LibrarySort.Title(true),
   val selectedManga: Set<Long> = emptySet()

@@ -10,6 +10,7 @@ package tachiyomi.data.library.prefs
 
 import tachiyomi.core.prefs.Preference
 import tachiyomi.core.prefs.PreferenceStore
+import tachiyomi.domain.category.Category
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.deserialize
@@ -34,6 +35,10 @@ class LibraryPreferences internal constructor(private val preferenceStore: Prefe
       serializer = { it.serialize() },
       deserializer = { LibraryFilter.deserializeList(it) }
     )
+  }
+
+  fun lastUsedCategory(): Preference<Long> {
+    return preferenceStore.getLong("last_used_category", Category.ALL_ID)
   }
 
 }

@@ -18,11 +18,13 @@ import tachiyomi.core.db.inTransaction
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
 import tachiyomi.data.category.model.MangaCategory
+import tachiyomi.data.category.resolver.CategoryWithCountGetResolver
 import tachiyomi.data.category.resolver.RenameCategoryPutResolver
 import tachiyomi.data.category.resolver.ReorderCategoriesPutResolver
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryWithCount
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
@@ -30,15 +32,31 @@ internal class CategoryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : CategoryRepository {
 
+  private val categories = storio.get()
+    .listOfObjects(Category::class.java)
+    .withQuery(Query.builder()
+      .table(CategoryTable.TABLE)
+      .orderBy(CategoryTable.COL_ORDER)
+      .build())
+    .prepare()
+    .asRxFlowable(BackpressureStrategy.LATEST)
+    .replay(1)
+    .autoConnect()
+
   override fun getCategories(): Flowable<List<Category>> {
+    return categories
+  }
+
+  override fun getCategoriesWithCount(): Flowable<List<CategoryWithCount>> {
     return storio.get()
-      .listOfObjects(Category::class.java)
-      .withQuery(Query.builder()
-        .table(CategoryTable.TABLE)
-        .orderBy(CategoryTable.COL_ORDER)
+      .listOfObjects(CategoryWithCount::class.java)
+      .withQuery(RawQuery.builder()
+        .query(CategoryWithCountGetResolver.query)
+        .observesTables(CategoryTable.TABLE, MangaCategoryTable.TABLE)
         .build())
+      .withGetResolver(CategoryWithCountGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.BUFFER)
+      .asRxFlowable(BackpressureStrategy.LATEST)
   }
 
   override fun getCategoriesForManga(mangaId: Long): Flowable<List<Category>> {
@@ -46,15 +64,15 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .listOfObjects(Category::class.java)
       .withQuery(RawQuery.builder()
         .query("""
-            SELECT ${CategoryTable.TABLE}.* FROM ${CategoryTable.TABLE}
-            JOIN ${MangaCategoryTable.TABLE} ON ${CategoryTable.TABLE}.${CategoryTable.COL_ID} =
-            ${MangaCategoryTable.TABLE}.${MangaCategoryTable.COL_CATEGORY_ID}
-            WHERE ${MangaCategoryTable.COL_MANGA_ID} = ?
+          SELECT ${CategoryTable.TABLE}.* FROM ${CategoryTable.TABLE}
+          JOIN ${MangaCategoryTable.TABLE} ON ${CategoryTable.TABLE}.${CategoryTable.COL_ID} =
+          ${MangaCategoryTable.TABLE}.${MangaCategoryTable.COL_CATEGORY_ID}
+          WHERE ${MangaCategoryTable.COL_MANGA_ID} = ?
         """)
         .args(mangaId)
         .build())
       .prepare()
-      .asRxFlowable(BackpressureStrategy.BUFFER)
+      .asRxFlowable(BackpressureStrategy.LATEST)
   }
 
   override fun addCategory(category: Category): Completable {
@@ -113,7 +131,10 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .asRxCompletable()
   }
 
-  override fun setCategoriesForMangas(categoryIds: List<Long>, mangaIds: List<Long>): Completable {
+  override fun setCategoriesForMangas(
+    categoryIds: Collection<Long>,
+    mangaIds: Collection<Long>
+  ): Completable {
     return Completable.fromAction {
       storio.inTransaction {
         deleteAllCategoriesForMangas(mangaIds)
@@ -122,7 +143,11 @@ internal class CategoryRepositoryImpl @Inject constructor(
     }
   }
 
-  private fun addCategoriesForMangas(categoryIds: List<Long>, mangaIds: List<Long>) {
+  override fun deleteCategoriesForMangas(mangaIds: Collection<Long>): Completable {
+    return Completable.fromAction { deleteAllCategoriesForMangas(mangaIds) }
+  }
+
+  private fun addCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>) {
     val mangaCategories = mangaIds.flatMap { mangaId ->
       categoryIds.map { categoryId -> MangaCategory(mangaId, categoryId) }
     }
@@ -132,7 +157,7 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .executeAsBlocking()
   }
 
-  private fun deleteAllCategoriesForMangas(mangaIds: List<Long>) {
+  private fun deleteAllCategoriesForMangas(mangaIds: Collection<Long>) {
     storio.delete()
       .withIds(MangaCategoryTable.TABLE, MangaCategoryTable.COL_MANGA_ID, mangaIds)
       .prepare()

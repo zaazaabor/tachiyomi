@@ -57,15 +57,23 @@ internal class CategoryPutResolver : DefaultPutResolver<Category>() {
   }
 }
 
-internal class CategoryGetResolver : DefaultGetResolver<Category>() {
+internal interface CategoryCursorMapper {
 
-  override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): Category {
+  fun mapCategory(cursor: Cursor): Category {
     val id = cursor.getLong(cursor.getColumnIndex(COL_ID))
     val name = cursor.getString(cursor.getColumnIndex(COL_NAME))
     val order = cursor.getInt(cursor.getColumnIndex(COL_ORDER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
 
     return Category(id, name, order, flags)
+  }
+
+}
+
+internal open class CategoryGetResolver : DefaultGetResolver<Category>(), CategoryCursorMapper {
+
+  override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): Category {
+    return mapCategory(cursor)
   }
 }
 

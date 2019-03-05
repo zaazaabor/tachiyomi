@@ -22,6 +22,7 @@
 
 package tachiyomi.ui.widget
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
@@ -46,6 +47,7 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.SCROLL_STATE_DRAGGING
 import androidx.viewpager.widget.ViewPager.SCROLL_STATE_IDLE
 import androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING
+import com.google.android.material.animation.AnimationUtils
 import tachiyomi.core.ui.R
 import java.lang.ref.WeakReference
 import java.util.ArrayList
@@ -68,8 +70,12 @@ open class CustomViewTabLayout(
   protected var tabPaddingEnd: Int = 0
   protected var tabPaddingBottom: Int = 0
 
+  protected var tabIndicatorAnimationDuration: Int = 300
+
   private val selectedListeners = ArrayList<OnTabSelectedListener>()
   private var currentVpSelectedListener: OnTabSelectedListener? = null
+
+  private var scrollAnimator: ValueAnimator? = null
 
   internal var viewPager: ViewPager? = null
   private var pagerAdapter: PagerAdapter? = null
@@ -118,6 +124,10 @@ open class CustomViewTabLayout(
       a.getDimensionPixelSize(com.google.android.material.R.styleable.TabLayout_tabPaddingBottom,
         tabPaddingBottom)
 
+    tabIndicatorAnimationDuration =
+      a.getInt(com.google.android.material.R.styleable.TabLayout_tabIndicatorAnimationDuration,
+        tabIndicatorAnimationDuration)
+
     a.recycle()
   }
 
@@ -132,6 +142,10 @@ open class CustomViewTabLayout(
     }
 
     // Now update the scroll position, canceling any running animation
+    val scrollAnimator = scrollAnimator
+    if (scrollAnimator != null && scrollAnimator.isRunning) {
+      scrollAnimator.cancel()
+    }
     scrollTo(calculateScrollXForTab(position, positionOffset), 0)
 
     // Update the 'selected state' view as we scroll, if enabled
@@ -477,6 +491,26 @@ open class CustomViewTabLayout(
       // position now
       setScrollPosition(newPosition, 0f, true)
       return
+    }
+
+    val startScrollX = scrollX
+    val targetScrollX = calculateScrollXForTab(newPosition, 0f)
+
+    if (startScrollX != targetScrollX) {
+      ensureScrollAnimator()
+
+      scrollAnimator?.setIntValues(startScrollX, targetScrollX)
+      scrollAnimator?.start()
+    }
+  }
+
+  private fun ensureScrollAnimator() {
+    if (scrollAnimator == null) {
+      val animator = ValueAnimator()
+      scrollAnimator = animator
+      animator.interpolator = AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR
+      animator.duration = tabIndicatorAnimationDuration.toLong()
+      animator.addUpdateListener { scrollTo(animator.animatedValue as Int, 0) }
     }
   }
 

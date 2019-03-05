@@ -14,7 +14,9 @@ import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
 import tachiyomi.core.db.DbOpenHelper
 import tachiyomi.data.catalog.sql.CatalogTable
 import tachiyomi.data.catalog.sql.CatalogTypeMapping
+import tachiyomi.data.category.model.MangaCategory
 import tachiyomi.data.category.resolver.CategoryTypeMapping
+import tachiyomi.data.category.resolver.MangaCategoryTypeMapping
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.resolver.ChapterTypeMapping
@@ -42,6 +44,7 @@ internal class StorIOProvider @Inject constructor(
       .addTypeMapping(Manga::class.java, MangaTypeMapping())
       .addTypeMapping(Chapter::class.java, ChapterTypeMapping())
       .addTypeMapping(Category::class.java, CategoryTypeMapping())
+      .addTypeMapping(MangaCategory::class.java, MangaCategoryTypeMapping())
       .addTypeMapping(CatalogRemote::class.java, CatalogTypeMapping())
       .build()
   }

@@ -18,6 +18,10 @@ class DeleteCategories @Inject constructor(
 ) {
 
   fun interact(categoryId: Long): Completable {
+    if (categoryId <= 0) {
+      return Completable.complete()
+    }
+
     return categoryRepository.deleteCategory(categoryId)
       .onErrorComplete()
   }
@@ -27,7 +31,12 @@ class DeleteCategories @Inject constructor(
   }
 
   fun interact(categoryIds: Collection<Long>): Completable {
-    return categoryRepository.deleteCategories(categoryIds)
+    val safeCategoryIds = categoryIds.filter { it > 0 }
+    if (safeCategoryIds.isEmpty()) {
+      return Completable.complete()
+    }
+
+    return categoryRepository.deleteCategories(safeCategoryIds)
       .onErrorComplete()
   }
 
