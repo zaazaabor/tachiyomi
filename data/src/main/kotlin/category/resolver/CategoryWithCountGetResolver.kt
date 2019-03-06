@@ -30,7 +30,7 @@ internal object CategoryWithCountGetResolver : DefaultGetResolver<CategoryWithCo
     WHERE ${CategoryTable.COL_ID} != ${Category.ALL_ID}
     GROUP BY ${CategoryTable.COL_ID}
     UNION
-    SELECT *, (SELECT COUNT() FROM ${MangaTable.TABLE} WHERE ${MangaTable.COL_FAVORITE} = 1)
+    SELECT *, (SELECT COUNT() FROM ${MangaTable.LIBRARY})
     FROM ${CategoryTable.TABLE}
     WHERE ${CategoryTable.COL_ID} = ${Category.ALL_ID}
     ORDER BY ${CategoryTable.COL_ORDER}

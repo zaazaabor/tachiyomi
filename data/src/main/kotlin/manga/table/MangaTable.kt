@@ -15,6 +15,8 @@ internal object MangaTable : DbOpenCallback {
 
   const val TABLE = "manga"
 
+  const val LIBRARY = "library"
+
   const val COL_ID = "m_id"
   const val COL_SOURCE = "m_source"
   const val COL_KEY = "m_url"
@@ -59,7 +61,7 @@ internal object MangaTable : DbOpenCallback {
     get() = "CREATE INDEX ${TABLE}_${COL_FAVORITE}_index ON $TABLE($COL_FAVORITE)"
 
   val createFavoriteViewQuery: String
-    get() = "CREATE VIEW library AS SELECT * FROM $TABLE WHERE $COL_FAVORITE = 1"
+    get() = "CREATE VIEW $LIBRARY AS SELECT * FROM $TABLE WHERE $COL_FAVORITE = 1"
 
   override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(createTableQuery)

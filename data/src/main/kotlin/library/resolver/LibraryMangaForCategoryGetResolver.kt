@@ -25,7 +25,7 @@ internal object LibraryMangaForCategoryGetResolver : DefaultGetResolver<LibraryM
    * Query to get the manga from the library for a given category.
    */
   const val query = """SELECT $mangaSelections, COUNT(${Chapter.COL_ID}) as unread
-    FROM ${Manga.TABLE}
+    FROM ${Manga.LIBRARY}
     JOIN ${MangaCategory.TABLE}
     ON ${Manga.COL_ID} = ${MangaCategory.COL_MANGA_ID}
       AND ${MangaCategory.COL_CATEGORY_ID} = ?1

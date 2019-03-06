@@ -24,10 +24,9 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>() {
    * Query to get all the manga from the library.
    */
   const val query = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
-    FROM ${Manga.TABLE}
+    FROM ${Manga.LIBRARY}
     LEFT JOIN ${ChapterTable.TABLE}
     ON ${Manga.COL_ID} = ${ChapterTable.COL_MANGA_ID} AND ${ChapterTable.COL_READ} = 0
-    WHERE ${Manga.COL_FAVORITE} = 1
     GROUP BY ${Manga.COL_ID}"""
 
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryManga {
