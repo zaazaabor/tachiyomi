@@ -13,25 +13,24 @@ import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Observable
 import io.reactivex.Single
+import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.data.manga.resolver.MangaDetailsUpdatePutResolver
-import tachiyomi.data.manga.resolver.MangaFlagsPutResolver
+import tachiyomi.data.manga.resolver.MangaUpdatePutResolver
 import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.data.manga.util.asDbManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.source.model.MangaInfo
 import javax.inject.Inject
 
 internal class MangaRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : MangaRepository {
 
-  override fun subscribeManga(mangaId: Long): Flowable<Optional<Manga>> {
+  override fun subscribe(mangaId: Long): Observable<Optional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -43,9 +42,10 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
       .map { it.toOptional() }
+      .toObservable()
   }
 
-  override fun subscribeManga(key: String, sourceId: Long): Flowable<Optional<Manga>> {
+  override fun subscribe(key: String, sourceId: Long): Observable<Optional<Manga>> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -57,9 +57,10 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
       .map { it.toOptional() }
+      .toObservable()
   }
 
-  override fun getManga(mangaId: Long): Maybe<Manga> {
+  override fun find(mangaId: Long): Maybe<Manga> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -71,7 +72,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxMaybe()
   }
 
-  override fun getManga(key: String, sourceId: Long): Maybe<Manga> {
+  override fun find(key: String, sourceId: Long): Maybe<Manga> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -83,29 +84,20 @@ internal class MangaRepositoryImpl @Inject constructor(
       .asRxMaybe()
   }
 
-  override fun updateMangaDetails(manga: Manga): Completable {
+  override fun save(manga: Manga): Single<Manga> {
     return storio.put()
       .`object`(manga)
-      .withPutResolver(MangaDetailsUpdatePutResolver())
-      .prepare()
-      .asRxCompletable()
-  }
-
-  override fun saveAndReturnNewManga(manga: MangaInfo, sourceId: Long): Single<Manga> {
-    val newManga = manga.asDbManga(sourceId)
-    return storio.put()
-      .`object`(newManga)
       .prepare()
       .asRxSingle()
-      .map { newManga.copy(id = it.insertedId()!!) }
+      .map { manga.copy(id = it.insertedId()!!) }
   }
 
-  override fun setFlags(manga: Manga, flags: Int): Completable {
+  override fun savePartial(update: MangaUpdate): Completable {
     return storio.put()
-      .`object`(manga.copy(flags = flags))
-      .withPutResolver(MangaFlagsPutResolver())
+      .`object`(update)
+      .withPutResolver(MangaUpdatePutResolver)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
   override fun deleteNonFavorite(): Completable {
@@ -118,4 +110,5 @@ internal class MangaRepositoryImpl @Inject constructor(
       .prepare()
       .asRxCompletable()
   }
+
 }

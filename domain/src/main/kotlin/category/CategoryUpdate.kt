@@ -6,6 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.domain.category.exception
+package tachiyomi.domain.category
 
-class EmptyCategoryName : Exception("A category can't have an empty name")
+import tachiyomi.core.stdlib.Optional
+
+data class CategoryUpdate(
+  val id: Long,
+  val name: Optional<String> = Optional.None,
+  val order: Optional<Int> = Optional.None,
+  val flags: Optional<Int> = Optional.None
+)

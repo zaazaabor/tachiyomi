@@ -9,7 +9,9 @@
 package tachiyomi.domain.category.interactor
 
 import io.reactivex.Single
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryUpdate
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
@@ -21,7 +23,7 @@ class RenameCategory @Inject constructor(
     if (newName.isBlank()) {
       return Single.just(Result.EmptyNameError)
     }
-    return categoryRepository.getCategories()
+    return categoryRepository.subscribe()
       .firstOrError()
       .flatMap { categories ->
         val category = categories.find { it.id == categoryId }
@@ -37,9 +39,14 @@ class RenameCategory @Inject constructor(
           return@flatMap Single.just(Result.NameAlreadyExistsError)
         }
 
-        categoryRepository.renameCategory(categoryId, newName)
+        val update = CategoryUpdate(
+          id = categoryId,
+          name = Optional.of(newName)
+        )
+
+        categoryRepository.savePartial(update)
           .andThen(Single.just<Result>(Result.Success))
-          .onErrorReturn { Result.InternalError(it) }
+          .onErrorReturn(Result::InternalError)
       }
   }
 

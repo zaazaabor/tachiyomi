@@ -46,7 +46,7 @@ class SubscribeLocalCatalogs @Inject constructor(
   private fun sortByFavorites(
     catalogsFlow: Observable<List<CatalogLocal>>
   ): Observable<List<CatalogLocal>> {
-    val favoriteIdsFlow = libraryRepository.getFavoriteSourceIds()
+    val favoriteIdsFlow = libraryRepository.findFavoriteSourceIds()
       .map { favoriteIds ->
         var position = 0
         favoriteIds.associateWith { position++ }

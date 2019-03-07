@@ -80,7 +80,6 @@ class LibraryPresenter @Inject constructor(
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
     val shared = subscribeUserCategories.interact(true)
-      .toObservable()
       .share()
 
     return Observable.merge(
@@ -110,7 +109,6 @@ class LibraryPresenter @Inject constructor(
           lastUsedCategoryPreference.set(selectedId)
 
           subscribeLibraryCategory.interact(selectedId)
-            .toObservable()
             .subscribeOn(schedulers.io)
             .map(Action::LibraryUpdate)
         }

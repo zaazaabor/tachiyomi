@@ -11,26 +11,23 @@ package tachiyomi.data.library
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.data.library.resolver.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.resolver.LibraryMangaForCategoryGetResolver
 import tachiyomi.data.library.resolver.LibraryMangaGetResolver
-import tachiyomi.data.manga.resolver.MangaFavoritePutResolver
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
-import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 internal class LibraryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : LibraryRepository {
 
-  override fun getLibraryMangas(): Flowable<List<LibraryManga>> {
+  override fun subscribe(): Observable<List<LibraryManga>> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -40,9 +37,10 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
   }
 
-  override fun getLibraryMangasForCategory(categoryId: Long): Flowable<List<LibraryManga>> {
+  override fun subscribeForCategory(categoryId: Long): Observable<List<LibraryManga>> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -53,25 +51,16 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .withGetResolver(LibraryMangaForCategoryGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
   }
 
-  override fun getFavoriteSourceIds(): Single<List<Long>> {
+  override fun findFavoriteSourceIds(): Single<List<Long>> {
     return storio.get()
       .listOfObjects(Long::class.java)
       .withQuery(RawQuery.builder().query(FavoriteSourceIdsGetResolver.query).build())
       .withGetResolver(FavoriteSourceIdsGetResolver)
       .prepare()
       .asRxSingle()
-  }
-
-  override fun updateFavorite(manga: Manga): Completable {
-    return Completable.fromAction {
-      storio.put()
-        .`object`(manga)
-        .withPutResolver(MangaFavoritePutResolver())
-        .prepare()
-        .executeAsBlocking()
-    }
   }
 
 }

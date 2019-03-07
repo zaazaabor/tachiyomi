@@ -10,10 +10,12 @@ package tachiyomi.core.db
 
 import com.pushtorefresh.storio3.Optional
 import com.pushtorefresh.storio3.Queries
+import com.pushtorefresh.storio3.operations.PreparedCompletableOperation
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDelete
 import com.pushtorefresh.storio3.sqlite.operations.delete.PreparedDeleteByQuery
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
+import io.reactivex.Completable
 
 inline fun StorIOSQLite.inTransaction(block: () -> Unit) {
   lowLevel().beginTransaction()
@@ -64,4 +66,8 @@ fun PreparedDelete.Builder.withIds(
 
 fun <T> Optional<T>.toOptional(): tachiyomi.core.stdlib.Optional<T> {
   return tachiyomi.core.stdlib.Optional.of(orNull())
+}
+
+fun <R, D> PreparedCompletableOperation<R, D>.asImmediateCompletable(): Completable {
+  return Completable.fromAction { executeAsBlocking() }
 }

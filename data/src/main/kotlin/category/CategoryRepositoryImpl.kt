@@ -13,17 +13,16 @@ import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
-import io.reactivex.Flowable
-import tachiyomi.core.db.inTransaction
+import io.reactivex.Observable
+import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.data.category.model.MangaCategory
+import tachiyomi.data.category.resolver.CategoryUpdatePutResolver
 import tachiyomi.data.category.resolver.CategoryWithCountGetResolver
-import tachiyomi.data.category.resolver.RenameCategoryPutResolver
-import tachiyomi.data.category.resolver.ReorderCategoriesPutResolver
 import tachiyomi.data.category.table.CategoryTable
 import tachiyomi.data.category.table.MangaCategoryTable
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryUpdate
 import tachiyomi.domain.category.CategoryWithCount
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
@@ -32,22 +31,19 @@ internal class CategoryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : CategoryRepository {
 
-  private val categories = storio.get()
-    .listOfObjects(Category::class.java)
-    .withQuery(Query.builder()
-      .table(CategoryTable.TABLE)
-      .orderBy(CategoryTable.COL_ORDER)
-      .build())
-    .prepare()
-    .asRxFlowable(BackpressureStrategy.LATEST)
-    .replay(1)
-    .autoConnect()
-
-  override fun getCategories(): Flowable<List<Category>> {
-    return categories
+  override fun subscribe(): Observable<List<Category>> {
+    return storio.get()
+      .listOfObjects(Category::class.java)
+      .withQuery(Query.builder()
+        .table(CategoryTable.TABLE)
+        .orderBy(CategoryTable.COL_ORDER)
+        .build())
+      .prepare()
+      .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
   }
 
-  override fun getCategoriesWithCount(): Flowable<List<CategoryWithCount>> {
+  override fun subscribeWithCount(): Observable<List<CategoryWithCount>> {
     return storio.get()
       .listOfObjects(CategoryWithCount::class.java)
       .withQuery(RawQuery.builder()
@@ -57,110 +53,67 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .withGetResolver(CategoryWithCountGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
   }
 
-  override fun getCategoriesForManga(mangaId: Long): Flowable<List<Category>> {
+  override fun subscribeForManga(mangaId: Long): Observable<List<Category>> {
     return storio.get()
       .listOfObjects(Category::class.java)
       .withQuery(RawQuery.builder()
-        .query("""
-          SELECT ${CategoryTable.TABLE}.* FROM ${CategoryTable.TABLE}
-          JOIN ${MangaCategoryTable.TABLE} ON ${CategoryTable.TABLE}.${CategoryTable.COL_ID} =
-          ${MangaCategoryTable.TABLE}.${MangaCategoryTable.COL_CATEGORY_ID}
-          WHERE ${MangaCategoryTable.COL_MANGA_ID} = ?
-        """)
+        .query("""SELECT ${CategoryTable.TABLE}.*
+          FROM ${CategoryTable.TABLE}
+          JOIN ${MangaCategoryTable.TABLE}
+          ON ${CategoryTable.COL_ID} = ${MangaCategoryTable.COL_CATEGORY_ID}
+          WHERE ${MangaCategoryTable.COL_MANGA_ID} = ?""")
         .args(mangaId)
         .build())
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
   }
 
-  override fun addCategory(category: Category): Completable {
+  override fun save(category: Category): Completable {
     return storio.put()
       .`object`(category)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun addCategories(categories: List<Category>): Completable {
+  override fun save(categories: Collection<Category>): Completable {
     return storio.put()
       .objects(categories)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun createCategory(name: String, order: Int): Completable {
-    val newCategory = Category(name = name, order = order)
+  override fun savePartial(update: CategoryUpdate): Completable {
     return storio.put()
-      .`object`(newCategory)
+      .`object`(update)
+      .withPutResolver(CategoryUpdatePutResolver)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun renameCategory(categoryId: Long, newName: String): Completable {
-    val category = Category(id = categoryId, name = newName)
+  override fun savePartial(updates: Collection<CategoryUpdate>): Completable {
     return storio.put()
-      .`object`(category)
-      .withPutResolver(RenameCategoryPutResolver())
+      .objects(updates)
+      .withPutResolver(CategoryUpdatePutResolver)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun reorderCategories(categories: List<Category>): Completable {
-    val updatedCategories = categories.mapIndexed { index: Int, category: Category ->
-      category.copy(order = index)
-    }
-    return storio.put()
-      .objects(updatedCategories)
-      .withPutResolver(ReorderCategoriesPutResolver())
-      .prepare()
-      .asRxCompletable()
-  }
-
-  override fun deleteCategory(categoryId: Long): Completable {
+  override fun delete(categoryId: Long): Completable {
     return storio.delete()
       .withId(CategoryTable.TABLE, CategoryTable.COL_ID, categoryId)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun deleteCategories(categoryIds: Collection<Long>): Completable {
+  override fun delete(categoryIds: Collection<Long>): Completable {
     return storio.delete()
       .withIds(CategoryTable.TABLE, CategoryTable.COL_ID, categoryIds)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun setCategoriesForMangas(
-    categoryIds: Collection<Long>,
-    mangaIds: Collection<Long>
-  ): Completable {
-    return Completable.fromAction {
-      storio.inTransaction {
-        deleteAllCategoriesForMangas(mangaIds)
-        addCategoriesForMangas(categoryIds, mangaIds)
-      }
-    }
-  }
-
-  override fun deleteCategoriesForMangas(mangaIds: Collection<Long>): Completable {
-    return Completable.fromAction { deleteAllCategoriesForMangas(mangaIds) }
-  }
-
-  private fun addCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>) {
-    val mangaCategories = mangaIds.flatMap { mangaId ->
-      categoryIds.map { categoryId -> MangaCategory(mangaId, categoryId) }
-    }
-    storio.put()
-      .objects(mangaCategories)
-      .prepare()
-      .executeAsBlocking()
-  }
-
-  private fun deleteAllCategoriesForMangas(mangaIds: Collection<Long>) {
-    storio.delete()
-      .withIds(MangaCategoryTable.TABLE, MangaCategoryTable.COL_MANGA_ID, mangaIds)
-      .prepare()
-      .executeAsBlocking()
-  }
 }

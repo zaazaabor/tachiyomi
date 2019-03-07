@@ -17,6 +17,7 @@ import javax.inject.Inject
 class SetMangaFlags @Inject internal constructor(private val mangaRepository: MangaRepository) {
 
   fun interact(manga: Manga, flags: Int): Completable {
-    return mangaRepository.setFlags(manga, flags)
+    // TODO
+    return Completable.complete()
   }
 }

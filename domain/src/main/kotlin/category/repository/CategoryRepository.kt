@@ -9,34 +9,29 @@
 package tachiyomi.domain.category.repository
 
 import io.reactivex.Completable
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryUpdate
 import tachiyomi.domain.category.CategoryWithCount
 
 interface CategoryRepository {
 
-  fun getCategories(): Flowable<List<Category>>
+  fun subscribe(): Observable<List<Category>>
 
-  fun getCategoriesWithCount(): Flowable<List<CategoryWithCount>>
+  fun subscribeWithCount(): Observable<List<CategoryWithCount>>
 
-  fun getCategoriesForManga(mangaId: Long): Flowable<List<Category>>
+  fun subscribeForManga(mangaId: Long): Observable<List<Category>>
 
-  fun addCategory(category: Category): Completable
+  fun save(category: Category): Completable
 
-  fun addCategories(categories: List<Category>): Completable
+  fun save(categories: Collection<Category>): Completable
 
-  fun createCategory(name: String, order: Int): Completable
+  fun savePartial(update: CategoryUpdate): Completable
 
-  fun renameCategory(categoryId: Long, newName: String): Completable
+  fun savePartial(updates: Collection<CategoryUpdate>): Completable
 
-  fun reorderCategories(categories: List<Category>): Completable
+  fun delete(categoryId: Long): Completable
 
-  fun deleteCategory(categoryId: Long): Completable
-
-  fun deleteCategories(categoryIds: Collection<Long>): Completable
-
-  fun setCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>): Completable
-
-  fun deleteCategoriesForMangas(mangaIds: Collection<Long>): Completable
+  fun delete(categoryIds: Collection<Long>): Completable
 
 }

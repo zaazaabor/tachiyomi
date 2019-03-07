@@ -8,9 +8,8 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Completable
-import tachiyomi.domain.category.exception.CategoryAlreadyExists
-import tachiyomi.domain.category.exception.EmptyCategoryName
+import io.reactivex.Single
+import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
@@ -18,19 +17,36 @@ class CreateCategoryWithName @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(name: String): Completable {
+  fun interact(name: String): Single<Result> {
     if (name.isBlank()) {
-      return Completable.error(EmptyCategoryName())
+      return Single.just(Result.EmptyCategoryNameError)
     }
-    return categoryRepository.getCategories()
-      .take(1)
-      .flatMapCompletable { categories ->
+    return categoryRepository.subscribe()
+      .firstOrError()
+      .flatMap<Result> { categories ->
         if (categories.none { name.equals(it.name, ignoreCase = true) }) {
           val nextOrder = categories.maxBy { it.order }?.order?.plus(1) ?: 0
-          categoryRepository.createCategory(name, nextOrder)
+
+          val newCategory = Category(
+            id = -1,
+            name = name,
+            order = nextOrder,
+            flags = 0
+          )
+          categoryRepository.save(newCategory)
+            .toSingle { Result.Success }
         } else {
-          Completable.error(CategoryAlreadyExists(name))
+          Single.just(Result.CategoryAlreadyExistsError(name))
         }
       }
+      .onErrorReturn(Result::InternalError)
   }
+
+  sealed class Result {
+    object Success : Result()
+    object EmptyCategoryNameError : Result()
+    data class CategoryAlreadyExistsError(val name: String) : Result()
+    data class InternalError(val error: Throwable) : Result()
+  }
+
 }

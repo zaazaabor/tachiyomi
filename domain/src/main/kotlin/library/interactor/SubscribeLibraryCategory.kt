@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
@@ -18,11 +18,11 @@ class SubscribeLibraryCategory @Inject constructor(
   private val libraryRepository: LibraryRepository
 ) {
 
-  fun interact(categoryId: Long): Flowable<List<LibraryManga>> {
+  fun interact(categoryId: Long): Observable<List<LibraryManga>> {
     return if (categoryId == Category.ALL_ID) {
-      libraryRepository.getLibraryMangas()
+      libraryRepository.subscribe()
     } else {
-      libraryRepository.getLibraryMangasForCategory(categoryId)
+      libraryRepository.subscribeForCategory(categoryId)
     }
   }
 

@@ -47,7 +47,7 @@ class GetOrAddMangaFromSourceTest {
 
   @Test
   fun `creates manga when not found in repository`() {
-    `when`(mangaRepository.subscribeManga(sourceManga.key, sourceId))
+    `when`(mangaRepository.subscribe(sourceManga.key, sourceId))
       .thenReturn(Flowable.just(Optional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga), anyLong()))
@@ -60,7 +60,7 @@ class GetOrAddMangaFromSourceTest {
 
   @Test
   fun `returns manga when found in repository`() {
-    `when`(mangaRepository.subscribeManga(sourceManga.key, sourceId))
+    `when`(mangaRepository.subscribe(sourceManga.key, sourceId))
       .thenReturn(Flowable.just(Optional.of(dbManga)))
 
     getOrAddMangaFromSource.interact(sourceManga, sourceId).blockingGet()

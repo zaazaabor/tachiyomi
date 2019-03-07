@@ -58,13 +58,13 @@ class SubscribeMangaPageFromCatalogSourceTest {
     `when`(source.id).thenReturn(1)
     `when`(source.fetchMangaList(anyInt())).thenReturn(sourceMangaPage)
 
-    `when`(mangaRepository.subscribeManga(eq("url1"), anyLong()))
+    `when`(mangaRepository.subscribe(eq("url1"), anyLong()))
       .thenReturn(Flowable.just(Optional.of(dbManga1)))
 
-    `when`(mangaRepository.subscribeManga(eq("url2"), anyLong()))
+    `when`(mangaRepository.subscribe(eq("url2"), anyLong()))
       .thenReturn(Flowable.just(Optional.None))
 
-    `when`(mangaRepository.subscribeManga(eq("url3"), anyLong()))
+    `when`(mangaRepository.subscribe(eq("url3"), anyLong()))
       .thenReturn(Flowable.just(Optional.None))
 
     `when`(mangaRepository.saveAndReturnNewManga(eq(sourceManga1), anyLong()))

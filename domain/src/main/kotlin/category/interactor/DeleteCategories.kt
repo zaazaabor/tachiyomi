@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Completable
+import io.reactivex.Single
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
@@ -17,27 +17,35 @@ class DeleteCategories @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(categoryId: Long): Completable {
+  fun interact(categoryId: Long): Single<Result> {
     if (categoryId <= 0) {
-      return Completable.complete()
+      return Single.just(Result.SystemCategoryUndeletableError)
     }
 
-    return categoryRepository.deleteCategory(categoryId)
-      .onErrorComplete()
+    return categoryRepository.delete(categoryId)
+      .toSingle<Result> { Result.Success }
+      .onErrorReturn(Result::InternalError)
   }
 
-  fun interact(category: Category): Completable {
+  fun interact(categoryIds: Collection<Long>): Single<Result> {
+    val safeCategoryIds = categoryIds.filter { it > 0 }
+    if (safeCategoryIds.isEmpty()) {
+      return Single.just(Result.Success)
+    }
+
+    return categoryRepository.delete(safeCategoryIds)
+      .toSingle<Result> { Result.Success }
+      .onErrorReturn(Result::InternalError)
+  }
+
+  fun interact(category: Category): Single<Result> {
     return interact(category.id)
   }
 
-  fun interact(categoryIds: Collection<Long>): Completable {
-    val safeCategoryIds = categoryIds.filter { it > 0 }
-    if (safeCategoryIds.isEmpty()) {
-      return Completable.complete()
-    }
-
-    return categoryRepository.deleteCategories(safeCategoryIds)
-      .onErrorComplete()
+  sealed class Result {
+    object Success : Result()
+    object SystemCategoryUndeletableError : Result()
+    data class InternalError(val error: Throwable) : Result()
   }
 
 }

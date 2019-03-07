@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import tachiyomi.domain.category.CategoryWithCount
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
@@ -17,8 +17,8 @@ class SubscribeCategoriesWithCount @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(): Flowable<List<CategoryWithCount>> {
-    return categoryRepository.getCategoriesWithCount()
+  fun interact(): Observable<List<CategoryWithCount>> {
+    return categoryRepository.subscribeWithCount()
   }
 
 }

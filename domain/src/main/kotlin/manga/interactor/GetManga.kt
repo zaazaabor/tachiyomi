@@ -18,11 +18,11 @@ class GetManga @Inject constructor(
 ) {
 
   fun interact(mangaId: Long): Maybe<Manga> {
-    return mangaRepository.getManga(mangaId)
+    return mangaRepository.find(mangaId)
   }
 
   fun interact(mangaKey: String, sourceId: Long): Maybe<Manga> {
-    return mangaRepository.getManga(mangaKey, sourceId)
+    return mangaRepository.find(mangaKey, sourceId)
   }
 
 }

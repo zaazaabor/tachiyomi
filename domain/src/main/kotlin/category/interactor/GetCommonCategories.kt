@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
@@ -20,8 +20,8 @@ class GetCommonCategories @Inject constructor(
 ) {
 
   fun interact(mangas: List<Manga>): Single<List<Category>> {
-    return Flowable.fromIterable(mangas)
-      .flatMap { categoryRepository.getCategoriesForManga(it.id).take(1) }
+    return Observable.fromIterable(mangas)
+      .flatMap { categoryRepository.subscribeForManga(it.id).take(1) }
       .flatMapIterable { it }
       .distinct { it.id }
       .toList()

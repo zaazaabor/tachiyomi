@@ -8,8 +8,10 @@
 
 package tachiyomi.domain.category.interactor
 
-import io.reactivex.Completable
+import io.reactivex.Single
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.CategoryUpdate
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 
@@ -17,29 +19,40 @@ class ReorderCategory @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(categories: List<Category>): Completable {
-    return categoryRepository.reorderCategories(categories)
-  }
-
-  fun interact(categoryId: Long, newPosition: Int): Completable {
-    return categoryRepository.getCategories()
-      .take(1)
-      .flatMapCompletable { categories ->
+  fun interact(categoryId: Long, newPosition: Int): Single<Result> {
+    return categoryRepository.subscribe()
+      .firstOrError()
+      .flatMap { categories ->
         val currPosition = categories.indexOfFirst { it.id == categoryId }
         if (currPosition == newPosition || currPosition == -1) {
-          return@flatMapCompletable Completable.complete()
+          return@flatMap Single.just(Result.Unchanged)
         }
 
-        val mutCategories = categories.toMutableList()
-        val category = mutCategories.removeAt(currPosition)
-        mutCategories.add(newPosition, category)
+        val reorderedCategories = categories.toMutableList()
+        val movedCategory = reorderedCategories.removeAt(currPosition)
+        reorderedCategories.add(newPosition, movedCategory)
 
-        interact(mutCategories)
+        val updates = reorderedCategories.mapIndexed { index, category ->
+          CategoryUpdate(
+            id = category.id,
+            order = Optional.of(index)
+          )
+        }
+
+        categoryRepository.savePartial(updates)
+          .toSingle<Result> { Result.Success }
       }
+      .onErrorReturn(Result::InternalError)
   }
 
-  fun interact(category: Category, newPosition: Int): Completable {
+  fun interact(category: Category, newPosition: Int): Single<Result> {
     return interact(category.id, newPosition)
+  }
+
+  sealed class Result {
+    object Success : Result()
+    object Unchanged : Result()
+    data class InternalError(val error: Throwable) : Result()
   }
 
 }

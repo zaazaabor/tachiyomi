@@ -9,28 +9,27 @@
 package tachiyomi.domain.manga.repository
 
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.model.MangaInfo
+import tachiyomi.domain.manga.model.MangaUpdate
 
 interface MangaRepository {
 
-  fun setFlags(manga: Manga, flags: Int): Completable
+  fun subscribe(mangaId: Long): Observable<Optional<Manga>>
 
-  fun subscribeManga(mangaId: Long): Flowable<Optional<Manga>>
+  fun subscribe(key: String, sourceId: Long): Observable<Optional<Manga>>
 
-  fun subscribeManga(key: String, sourceId: Long): Flowable<Optional<Manga>>
+  fun find(mangaId: Long): Maybe<Manga>
 
-  fun getManga(mangaId: Long): Maybe<Manga>
-
-  fun getManga(key: String, sourceId: Long): Maybe<Manga>
-
-  fun updateMangaDetails(manga: Manga): Completable
-
-  fun saveAndReturnNewManga(manga: MangaInfo, sourceId: Long): Single<Manga>
+  fun find(key: String, sourceId: Long): Maybe<Manga>
 
   fun deleteNonFavorite(): Completable
+
+  fun save(manga: Manga): Single<Manga>
+
+  fun savePartial(update: MangaUpdate): Completable
+
 }

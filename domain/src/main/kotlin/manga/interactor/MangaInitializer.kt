@@ -9,7 +9,9 @@
 package tachiyomi.domain.manga.interactor
 
 import io.reactivex.Maybe
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.Source
@@ -25,7 +27,7 @@ class MangaInitializer @Inject internal constructor(
   fun interact(source: Source, manga: Manga, force: Boolean = false): Maybe<Manga> {
     if (!force && lastInitBelowMinInterval(manga)) return Maybe.empty()
 
-    val stubManga = MangaInfo(
+    val info = MangaInfo(
       key = manga.key,
       title = manga.title,
       artist = manga.artist,
@@ -35,20 +37,42 @@ class MangaInitializer @Inject internal constructor(
       status = manga.status,
       cover = manga.cover
     )
-    return Maybe.fromCallable { source.fetchMangaDetails(stubManga) }
-      .flatMap { sourceManga ->
+    return Maybe.fromCallable { source.fetchMangaDetails(info) }
+      .flatMap { newInfo ->
+        val update = MangaUpdate(
+          id = manga.id,
+          key = if (newInfo.key.isEmpty() || newInfo.key == manga.key) {
+            Optional.None
+          } else {
+            Optional.of(newInfo.key)
+          },
+          title = if (newInfo.title.isEmpty() || newInfo.title == manga.title) {
+            Optional.None
+          } else {
+            Optional.of(newInfo.title)
+          },
+          artist = Optional.of(newInfo.artist),
+          author = Optional.of(newInfo.author),
+          description = Optional.of(newInfo.description),
+          genres = Optional.of(newInfo.genres),
+          status = Optional.of(newInfo.status),
+          cover = Optional.of(newInfo.cover),
+          lastInit = Optional.of(System.currentTimeMillis())
+        )
+
         val updatedManga = manga.copy(
-          key = if (sourceManga.key.isEmpty()) manga.key else sourceManga.key,
-          title = if (sourceManga.title.isEmpty()) manga.title else sourceManga.title,
-          artist = sourceManga.artist,
-          author = sourceManga.author,
-          description = sourceManga.description,
-          genres = sourceManga.genres,
-          status = sourceManga.status,
-          cover = sourceManga.cover,
+          key = if (newInfo.key.isEmpty()) manga.key else newInfo.key,
+          title = if (newInfo.title.isEmpty()) manga.title else newInfo.title,
+          artist = newInfo.artist,
+          author = newInfo.author,
+          description = newInfo.description,
+          genres = newInfo.genres,
+          status = newInfo.status,
+          cover = newInfo.cover,
           lastInit = System.currentTimeMillis()
         )
-        mangaRepository.updateMangaDetails(updatedManga)
+
+        mangaRepository.savePartial(update)
           .andThen(Maybe.just(updatedManga))
       }
   }

@@ -8,20 +8,16 @@
 
 package tachiyomi.domain.library.repository
 
-import io.reactivex.Completable
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.domain.manga.model.Manga
 
 interface LibraryRepository {
 
-  fun getLibraryMangas(): Flowable<List<LibraryManga>>
+  fun subscribe(): Observable<List<LibraryManga>>
 
-  fun getLibraryMangasForCategory(categoryId: Long): Flowable<List<LibraryManga>>
+  fun subscribeForCategory(categoryId: Long): Observable<List<LibraryManga>>
 
-  fun getFavoriteSourceIds(): Single<List<Long>>
-
-  fun updateFavorite(manga: Manga): Completable
+  fun findFavoriteSourceIds(): Single<List<Long>>
 
 }

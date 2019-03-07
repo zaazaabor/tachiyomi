@@ -37,7 +37,7 @@
 //
 //  fun interact(filters: List<LibraryFilter>): Flowable<Library> {
 //    return categoryRepository.getCategories()
-//      .combineLatest(libraryRepository.getLibraryMangas()) { categories, mangas ->
+//      .combineLatest(libraryRepository.subscribe()) { categories, mangas ->
 //        toLibrary(categories, mangas, filters)
 //      }
 //      .combineLatest(filterRelay

@@ -19,8 +19,22 @@ class GetOrAddMangaFromSource @Inject internal constructor(
 ) {
 
   fun interact(manga: MangaInfo, sourceId: Long): Single<Manga> {
-    return mangaRepository.getManga(manga.key, sourceId)
-      .switchIfEmpty(Single.defer { mangaRepository.saveAndReturnNewManga(manga, sourceId) })
+    return mangaRepository.find(manga.key, sourceId)
+      .switchIfEmpty(Single.defer {
+        val newManga = Manga(
+          id = -1,
+          source = sourceId,
+          key = manga.key,
+          title = manga.title,
+          artist = manga.artist,
+          author = manga.author,
+          description = manga.description,
+          genres = manga.genres,
+          status = manga.status,
+          cover = manga.cover
+        )
+        mangaRepository.save(newManga)
+      })
   }
 
 }

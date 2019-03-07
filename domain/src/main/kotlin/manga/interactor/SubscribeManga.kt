@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -18,8 +18,8 @@ class SubscribeManga @Inject constructor(
   private val mangaRepository: MangaRepository
 ) {
 
-  fun interact(mangaId: Long): Flowable<Optional<Manga>> {
-    return mangaRepository.subscribeManga(mangaId)
+  fun interact(mangaId: Long): Observable<Optional<Manga>> {
+    return mangaRepository.subscribe(mangaId)
 
   }
 

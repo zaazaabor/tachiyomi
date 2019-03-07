@@ -9,6 +9,7 @@
 package tachiyomi.ui.screens.manga
 
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.processors.BehaviorProcessor
 import tachiyomi.core.rx.RxSchedulers
@@ -47,7 +48,7 @@ class MangaPresenter @Inject constructor(
 
     val intents = listOf(mangaIntent)
 
-    Flowable.merge(intents)
+    Observable.merge(intents)
       .scan(initialState, ::reduce)
       .logOnNext()
       .observeOn(schedulers.main)

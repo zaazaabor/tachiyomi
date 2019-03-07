@@ -81,8 +81,6 @@ class CategoryPresenter @Inject constructor(
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
     return subscribeCategories.interact()
-      .onBackpressureLatest()
-      .toObservable()
       .map(Action::CategoriesUpdate)
   }
 
@@ -92,9 +90,9 @@ class CategoryPresenter @Inject constructor(
     stateFn: StateAccessor<ViewState>
   ): Observable<Action> {
     return actions.ofType<Action.CreateCategory>()
-      .flatMapMaybe {
+      .flatMap {
         createCategoryWithName.interact(it.name)
-          .toMaybe<Action>()
+          .flatMapObservable { Observable.empty<Action>() }
           .onErrorReturn(Action::Error)
       }
   }
@@ -107,7 +105,9 @@ class CategoryPresenter @Inject constructor(
     return actions.ofType<Action.DeleteCategories>()
       .flatMap {
         deleteCategories.interact(it.categoryIds)
-          .andThen(Observable.just(Action.UnselectCategories))
+          .toObservable()
+          .ofType<DeleteCategories.Result.Success>()
+          .map { Action.UnselectCategories }
       }
   }
 
@@ -131,7 +131,8 @@ class CategoryPresenter @Inject constructor(
   ): Observable<Action> {
     return actions.ofType<Action.ReorderCategory>()
       .flatMap {
-        reorderCategory.interact(it.category, it.newPosition).toObservable<Action>()
+        reorderCategory.interact(it.category, it.newPosition)
+          .flatMapObservable { Observable.empty<Action>() }
       }
   }
 

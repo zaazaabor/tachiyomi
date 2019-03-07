@@ -17,9 +17,12 @@ class SetCategoriesForMangas @Inject constructor(
 ) {
 
   fun interact(categoryIds: Collection<Long>, mangaIds: Collection<Long>): Single<Result> {
-    return categoryRepository.setCategoriesForMangas(categoryIds, mangaIds)
-      .toSingle<Result> { Result.Success }
-      .onErrorReturn { Result.Error(it) }
+    return Single.just(Result.Success)
+
+    //TODO
+//    return categoryRepository.setCategoriesForMangas(categoryIds, mangaIds)
+//      .toSingle<Result> { Result.Success }
+//      .onErrorReturn { Result.Error(it) }
   }
 
   sealed class Result {

@@ -18,6 +18,6 @@ class GetCategories @Inject constructor(
 ) {
 
   fun interact(): Single<List<Category>> {
-    return categoryRepository.getCategories().firstOrError()
+    return categoryRepository.subscribe().firstOrError()
   }
 }
