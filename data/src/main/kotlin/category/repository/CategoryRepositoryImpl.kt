@@ -31,16 +31,20 @@ internal class CategoryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : CategoryRepository {
 
+  private val categories = storio.get()
+    .listOfObjects(Category::class.java)
+    .withQuery(Query.builder()
+      .table(CategoryTable.TABLE)
+      .orderBy(CategoryTable.COL_ORDER)
+      .build())
+    .prepare()
+    .asRxFlowable(BackpressureStrategy.LATEST)
+    .toObservable()
+    .replay(1)
+    .autoConnect()
+
   override fun subscribe(): Observable<List<Category>> {
-    return storio.get()
-      .listOfObjects(Category::class.java)
-      .withQuery(Query.builder()
-        .table(CategoryTable.TABLE)
-        .orderBy(CategoryTable.COL_ORDER)
-        .build())
-      .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
+    return categories
   }
 
   override fun subscribeWithCount(): Observable<List<CategoryWithCount>> {

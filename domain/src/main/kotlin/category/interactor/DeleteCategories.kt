@@ -11,10 +11,12 @@ package tachiyomi.domain.category.interactor
 import io.reactivex.Single
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.repository.CategoryRepository
+import tachiyomi.domain.library.prefs.LibraryPreferences
 import javax.inject.Inject
 
 class DeleteCategories @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val libraryPreferences: LibraryPreferences
 ) {
 
   fun interact(categoryId: Long): Single<Result> {
@@ -24,6 +26,11 @@ class DeleteCategories @Inject constructor(
 
     return categoryRepository.delete(categoryId)
       .toSingle<Result> { Result.Success }
+      .doOnSuccess {
+        if (libraryPreferences.defaultCategory().get() == categoryId) {
+          libraryPreferences.defaultCategory().delete()
+        }
+      }
       .onErrorReturn(Result::InternalError)
   }
 
@@ -35,6 +42,11 @@ class DeleteCategories @Inject constructor(
 
     return categoryRepository.delete(safeCategoryIds)
       .toSingle<Result> { Result.Success }
+      .doOnSuccess {
+        if (libraryPreferences.defaultCategory().get() in categoryIds) {
+          libraryPreferences.defaultCategory().delete()
+        }
+      }
       .onErrorReturn(Result::InternalError)
   }
 

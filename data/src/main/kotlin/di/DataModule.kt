@@ -18,15 +18,17 @@ import tachiyomi.data.catalog.installer.CatalogInstaller
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.data.catalog.prefs.CatalogPreferencesProvider
 import tachiyomi.data.category.CategoryRepositoryImpl
+import tachiyomi.data.category.repository.MangaCategoryRepositoryImpl
 import tachiyomi.data.chapter.ChapterRepositoryImpl
 import tachiyomi.data.library.LibraryRepositoryImpl
-import tachiyomi.data.library.prefs.LibraryPreferences
 import tachiyomi.data.library.prefs.LibraryPreferencesProvider
 import tachiyomi.data.manga.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.category.repository.CategoryRepository
+import tachiyomi.domain.category.repository.MangaCategoryRepository
 import tachiyomi.domain.chapter.repository.ChapterRepository
+import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.LibraryRepository
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
@@ -45,6 +47,7 @@ object DataModule : Module() {
     bindTo<ChapterRepository, ChapterRepositoryImpl>().singletonInScope()
 
     bindTo<CategoryRepository, CategoryRepositoryImpl>().singletonInScope()
+    bindTo<MangaCategoryRepository, MangaCategoryRepositoryImpl>().singletonInScope()
 
     bindTo<LibraryRepository, LibraryRepositoryImpl>().singletonInScope()
     bindProvider<LibraryPreferences, LibraryPreferencesProvider>()

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category.model
+package tachiyomi.domain.category.model
 
 data class MangaCategory(
   val mangaId: Long,

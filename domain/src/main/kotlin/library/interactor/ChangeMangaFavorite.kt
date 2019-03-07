@@ -8,13 +8,12 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Completable
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.repository.CategoryRepository
-import tachiyomi.domain.library.repository.LibraryRepository
+import tachiyomi.domain.category.model.MangaCategory
+import tachiyomi.domain.category.repository.MangaCategoryRepository
+import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -23,12 +22,11 @@ import javax.inject.Provider
 
 class ChangeMangaFavorite @Inject constructor(
   private val mangaRepository: MangaRepository,
-  private val libraryRepository: LibraryRepository,
-  private val categoryRepository: CategoryRepository,
+  private val mangaCategoryRepository: MangaCategoryRepository,
+  private val libraryPreferences: LibraryPreferences,
   private val transactions: Provider<Transaction>
 ) {
 
-  // TODO partial updates
   fun interact(manga: Manga) = Single.defer {
     val update = if (manga.favorite) {
       MangaUpdate(id = manga.id, favorite = Optional.of(false))
@@ -42,12 +40,13 @@ class ChangeMangaFavorite @Inject constructor(
 
     val mangaIds = listOf(manga.id)
     val setCategoryOperation = if (!manga.favorite) {
-      val categoryIds = listOf(Category.UNCATEGORIZED_ID) // TODO
-//      categoryRepository.setCategoriesForMangas(categoryIds, mangaIds)
-      Completable.complete()
+      val defaultCategory = libraryPreferences.defaultCategory().get()
+      val mangaCategories = mangaIds.map { mangaId ->
+        MangaCategory(mangaId, defaultCategory)
+      }
+      mangaCategoryRepository.save(mangaCategories)
     } else {
-//      categoryRepository.deleteCategoriesForMangas(mangaIds)
-      Completable.complete()
+      mangaCategoryRepository.deleteForMangas(mangaIds)
     }
 
     val transaction = transactions.get()

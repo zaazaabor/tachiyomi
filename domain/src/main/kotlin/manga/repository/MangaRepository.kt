@@ -26,10 +26,10 @@ interface MangaRepository {
 
   fun find(key: String, sourceId: Long): Maybe<Manga>
 
-  fun deleteNonFavorite(): Completable
-
   fun save(manga: Manga): Single<Manga>
 
   fun savePartial(update: MangaUpdate): Completable
+
+  fun deleteNonFavorite(): Completable
 
 }

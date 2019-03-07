@@ -9,25 +9,40 @@
 package tachiyomi.domain.library.interactor
 
 import io.reactivex.Single
-import tachiyomi.domain.category.repository.CategoryRepository
+import tachiyomi.core.db.Transaction
+import tachiyomi.domain.category.model.MangaCategory
+import tachiyomi.domain.category.repository.MangaCategoryRepository
 import javax.inject.Inject
+import javax.inject.Provider
 
 class SetCategoriesForMangas @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val mangaCategoryRepository: MangaCategoryRepository,
+  private val transactions: Provider<Transaction>
 ) {
 
-  fun interact(categoryIds: Collection<Long>, mangaIds: Collection<Long>): Single<Result> {
-    return Single.just(Result.Success)
+  fun interact(categoryIds: Collection<Long>, mangaIds: Collection<Long>) = Single.defer {
+    val transaction = transactions.get()
+    transaction.begin()
 
-    //TODO
-//    return categoryRepository.setCategoriesForMangas(categoryIds, mangaIds)
-//      .toSingle<Result> { Result.Success }
-//      .onErrorReturn { Result.Error(it) }
+    val newMangaCategories = mutableListOf<MangaCategory>()
+    for (categoryId in categoryIds) {
+      for (mangaId in mangaIds) {
+        val mangaCategory = MangaCategory(mangaId, categoryId)
+        newMangaCategories.add(mangaCategory)
+      }
+    }
+
+    mangaCategoryRepository.deleteForMangas(mangaIds)
+      .andThen(mangaCategoryRepository.save(newMangaCategories))
+      .toSingle<Result> { Result.Success }
+      .doOnSuccess { transaction.commit() }
+      .doFinally { transaction.end() }
+      .onErrorReturn(Result::InternalError)
   }
 
   sealed class Result {
     object Success : Result()
-    data class Error(val error: Throwable) : Result()
+    data class InternalError(val error: Throwable) : Result()
   }
 
 }

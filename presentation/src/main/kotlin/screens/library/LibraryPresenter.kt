@@ -17,12 +17,12 @@ import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.data.library.prefs.LibraryPreferences
 import tachiyomi.domain.category.Category
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.SubscribeLibraryCategory
 import tachiyomi.domain.library.interactor.SubscribeUserCategories
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 

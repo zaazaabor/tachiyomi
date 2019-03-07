@@ -14,7 +14,6 @@ import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
 import tachiyomi.core.db.DbOpenHelper
 import tachiyomi.data.catalog.sql.CatalogTable
 import tachiyomi.data.catalog.sql.CatalogTypeMapping
-import tachiyomi.data.category.model.MangaCategory
 import tachiyomi.data.category.resolver.CategoryTypeMapping
 import tachiyomi.data.category.resolver.MangaCategoryTypeMapping
 import tachiyomi.data.category.table.CategoryTable
@@ -25,6 +24,7 @@ import tachiyomi.data.manga.resolver.MangaTypeMapping
 import tachiyomi.data.manga.table.MangaTable
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.MangaCategory
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import toothpick.ProvidesSingletonInScope
