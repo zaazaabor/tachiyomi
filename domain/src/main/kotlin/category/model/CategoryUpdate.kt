@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.domain.category
+package tachiyomi.domain.category.model
 
 import tachiyomi.core.stdlib.Optional
 

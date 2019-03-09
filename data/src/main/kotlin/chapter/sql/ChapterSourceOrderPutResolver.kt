@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.chapter.resolver
+package tachiyomi.data.chapter.sql
 
 import android.content.ContentValues
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
@@ -14,7 +14,6 @@ import com.pushtorefresh.storio3.sqlite.operations.put.PutResolver
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.core.db.inTransactionReturn
-import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.domain.chapter.model.Chapter
 
 class ChapterSourceOrderPutResolver : PutResolver<Chapter>() {

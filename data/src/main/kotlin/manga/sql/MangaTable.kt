@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.manga.table
+package tachiyomi.data.manga.sql
 
 import android.database.sqlite.SQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback

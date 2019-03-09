@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category.table
+package tachiyomi.data.category.sql
 
 import android.database.sqlite.SQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 
 internal object CategoryTable : DbOpenCallback {
 

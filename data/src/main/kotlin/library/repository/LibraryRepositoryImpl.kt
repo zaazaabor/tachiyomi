@@ -6,19 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.library
+package tachiyomi.data.library.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.Single
-import tachiyomi.data.category.table.MangaCategoryTable
-import tachiyomi.data.chapter.table.ChapterTable
-import tachiyomi.data.library.resolver.FavoriteSourceIdsGetResolver
-import tachiyomi.data.library.resolver.LibraryMangaForCategoryGetResolver
-import tachiyomi.data.library.resolver.LibraryMangaGetResolver
-import tachiyomi.data.manga.table.MangaTable
+import tachiyomi.data.category.sql.MangaCategoryTable
+import tachiyomi.data.chapter.sql.ChapterTable
+import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
+import tachiyomi.data.library.sql.LibraryMangaForCategoryGetResolver
+import tachiyomi.data.library.sql.LibraryMangaGetResolver
+import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject

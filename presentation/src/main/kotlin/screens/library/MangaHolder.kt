@@ -14,6 +14,7 @@ import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseViewHolder
 import tachiyomi.ui.glide.GlideRequests
+import tachiyomi.ui.glide.MangaCover
 import tachiyomi.ui.util.inflate
 
 class MangaHolder(
@@ -35,11 +36,9 @@ class MangaHolder(
     currentAdapter = adapter
     catalog_title.text = manga.title
 
-    // TODO implement custom loader
-    if (manga.cover.isNotEmpty()) {
-      glideRequests.load(manga.cover)
-        .into(thumbnail)
-    }
+    glideRequests.load(MangaCover.from(manga))
+      .centerCrop()
+      .into(thumbnail)
 
     bindIsSelected(isSelected)
   }

@@ -13,7 +13,7 @@ import android.os.Bundle
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.bluelinelabs.conductor.Controller
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.DialogController
 

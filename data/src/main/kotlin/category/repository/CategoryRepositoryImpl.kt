@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category
+package tachiyomi.data.category.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.Query
@@ -17,13 +17,13 @@ import io.reactivex.Observable
 import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.data.category.resolver.CategoryUpdatePutResolver
-import tachiyomi.data.category.resolver.CategoryWithCountGetResolver
-import tachiyomi.data.category.table.CategoryTable
-import tachiyomi.data.category.table.MangaCategoryTable
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.CategoryUpdate
-import tachiyomi.domain.category.CategoryWithCount
+import tachiyomi.data.category.sql.CategoryTable
+import tachiyomi.data.category.sql.CategoryUpdatePutResolver
+import tachiyomi.data.category.sql.CategoryWithCountGetResolver
+import tachiyomi.data.category.sql.MangaCategoryTable
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.CategoryUpdate
+import tachiyomi.domain.category.model.CategoryWithCount
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 

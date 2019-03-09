@@ -13,7 +13,7 @@ import io.reactivex.Completable
 import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.data.category.table.MangaCategoryTable
+import tachiyomi.data.category.sql.MangaCategoryTable
 import tachiyomi.domain.category.model.MangaCategory
 import tachiyomi.domain.category.repository.MangaCategoryRepository
 import javax.inject.Inject

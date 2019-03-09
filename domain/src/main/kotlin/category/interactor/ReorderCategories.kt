@@ -10,8 +10,8 @@ package tachiyomi.domain.category.interactor
 
 import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.CategoryUpdate
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.CategoryUpdate
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 

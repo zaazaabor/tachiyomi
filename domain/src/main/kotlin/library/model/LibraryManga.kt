@@ -10,7 +10,7 @@ package tachiyomi.domain.library.model
 
 data class LibraryManga(
   val mangaId: Long,
-  val source: Long,
+  val sourceId: Long,
   val key: String,
   val title: String,
   val status: Int,

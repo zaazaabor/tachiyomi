@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.library.model
 
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 
 data class LibraryCategory(
   val category: Category,

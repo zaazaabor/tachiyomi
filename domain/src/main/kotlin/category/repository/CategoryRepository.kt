@@ -10,9 +10,9 @@ package tachiyomi.domain.category.repository
 
 import io.reactivex.Completable
 import io.reactivex.Observable
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.CategoryUpdate
-import tachiyomi.domain.category.CategoryWithCount
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.CategoryUpdate
+import tachiyomi.domain.category.model.CategoryWithCount
 
 interface CategoryRepository {
 

@@ -9,7 +9,7 @@
 package tachiyomi.ui.screens.category
 
 import android.content.Context
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 import tachiyomi.ui.R
 
 fun Category.getVisibleName(context: Context): String {

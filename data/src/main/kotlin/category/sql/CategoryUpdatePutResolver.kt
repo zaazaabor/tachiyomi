@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category.resolver
+package tachiyomi.data.category.sql
 
 import android.content.ContentValues
 import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
@@ -14,12 +14,12 @@ import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.core.util.optInt
 import tachiyomi.core.util.optString
-import tachiyomi.data.category.table.CategoryTable.COL_FLAGS
-import tachiyomi.data.category.table.CategoryTable.COL_ID
-import tachiyomi.data.category.table.CategoryTable.COL_NAME
-import tachiyomi.data.category.table.CategoryTable.COL_ORDER
-import tachiyomi.data.category.table.CategoryTable.TABLE
-import tachiyomi.domain.category.CategoryUpdate
+import tachiyomi.data.category.sql.CategoryTable.COL_FLAGS
+import tachiyomi.data.category.sql.CategoryTable.COL_ID
+import tachiyomi.data.category.sql.CategoryTable.COL_NAME
+import tachiyomi.data.category.sql.CategoryTable.COL_ORDER
+import tachiyomi.data.category.sql.CategoryTable.TABLE
+import tachiyomi.domain.category.model.CategoryUpdate
 
 object CategoryUpdatePutResolver : DefaultPutResolver<CategoryUpdate>() {
 

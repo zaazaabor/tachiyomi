@@ -6,12 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui.screens.category
+package tachiyomi.domain.library.repository
 
-import tachiyomi.domain.category.model.Category
+import java.io.File
 
-data class ViewState(
-  val categories: List<Category> = emptyList(),
-  val selectedCategories: Set<Long> = emptySet(),
-  val error: Throwable? = null
-)
+interface LibraryCovers {
+
+  fun find(mangaId: Long): File
+
+  fun findCustom(mangaId: Long): File
+
+  fun delete(mangaId: Long): Boolean
+
+  fun deleteCustom(mangaId: Long): Boolean
+
+}

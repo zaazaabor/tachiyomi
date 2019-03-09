@@ -8,7 +8,7 @@
 
 package tachiyomi.ui.screens.library
 
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort

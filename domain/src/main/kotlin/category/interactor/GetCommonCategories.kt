@@ -10,7 +10,7 @@ package tachiyomi.domain.category.interactor
 
 import io.reactivex.Observable
 import io.reactivex.Single
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.repository.CategoryRepository
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject

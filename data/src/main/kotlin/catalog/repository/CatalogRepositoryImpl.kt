@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.catalog
+package tachiyomi.data.catalog.repository
 
 import android.app.Application
 import android.os.SystemClock

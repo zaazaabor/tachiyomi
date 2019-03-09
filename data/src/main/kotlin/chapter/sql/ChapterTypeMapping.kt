@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.chapter.resolver
+package tachiyomi.data.chapter.sql
 
 import android.content.ContentValues
 import android.database.Cursor
@@ -18,19 +18,19 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.data.chapter.table.ChapterTable.COL_BOOKMARK
-import tachiyomi.data.chapter.table.ChapterTable.COL_DATE_FETCH
-import tachiyomi.data.chapter.table.ChapterTable.COL_DATE_UPLOAD
-import tachiyomi.data.chapter.table.ChapterTable.COL_ID
-import tachiyomi.data.chapter.table.ChapterTable.COL_KEY
-import tachiyomi.data.chapter.table.ChapterTable.COL_MANGA_ID
-import tachiyomi.data.chapter.table.ChapterTable.COL_NAME
-import tachiyomi.data.chapter.table.ChapterTable.COL_NUMBER
-import tachiyomi.data.chapter.table.ChapterTable.COL_PROGRESS
-import tachiyomi.data.chapter.table.ChapterTable.COL_READ
-import tachiyomi.data.chapter.table.ChapterTable.COL_SCANLATOR
-import tachiyomi.data.chapter.table.ChapterTable.COL_SOURCE_ORDER
-import tachiyomi.data.chapter.table.ChapterTable.TABLE
+import tachiyomi.data.chapter.sql.ChapterTable.COL_BOOKMARK
+import tachiyomi.data.chapter.sql.ChapterTable.COL_DATE_FETCH
+import tachiyomi.data.chapter.sql.ChapterTable.COL_DATE_UPLOAD
+import tachiyomi.data.chapter.sql.ChapterTable.COL_ID
+import tachiyomi.data.chapter.sql.ChapterTable.COL_KEY
+import tachiyomi.data.chapter.sql.ChapterTable.COL_MANGA_ID
+import tachiyomi.data.chapter.sql.ChapterTable.COL_NAME
+import tachiyomi.data.chapter.sql.ChapterTable.COL_NUMBER
+import tachiyomi.data.chapter.sql.ChapterTable.COL_PROGRESS
+import tachiyomi.data.chapter.sql.ChapterTable.COL_READ
+import tachiyomi.data.chapter.sql.ChapterTable.COL_SCANLATOR
+import tachiyomi.data.chapter.sql.ChapterTable.COL_SOURCE_ORDER
+import tachiyomi.data.chapter.sql.ChapterTable.TABLE
 import tachiyomi.domain.chapter.model.Chapter
 
 internal class ChapterTypeMapping : SQLiteTypeMapping<Chapter>(

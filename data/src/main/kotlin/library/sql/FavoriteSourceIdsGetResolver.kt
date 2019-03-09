@@ -6,12 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.library.resolver
+package tachiyomi.data.library.sql
 
 import android.database.Cursor
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
-import tachiyomi.data.manga.table.MangaTable
+import tachiyomi.data.manga.sql.MangaTable
 
 internal object FavoriteSourceIdsGetResolver : DefaultGetResolver<Long>() {
 

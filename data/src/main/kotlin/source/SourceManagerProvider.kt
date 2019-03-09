@@ -9,7 +9,7 @@
 package tachiyomi.data.source
 
 import android.app.Application
-import tachiyomi.data.catalog.CatalogRepositoryImpl
+import tachiyomi.data.catalog.repository.CatalogRepositoryImpl
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.source.SourceManager
 import toothpick.ProvidesSingletonInScope

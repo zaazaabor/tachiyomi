@@ -14,6 +14,7 @@ import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.category.model.MangaCategory
 import tachiyomi.domain.category.repository.MangaCategoryRepository
 import tachiyomi.domain.library.prefs.LibraryPreferences
+import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -24,17 +25,20 @@ class ChangeMangaFavorite @Inject constructor(
   private val mangaRepository: MangaRepository,
   private val mangaCategoryRepository: MangaCategoryRepository,
   private val libraryPreferences: LibraryPreferences,
+  private val libraryCovers: LibraryCovers,
   private val transactions: Provider<Transaction>
 ) {
 
   fun interact(manga: Manga) = Single.defer {
+    val now = System.currentTimeMillis()
+
     val update = if (manga.favorite) {
       MangaUpdate(id = manga.id, favorite = Optional.of(false))
     } else {
       MangaUpdate(
         id = manga.id,
         favorite = Optional.of(true),
-        dateAdded = Optional.of(System.currentTimeMillis())
+        dateAdded = Optional.of(now)
       )
     }
 
@@ -55,6 +59,11 @@ class ChangeMangaFavorite @Inject constructor(
     mangaRepository.savePartial(update)
       .andThen(setCategoryOperation)
       .toSingle<Result> { Result.Success }
+      .doOnSuccess {
+        if (manga.favorite) {
+          libraryCovers.delete(manga.id)
+        }
+      }
       .doOnSuccess { transaction.commit() }
       .doFinally { transaction.end() }
       .onErrorReturn(Result::InternalError)

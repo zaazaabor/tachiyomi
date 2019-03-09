@@ -6,27 +6,31 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.library.resolver
+package tachiyomi.data.library.sql
 
 import android.database.Cursor
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
-import tachiyomi.data.chapter.table.ChapterTable
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.data.manga.table.MangaTable as Manga
+import tachiyomi.data.category.sql.MangaCategoryTable as MangaCategory
+import tachiyomi.data.chapter.sql.ChapterTable as Chapter
+import tachiyomi.data.manga.sql.MangaTable as Manga
 
-internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>() {
+internal object LibraryMangaForCategoryGetResolver : DefaultGetResolver<LibraryManga>() {
 
   private const val mangaSelections = """${Manga.COL_ID}, ${Manga.COL_SOURCE}, ${Manga.COL_KEY},
     ${Manga.COL_TITLE}, ${Manga.COL_STATUS}, ${Manga.COL_COVER}, ${Manga.COL_LAST_UPDATE}"""
 
   /**
-   * Query to get all the manga from the library.
+   * Query to get the manga from the library for a given category.
    */
-  const val query = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
+  const val query = """SELECT $mangaSelections, COUNT(${Chapter.COL_ID}) as unread
     FROM ${Manga.LIBRARY}
-    LEFT JOIN ${ChapterTable.TABLE}
-    ON ${Manga.COL_ID} = ${ChapterTable.COL_MANGA_ID} AND ${ChapterTable.COL_READ} = 0
+    JOIN ${MangaCategory.TABLE}
+    ON ${Manga.COL_ID} = ${MangaCategory.COL_MANGA_ID}
+      AND ${MangaCategory.COL_CATEGORY_ID} = ?1
+    LEFT JOIN ${Chapter.TABLE}
+    ON ${Manga.COL_ID} = ${Chapter.COL_MANGA_ID} AND ${Chapter.COL_READ} = 0
     GROUP BY ${Manga.COL_ID}"""
 
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryManga {

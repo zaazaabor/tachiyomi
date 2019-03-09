@@ -10,6 +10,7 @@ package tachiyomi.domain.manga.interactor
 
 import io.reactivex.Maybe
 import tachiyomi.core.stdlib.Optional
+import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -21,13 +22,17 @@ import javax.inject.Inject
 
 class MangaInitializer @Inject internal constructor(
   private val mangaRepository: MangaRepository,
-  private val sourceManager: SourceManager
+  private val sourceManager: SourceManager,
+  private val libraryCovers: LibraryCovers
 ) {
 
-  fun interact(source: Source, manga: Manga, force: Boolean = false): Maybe<Manga> {
-    if (!force && lastInitBelowMinInterval(manga)) return Maybe.empty()
+  // TODO error handling
+  fun interact(source: Source, manga: Manga, force: Boolean = false) = Maybe.defer {
+    if (!force && lastInitBelowMinInterval(manga)) return@defer Maybe.empty<Manga>()
 
-    val info = MangaInfo(
+    val now = System.currentTimeMillis()
+
+    val infoQuery = MangaInfo(
       key = manga.key,
       title = manga.title,
       artist = manga.artist,
@@ -37,44 +42,44 @@ class MangaInitializer @Inject internal constructor(
       status = manga.status,
       cover = manga.cover
     )
-    return Maybe.fromCallable { source.fetchMangaDetails(info) }
-      .flatMap { newInfo ->
-        val update = MangaUpdate(
-          id = manga.id,
-          key = if (newInfo.key.isEmpty() || newInfo.key == manga.key) {
-            Optional.None
-          } else {
-            Optional.of(newInfo.key)
-          },
-          title = if (newInfo.title.isEmpty() || newInfo.title == manga.title) {
-            Optional.None
-          } else {
-            Optional.of(newInfo.title)
-          },
-          artist = Optional.of(newInfo.artist),
-          author = Optional.of(newInfo.author),
-          description = Optional.of(newInfo.description),
-          genres = Optional.of(newInfo.genres),
-          status = Optional.of(newInfo.status),
-          cover = Optional.of(newInfo.cover),
-          lastInit = Optional.of(System.currentTimeMillis())
-        )
+    val newInfo = source.fetchMangaDetails(infoQuery)
 
-        val updatedManga = manga.copy(
-          key = if (newInfo.key.isEmpty()) manga.key else newInfo.key,
-          title = if (newInfo.title.isEmpty()) manga.title else newInfo.title,
-          artist = newInfo.artist,
-          author = newInfo.author,
-          description = newInfo.description,
-          genres = newInfo.genres,
-          status = newInfo.status,
-          cover = newInfo.cover,
-          lastInit = System.currentTimeMillis()
-        )
+    val update = MangaUpdate(
+      id = manga.id,
+      key = if (newInfo.key.isEmpty() || newInfo.key == manga.key) {
+        Optional.None
+      } else {
+        Optional.of(newInfo.key)
+      },
+      title = if (newInfo.title.isEmpty() || newInfo.title == manga.title) {
+        Optional.None
+      } else {
+        Optional.of(newInfo.title)
+      },
+      artist = Optional.of(newInfo.artist),
+      author = Optional.of(newInfo.author),
+      description = Optional.of(newInfo.description),
+      genres = Optional.of(newInfo.genres),
+      status = Optional.of(newInfo.status),
+      cover = Optional.of(newInfo.cover),
+      lastInit = Optional.of(now)
+    )
 
-        mangaRepository.savePartial(update)
-          .andThen(Maybe.just(updatedManga))
-      }
+    val updatedManga = manga.copy(
+      key = if (newInfo.key.isEmpty()) manga.key else newInfo.key,
+      title = if (newInfo.title.isEmpty()) manga.title else newInfo.title,
+      artist = newInfo.artist,
+      author = newInfo.author,
+      description = newInfo.description,
+      genres = newInfo.genres,
+      status = newInfo.status,
+      cover = newInfo.cover,
+      lastInit = now
+    )
+
+    mangaRepository.savePartial(update)
+      .andThen(Maybe.just(updatedManga))
+      .doOnSuccess { libraryCovers.find(manga.id).setLastModified(now) }
   }
 
   fun interact(manga: Manga, force: Boolean = false): Maybe<Manga> {

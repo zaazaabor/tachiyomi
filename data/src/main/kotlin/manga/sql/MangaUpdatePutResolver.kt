@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.manga.resolver
+package tachiyomi.data.manga.sql
 
 import android.content.ContentValues
 import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
@@ -17,23 +17,23 @@ import tachiyomi.core.util.optBoolean
 import tachiyomi.core.util.optInt
 import tachiyomi.core.util.optLong
 import tachiyomi.core.util.optString
-import tachiyomi.data.manga.table.MangaTable.COL_ARTIST
-import tachiyomi.data.manga.table.MangaTable.COL_AUTHOR
-import tachiyomi.data.manga.table.MangaTable.COL_COVER
-import tachiyomi.data.manga.table.MangaTable.COL_DATE_ADDED
-import tachiyomi.data.manga.table.MangaTable.COL_DESCRIPTION
-import tachiyomi.data.manga.table.MangaTable.COL_FAVORITE
-import tachiyomi.data.manga.table.MangaTable.COL_FLAGS
-import tachiyomi.data.manga.table.MangaTable.COL_GENRES
-import tachiyomi.data.manga.table.MangaTable.COL_ID
-import tachiyomi.data.manga.table.MangaTable.COL_KEY
-import tachiyomi.data.manga.table.MangaTable.COL_LAST_INIT
-import tachiyomi.data.manga.table.MangaTable.COL_LAST_UPDATE
-import tachiyomi.data.manga.table.MangaTable.COL_SOURCE
-import tachiyomi.data.manga.table.MangaTable.COL_STATUS
-import tachiyomi.data.manga.table.MangaTable.COL_TITLE
-import tachiyomi.data.manga.table.MangaTable.COL_VIEWER
-import tachiyomi.data.manga.table.MangaTable.TABLE
+import tachiyomi.data.manga.sql.MangaTable.COL_ARTIST
+import tachiyomi.data.manga.sql.MangaTable.COL_AUTHOR
+import tachiyomi.data.manga.sql.MangaTable.COL_COVER
+import tachiyomi.data.manga.sql.MangaTable.COL_DATE_ADDED
+import tachiyomi.data.manga.sql.MangaTable.COL_DESCRIPTION
+import tachiyomi.data.manga.sql.MangaTable.COL_FAVORITE
+import tachiyomi.data.manga.sql.MangaTable.COL_FLAGS
+import tachiyomi.data.manga.sql.MangaTable.COL_GENRES
+import tachiyomi.data.manga.sql.MangaTable.COL_ID
+import tachiyomi.data.manga.sql.MangaTable.COL_KEY
+import tachiyomi.data.manga.sql.MangaTable.COL_LAST_INIT
+import tachiyomi.data.manga.sql.MangaTable.COL_LAST_UPDATE
+import tachiyomi.data.manga.sql.MangaTable.COL_SOURCE
+import tachiyomi.data.manga.sql.MangaTable.COL_STATUS
+import tachiyomi.data.manga.sql.MangaTable.COL_TITLE
+import tachiyomi.data.manga.sql.MangaTable.COL_VIEWER
+import tachiyomi.data.manga.sql.MangaTable.TABLE
 import tachiyomi.domain.manga.model.MangaUpdate
 
 object MangaUpdatePutResolver : DefaultPutResolver<MangaUpdate>() {

@@ -9,8 +9,8 @@
 package tachiyomi.domain.library.interactor
 
 import io.reactivex.Observable
-import tachiyomi.domain.category.Category
 import tachiyomi.domain.category.interactor.SubscribeCategoriesWithCount
+import tachiyomi.domain.category.model.Category
 import javax.inject.Inject
 
 class SubscribeUserCategories @Inject constructor(

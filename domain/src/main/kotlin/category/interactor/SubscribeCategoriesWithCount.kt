@@ -9,7 +9,7 @@
 package tachiyomi.domain.category.interactor
 
 import io.reactivex.Observable
-import tachiyomi.domain.category.CategoryWithCount
+import tachiyomi.domain.category.model.CategoryWithCount
 import tachiyomi.domain.category.repository.CategoryRepository
 import javax.inject.Inject
 

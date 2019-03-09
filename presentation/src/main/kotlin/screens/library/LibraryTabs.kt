@@ -15,7 +15,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.google.android.material.chip.Chip
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 import tachiyomi.ui.R
 import tachiyomi.ui.screens.category.getVisibleName
 import tachiyomi.ui.theme.ChipTheme

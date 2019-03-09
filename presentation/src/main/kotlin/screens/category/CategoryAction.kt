@@ -8,7 +8,7 @@
 
 package tachiyomi.ui.screens.category
 
-import tachiyomi.domain.category.Category
+import tachiyomi.domain.category.model.Category
 
 sealed class Action {
 

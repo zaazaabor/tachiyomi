@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.chapter
+package tachiyomi.data.chapter.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
@@ -23,8 +23,8 @@ import tachiyomi.core.db.toOptional
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.data.chapter.resolver.ChapterSourceOrderPutResolver
-import tachiyomi.data.chapter.table.ChapterTable
+import tachiyomi.data.chapter.sql.ChapterSourceOrderPutResolver
+import tachiyomi.data.chapter.sql.ChapterTable
 import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository

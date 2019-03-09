@@ -9,9 +9,10 @@
 package tachiyomi.ui.screens.manga
 
 import android.view.View
-import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.manga_header_item.*
 import tachiyomi.ui.adapter.BaseViewHolder
+import tachiyomi.ui.glide.GlideApp
+import tachiyomi.ui.glide.MangaCover
 
 class MangaHeaderHolder(private val view: View) : BaseViewHolder(view) {
 
@@ -25,10 +26,9 @@ class MangaHeaderHolder(private val view: View) : BaseViewHolder(view) {
     manga_status.text = manga.status.toString()
     manga_source.text = manga.source.toString()
 
-    Glide.with(view.context)
-      .load(manga.cover) // TODO use custom model loader
-      //.diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-      //.centerCrop()
+    GlideApp.with(view.context)
+      .load(MangaCover.from(manga))
+      .centerCrop()
       .into(manga_cover)
 
   }

@@ -6,16 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category.resolver
+package tachiyomi.data.category.sql
 
 import android.database.Cursor
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
-import tachiyomi.data.category.table.CategoryTable
-import tachiyomi.data.category.table.MangaCategoryTable
-import tachiyomi.data.manga.table.MangaTable
-import tachiyomi.domain.category.Category
-import tachiyomi.domain.category.CategoryWithCount
+import tachiyomi.data.manga.sql.MangaTable
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.CategoryWithCount
 
 internal object CategoryWithCountGetResolver : DefaultGetResolver<CategoryWithCount>(),
   CategoryCursorMapper {

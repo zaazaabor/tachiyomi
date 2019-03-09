@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.category.resolver
+package tachiyomi.data.category.sql
 
 import android.content.ContentValues
 import android.database.Cursor
@@ -18,12 +18,12 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.data.category.table.CategoryTable.COL_FLAGS
-import tachiyomi.data.category.table.CategoryTable.COL_ID
-import tachiyomi.data.category.table.CategoryTable.COL_NAME
-import tachiyomi.data.category.table.CategoryTable.COL_ORDER
-import tachiyomi.data.category.table.CategoryTable.TABLE
-import tachiyomi.domain.category.Category
+import tachiyomi.data.category.sql.CategoryTable.COL_FLAGS
+import tachiyomi.data.category.sql.CategoryTable.COL_ID
+import tachiyomi.data.category.sql.CategoryTable.COL_NAME
+import tachiyomi.data.category.sql.CategoryTable.COL_ORDER
+import tachiyomi.data.category.sql.CategoryTable.TABLE
+import tachiyomi.domain.category.model.Category
 
 internal class CategoryTypeMapping : SQLiteTypeMapping<Category>(
   CategoryPutResolver(),
@@ -70,7 +70,8 @@ internal interface CategoryCursorMapper {
 
 }
 
-internal open class CategoryGetResolver : DefaultGetResolver<Category>(), CategoryCursorMapper {
+internal open class CategoryGetResolver : DefaultGetResolver<Category>(),
+  CategoryCursorMapper {
 
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): Category {
     return mapCategory(cursor)
