@@ -36,7 +36,7 @@ class LibraryChangeCategoriesDialog<T>(
   ) : this() {
 
     this.mangas = mangas
-    this.allCategories = allCategories.filterNot { it.isAll }
+    this.allCategories = allCategories.filterNot { it.isSystemCategory }
     this.preselected = preselected
     targetController = target
   }
@@ -46,7 +46,8 @@ class LibraryChangeCategoriesDialog<T>(
       .title(R.string.action_move_category)
       .listItemsMultiChoice(
         items = allCategories.map { it.getVisibleName(activity!!) },
-        initialSelection = preselected.toIntArray()
+        initialSelection = preselected.toIntArray(),
+        allowEmptySelection = true
       ) { _, indices, _ ->
         val newCategories = indices.map { allCategories[it].id }
         (targetController as? Listener)?.updateCategoriesForMangas(newCategories, mangas)

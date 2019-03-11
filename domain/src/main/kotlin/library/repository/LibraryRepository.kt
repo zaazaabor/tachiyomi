@@ -14,9 +14,11 @@ import tachiyomi.domain.library.model.LibraryManga
 
 interface LibraryRepository {
 
-  fun subscribe(): Observable<List<LibraryManga>>
+  fun subscribeAll(): Observable<List<LibraryManga>>
 
-  fun subscribeForCategory(categoryId: Long): Observable<List<LibraryManga>>
+  fun subscribeUncategorized(): Observable<List<LibraryManga>>
+
+  fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>>
 
   fun findFavoriteSourceIds(): Single<List<Long>>
 

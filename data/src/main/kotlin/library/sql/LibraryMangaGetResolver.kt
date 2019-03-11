@@ -11,6 +11,7 @@ package tachiyomi.data.library.sql
 import android.database.Cursor
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
+import tachiyomi.data.category.sql.MangaCategoryTable
 import tachiyomi.data.chapter.sql.ChapterTable
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.data.manga.sql.MangaTable as Manga
@@ -23,8 +24,28 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>() {
   /**
    * Query to get all the manga from the library.
    */
-  const val query = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
+  const val allQuery = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
     FROM ${Manga.LIBRARY}
+    LEFT JOIN ${ChapterTable.TABLE}
+    ON ${Manga.COL_ID} = ${ChapterTable.COL_MANGA_ID} AND ${ChapterTable.COL_READ} = 0
+    GROUP BY ${Manga.COL_ID}"""
+
+  const val uncategorizedQuery = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
+    FROM ${Manga.LIBRARY}
+    LEFT JOIN ${ChapterTable.TABLE}
+    ON ${Manga.COL_ID} = ${ChapterTable.COL_MANGA_ID} AND ${ChapterTable.COL_READ} = 0
+    WHERE NOT EXISTS (
+      SELECT ${MangaCategoryTable.COL_MANGA_ID}
+      FROM ${MangaCategoryTable.TABLE}
+      WHERE ${Manga.COL_ID} = ${MangaCategoryTable.COL_MANGA_ID}
+    )
+    GROUP BY ${Manga.COL_ID}"""
+
+  const val categoryQuery = """SELECT $mangaSelections, COUNT(${ChapterTable.COL_ID}) as unread
+    FROM ${Manga.LIBRARY}
+    JOIN ${MangaCategoryTable.TABLE}
+    ON ${Manga.COL_ID} = ${MangaCategoryTable.COL_MANGA_ID}
+      AND ${MangaCategoryTable.COL_CATEGORY_ID} = ?1
     LEFT JOIN ${ChapterTable.TABLE}
     ON ${Manga.COL_ID} = ${ChapterTable.COL_MANGA_ID} AND ${ChapterTable.COL_READ} = 0
     GROUP BY ${Manga.COL_ID}"""

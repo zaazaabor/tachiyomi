@@ -8,10 +8,10 @@
 
 package tachiyomi.domain.library.interactor
 
+import io.reactivex.Completable
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.category.model.MangaCategory
 import tachiyomi.domain.category.repository.MangaCategoryRepository
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.LibraryCovers
@@ -26,29 +26,36 @@ class ChangeMangaFavorite @Inject constructor(
   private val mangaCategoryRepository: MangaCategoryRepository,
   private val libraryPreferences: LibraryPreferences,
   private val libraryCovers: LibraryCovers,
-  private val transactions: Provider<Transaction>
+  private val transactions: Provider<Transaction>,
+  private val setCategoriesForMangas: Provider<SetCategoriesForMangas>
 ) {
 
   fun interact(manga: Manga) = Single.defer {
     val now = System.currentTimeMillis()
-
-    val update = if (manga.favorite) {
-      MangaUpdate(id = manga.id, favorite = Optional.of(false))
-    } else {
+    val nowFavorite = !manga.favorite
+    val update = if (nowFavorite) {
       MangaUpdate(
         id = manga.id,
         favorite = Optional.of(true),
         dateAdded = Optional.of(now)
       )
+    } else {
+      MangaUpdate(id = manga.id, favorite = Optional.of(false))
     }
 
     val mangaIds = listOf(manga.id)
-    val setCategoryOperation = if (!manga.favorite) {
+    val setCategoryOperation = if (nowFavorite) {
       val defaultCategory = libraryPreferences.defaultCategory().get()
-      val mangaCategories = mangaIds.map { mangaId ->
-        MangaCategory(mangaId, defaultCategory)
-      }
-      mangaCategoryRepository.save(mangaCategories)
+//      val mangaCategories = mangaIds.map { mangaId ->
+//        MangaCategory(mangaId, defaultCategory)
+//      }
+      setCategoriesForMangas.get().interact(listOf(defaultCategory), mangaIds)
+        .flatMapCompletable { result ->
+          when (result) {
+            SetCategoriesForMangas.Result.Success -> Completable.complete()
+            is SetCategoriesForMangas.Result.InternalError -> Completable.error(result.error)
+          }
+        }
     } else {
       mangaCategoryRepository.deleteForMangas(mangaIds)
     }
@@ -60,7 +67,7 @@ class ChangeMangaFavorite @Inject constructor(
       .andThen(setCategoryOperation)
       .toSingle<Result> { Result.Success }
       .doOnSuccess {
-        if (manga.favorite) {
+        if (!nowFavorite) {
           libraryCovers.delete(manga.id)
         }
       }

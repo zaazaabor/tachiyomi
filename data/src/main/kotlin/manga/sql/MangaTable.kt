@@ -34,7 +34,7 @@ internal object MangaTable : DbOpenCallback {
   const val COL_VIEWER = "m_viewer"
   const val COL_FLAGS = "m_flags"
 
-  private val createTableQuery: String
+  private val createTableQuery
     get() = """CREATE TABLE $TABLE(
             $COL_ID INTEGER NOT NULL PRIMARY KEY,
             $COL_SOURCE INTEGER NOT NULL,
@@ -54,13 +54,13 @@ internal object MangaTable : DbOpenCallback {
             $COL_FLAGS INTEGER NOT NULL
             )"""
 
-  val createUrlIndexQuery: String
+  val createUrlIndexQuery
     get() = "CREATE INDEX ${TABLE}_${COL_KEY}_index ON $TABLE($COL_KEY)"
 
-  val createFavoriteIndexQuery: String
+  val createFavoriteIndexQuery
     get() = "CREATE INDEX ${TABLE}_${COL_FAVORITE}_index ON $TABLE($COL_FAVORITE)"
 
-  val createFavoriteViewQuery: String
+  val createFavoriteViewQuery
     get() = "CREATE VIEW $LIBRARY AS SELECT * FROM $TABLE WHERE $COL_FAVORITE = 1"
 
   override fun onCreate(db: SQLiteDatabase) {

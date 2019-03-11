@@ -19,10 +19,10 @@ class SubscribeLibraryCategory @Inject constructor(
 ) {
 
   fun interact(categoryId: Long): Observable<List<LibraryManga>> {
-    return if (categoryId == Category.ALL_ID) {
-      libraryRepository.subscribe()
-    } else {
-      libraryRepository.subscribeForCategory(categoryId)
+    return when (categoryId) {
+      Category.ALL_ID -> libraryRepository.subscribeAll()
+      Category.UNCATEGORIZED_ID -> libraryRepository.subscribeUncategorized()
+      else -> libraryRepository.subscribeToCategory(categoryId)
     }
   }
 

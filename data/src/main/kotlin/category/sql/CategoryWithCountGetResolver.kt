@@ -25,12 +25,27 @@ internal object CategoryWithCountGetResolver : DefaultGetResolver<CategoryWithCo
     FROM ${CategoryTable.TABLE}
     LEFT JOIN ${MangaCategoryTable.TABLE}
     ON ${CategoryTable.COL_ID} = ${MangaCategoryTable.COL_CATEGORY_ID}
-    WHERE ${CategoryTable.COL_ID} != ${Category.ALL_ID}
+    WHERE ${CategoryTable.COL_ID} > 0
     GROUP BY ${CategoryTable.COL_ID}
-    UNION
-    SELECT *, (SELECT COUNT() FROM ${MangaTable.LIBRARY})
+    UNION ALL
+    SELECT *, (
+      SELECT COUNT()
+      FROM ${MangaTable.LIBRARY}
+    )
     FROM ${CategoryTable.TABLE}
     WHERE ${CategoryTable.COL_ID} = ${Category.ALL_ID}
+    UNION ALL
+    SELECT *, (
+      SELECT COUNT(${MangaTable.COL_ID})
+      FROM ${MangaTable.LIBRARY}
+      WHERE NOT EXISTS (
+        SELECT ${MangaCategoryTable.COL_MANGA_ID}
+        FROM ${MangaCategoryTable.TABLE}
+        WHERE ${MangaTable.COL_ID} = ${MangaCategoryTable.COL_MANGA_ID}
+      )
+    )
+    FROM ${CategoryTable.TABLE}
+    WHERE ${CategoryTable.COL_ID} = ${Category.UNCATEGORIZED_ID}
     ORDER BY ${CategoryTable.COL_ORDER}
   """
 

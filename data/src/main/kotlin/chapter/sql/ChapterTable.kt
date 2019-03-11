@@ -47,8 +47,17 @@ internal object ChapterTable : DbOpenCallback {
             ON DELETE CASCADE
             )"""
 
+  val createMangaIdIndex
+    get() = "CREATE INDEX ${TABLE}_${COL_ID}_index ON $TABLE($COL_MANGA_ID)"
+
+  val createUnreadIndex
+    get() = "CREATE INDEX ${TABLE}_unread_index ON $TABLE($COL_MANGA_ID, $COL_READ) WHERE " +
+      "$COL_READ = 0"
+
   override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(createTableQuery)
+    db.execSQL(createMangaIdIndex)
+    db.execSQL(createUnreadIndex)
   }
 
 }

@@ -173,6 +173,12 @@ class LibraryPresenter @Inject constructor(
   fun setCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>) {
     setCategoriesForMangas.interact(categoryIds, mangaIds)
       .subscribeOn(schedulers.io)
+      .doOnSuccess { result ->
+        when (result) {
+          SetCategoriesForMangas.Result.Success -> unselectMangas()
+          is SetCategoriesForMangas.Result.InternalError -> {} // do nothing
+        }
+      }
       .subscribe()
   }
 

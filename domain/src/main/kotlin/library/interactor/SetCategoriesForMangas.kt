@@ -26,9 +26,12 @@ class SetCategoriesForMangas @Inject constructor(
 
     val newMangaCategories = mutableListOf<MangaCategory>()
     for (categoryId in categoryIds) {
-      for (mangaId in mangaIds) {
-        val mangaCategory = MangaCategory(mangaId, categoryId)
-        newMangaCategories.add(mangaCategory)
+      // System categories don't need entries
+      if (categoryId > 0) {
+        for (mangaId in mangaIds) {
+          val mangaCategory = MangaCategory(mangaId, categoryId)
+          newMangaCategories.add(mangaCategory)
+        }
       }
     }
 

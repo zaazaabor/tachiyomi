@@ -16,7 +16,6 @@ import io.reactivex.Single
 import tachiyomi.data.category.sql.MangaCategoryTable
 import tachiyomi.data.chapter.sql.ChapterTable
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
-import tachiyomi.data.library.sql.LibraryMangaForCategoryGetResolver
 import tachiyomi.data.library.sql.LibraryMangaGetResolver
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
@@ -27,11 +26,11 @@ internal class LibraryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : LibraryRepository {
 
-  override fun subscribe(): Observable<List<LibraryManga>> {
+  override fun subscribeAll(): Observable<List<LibraryManga>> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
-        .query(LibraryMangaGetResolver.query)
+        .query(LibraryMangaGetResolver.allQuery)
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE)
         .build())
       .withGetResolver(LibraryMangaGetResolver)
@@ -40,15 +39,28 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .toObservable()
   }
 
-  override fun subscribeForCategory(categoryId: Long): Observable<List<LibraryManga>> {
+  override fun subscribeUncategorized(): Observable<List<LibraryManga>> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
-        .query(LibraryMangaForCategoryGetResolver.query)
+        .query(LibraryMangaGetResolver.uncategorizedQuery)
+        .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE)
+        .build())
+      .withGetResolver(LibraryMangaGetResolver)
+      .prepare()
+      .asRxFlowable(BackpressureStrategy.LATEST)
+      .toObservable()
+  }
+
+  override fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>> {
+    return storio.get()
+      .listOfObjects(LibraryManga::class.java)
+      .withQuery(RawQuery.builder()
+        .query(LibraryMangaGetResolver.categoryQuery)
         .args(categoryId)
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE)
         .build())
-      .withGetResolver(LibraryMangaForCategoryGetResolver)
+      .withGetResolver(LibraryMangaGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .toObservable()

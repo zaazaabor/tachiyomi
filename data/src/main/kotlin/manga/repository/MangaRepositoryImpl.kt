@@ -19,8 +19,8 @@ import io.reactivex.Single
 import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.data.manga.sql.MangaUpdatePutResolver
 import tachiyomi.data.manga.sql.MangaTable
+import tachiyomi.data.manga.sql.MangaUpdatePutResolver
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
