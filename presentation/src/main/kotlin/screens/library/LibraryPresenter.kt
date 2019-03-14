@@ -21,9 +21,12 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.SubscribeLibraryCategory
 import tachiyomi.domain.library.interactor.SubscribeUserCategories
+import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.prefs.LibraryPreferences
+import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.ui.presenter.BasePresenter
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class LibraryPresenter @Inject constructor(
@@ -31,7 +34,8 @@ class LibraryPresenter @Inject constructor(
   private val subscribeLibraryCategory: SubscribeLibraryCategory,
   private val setCategoriesForMangas: SetCategoriesForMangas,
   private val libraryPreferences: LibraryPreferences,
-  private val schedulers: RxSchedulers
+  private val schedulers: RxSchedulers,
+  private val updateLibraryCategory: UpdateLibraryCategory
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
@@ -53,7 +57,8 @@ class LibraryPresenter @Inject constructor(
           ::categoriesSideEffect,
           ::setSelectedCategorySideEffect,
           ::setFiltersSideEffect,
-          ::setSortSideEffect
+          ::setSortSideEffect,
+          ::updateCategorySideEffect
         ),
         reducer = { state, action -> action.reduce(state) }
       )
@@ -157,6 +162,36 @@ class LibraryPresenter @Inject constructor(
       }
   }
 
+  @Suppress("unused_parameter")
+  private fun updateCategorySideEffect(
+    actions: Observable<Action>,
+    stateFn: StateAccessor<ViewState>
+  ): Observable<Action> {
+    return actions.ofType<Action.UpdateCategory>()
+      .flatMap<Action> { action ->
+        if (action.loading) {
+          val categoryId = stateFn().selectedCategoryId
+          if (categoryId != null) {
+            updateLibraryCategory.interact(categoryId)
+              .subscribeOn(schedulers.io)
+              .toObservable()
+              .flatMap { result ->
+                if (result is LibraryUpdater.QueueResult.Executing) {
+                  Observable.timer(1, TimeUnit.SECONDS)
+                    .map { Action.UpdateCategory(false) }
+                } else {
+                  Observable.just(Action.UpdateCategory(false))
+                }
+              }
+          } else {
+            Observable.just(Action.UpdateCategory(false))
+          }
+        } else {
+          Observable.empty()
+        }
+      }
+  }
+
   fun setSelectedCategory(position: Int) {
     val category = state.value?.categories?.getOrNull(position) ?: return
     actions.accept(Action.SetSelectedCategory(category))
@@ -184,6 +219,10 @@ class LibraryPresenter @Inject constructor(
 
   fun getCategories(): List<Category> {
     return state.value?.categories.orEmpty()
+  }
+
+  fun updateSelectedCategory() {
+    actions.accept(Action.UpdateCategory(true))
   }
 
 }

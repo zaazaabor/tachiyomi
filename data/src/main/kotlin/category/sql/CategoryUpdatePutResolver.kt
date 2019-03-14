@@ -14,10 +14,10 @@ import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.core.util.optInt
 import tachiyomi.core.util.optString
-import tachiyomi.data.category.sql.CategoryTable.COL_FLAGS
 import tachiyomi.data.category.sql.CategoryTable.COL_ID
 import tachiyomi.data.category.sql.CategoryTable.COL_NAME
 import tachiyomi.data.category.sql.CategoryTable.COL_ORDER
+import tachiyomi.data.category.sql.CategoryTable.COL_UPDATE_INTERVAL
 import tachiyomi.data.category.sql.CategoryTable.TABLE
 import tachiyomi.domain.category.model.CategoryUpdate
 
@@ -40,7 +40,7 @@ object CategoryUpdatePutResolver : DefaultPutResolver<CategoryUpdate>() {
       put(COL_ID, update.id)
       optString(COL_NAME, update.name)
       optInt(COL_ORDER, update.order)
-      optInt(COL_FLAGS, update.flags)
+      optInt(COL_UPDATE_INTERVAL, update.updateInterval)
     }
   }
 

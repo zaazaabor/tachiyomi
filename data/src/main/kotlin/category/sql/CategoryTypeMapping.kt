@@ -18,10 +18,10 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.data.category.sql.CategoryTable.COL_FLAGS
 import tachiyomi.data.category.sql.CategoryTable.COL_ID
 import tachiyomi.data.category.sql.CategoryTable.COL_NAME
 import tachiyomi.data.category.sql.CategoryTable.COL_ORDER
+import tachiyomi.data.category.sql.CategoryTable.COL_UPDATE_INTERVAL
 import tachiyomi.data.category.sql.CategoryTable.TABLE
 import tachiyomi.domain.category.model.Category
 
@@ -52,7 +52,7 @@ internal class CategoryPutResolver : DefaultPutResolver<Category>() {
       put(COL_ID, obj.id.takeIf { it != -1L })
       put(COL_NAME, obj.name)
       put(COL_ORDER, obj.order)
-      put(COL_FLAGS, obj.flags)
+      put(COL_UPDATE_INTERVAL, obj.updateInterval)
     }
   }
 }
@@ -63,7 +63,7 @@ internal interface CategoryCursorMapper {
     val id = cursor.getLong(cursor.getColumnIndex(COL_ID))
     val name = cursor.getString(cursor.getColumnIndex(COL_NAME))
     val order = cursor.getInt(cursor.getColumnIndex(COL_ORDER))
-    val flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
+    val flags = cursor.getInt(cursor.getColumnIndex(COL_UPDATE_INTERVAL))
 
     return Category(id, name, order, flags)
   }

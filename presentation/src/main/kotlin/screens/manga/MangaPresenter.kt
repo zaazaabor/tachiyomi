@@ -10,7 +10,6 @@ package tachiyomi.ui.screens.manga
 
 import io.reactivex.Flowable
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.processors.BehaviorProcessor
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
@@ -20,7 +19,6 @@ import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SubscribeManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.SourceManager
-import tachiyomi.source.model.MangaInfo
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 
@@ -64,10 +62,7 @@ class MangaPresenter @Inject constructor(
 
     sharedManga.map { it.get() }
       .flatMapSingle { manga ->
-        val info = MangaInfo(key = manga.key, title = "")
-        val source = sourceManager.get(manga.source)!!
-        Single.fromCallable { source.fetchChapterList(info) }
-          .flatMap { syncChaptersFromSource.interact(it, manga, source) }
+        syncChaptersFromSource.interact(manga)
       }
       .subscribe()
   }

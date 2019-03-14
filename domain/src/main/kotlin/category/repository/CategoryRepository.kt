@@ -9,6 +9,7 @@
 package tachiyomi.domain.category.repository
 
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.CategoryUpdate
@@ -21,6 +22,8 @@ interface CategoryRepository {
   fun subscribeWithCount(): Observable<List<CategoryWithCount>>
 
   fun subscribeForManga(mangaId: Long): Observable<List<Category>>
+
+  fun find(categoryId: Long): Maybe<Category>
 
   fun save(category: Category): Completable
 

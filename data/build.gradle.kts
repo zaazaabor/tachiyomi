@@ -27,6 +27,8 @@ dependencies {
   implementation(Deps.coroutines.android)
   implementation(Deps.gson)
   implementation(Deps.kotson)
+  implementation(Deps.workManager.runtime)
+  implementation(Deps.workManager.rx2)
 
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.smoothie)

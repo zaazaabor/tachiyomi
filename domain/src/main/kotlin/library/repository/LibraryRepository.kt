@@ -20,6 +20,12 @@ interface LibraryRepository {
 
   fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>>
 
+  fun findAll(): Single<List<LibraryManga>>
+
+  fun findUncategorized(): Single<List<LibraryManga>>
+
+  fun findToCategory(categoryId: Long): Single<List<LibraryManga>>
+
   fun findFavoriteSourceIds(): Single<List<Long>>
 
 }

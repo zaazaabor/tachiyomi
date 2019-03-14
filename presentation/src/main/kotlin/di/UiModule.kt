@@ -9,14 +9,17 @@
 package tachiyomi.ui.di
 
 import tachiyomi.core.di.bindTo
+import tachiyomi.domain.library.updater.LibraryUpdaterNotification
 import tachiyomi.ui.glide.GlideInitCallback
 import tachiyomi.ui.glide.TachiyomiGlideInitCallback
+import tachiyomi.ui.screens.library.LibraryUpdaterNotificationImpl
 import toothpick.config.Module
 
 object UiModule : Module() {
 
   init {
     bindTo<GlideInitCallback, TachiyomiGlideInitCallback>().singletonInScope()
+    bindTo<LibraryUpdaterNotification, LibraryUpdaterNotificationImpl>().singletonInScope()
   }
 
 }

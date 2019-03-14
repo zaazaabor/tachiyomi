@@ -62,7 +62,7 @@ internal class MangaPutResolver : DefaultPutResolver<Manga>() {
   override fun mapToContentValues(obj: Manga): ContentValues {
     return ContentValues(16).apply {
       put(COL_ID, obj.id.takeIf { it != -1L })
-      put(COL_SOURCE, obj.source)
+      put(COL_SOURCE, obj.sourceId)
       put(COL_KEY, obj.key)
       put(COL_TITLE, obj.title)
       put(COL_ARTIST, obj.artist)

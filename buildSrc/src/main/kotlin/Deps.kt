@@ -20,13 +20,20 @@ object Deps {
     const val preference = "androidx.preference:preference:1.0.0"
     const val card = "androidx.cardview:cardview:1.0.0"
     const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
+    const val workManager = "androidx.work:work-runtime:2.0.0-rc01"
   }
 
   const val androidKTX = "androidx.core:core-ktx:1.0.1"
 
+  object workManager {
+    private const val version = "2.0.0-rc01"
+    const val runtime = "androidx.work:work-runtime:$version"
+    const val rx2 = "androidx.work:work-rxjava2:$version"
+  }
+
   const val storio = "com.pushtorefresh.storio3:sqlite:3.0.0"
 
-  const val rxJava = "io.reactivex.rxjava2:rxjava:2.2.4"
+  const val rxJava = "io.reactivex.rxjava2:rxjava:2.2.7"
   const val rxAndroid = "io.reactivex.rxjava2:rxandroid:2.1.0"
   const val rxKotlin = "io.reactivex.rxjava2:rxkotlin:2.3.0"
   const val rxRelay = "com.jakewharton.rxrelay2:rxrelay:2.1.0"

@@ -9,10 +9,12 @@
 package tachiyomi.data.library.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
+import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.Single
+import tachiyomi.core.db.asImmediateSingle
 import tachiyomi.data.category.sql.MangaCategoryTable
 import tachiyomi.data.chapter.sql.ChapterTable
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
@@ -26,7 +28,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : LibraryRepository {
 
-  override fun subscribeAll(): Observable<List<LibraryManga>> {
+  private fun preparedAll(): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -35,11 +37,9 @@ internal class LibraryRepositoryImpl @Inject constructor(
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
   }
 
-  override fun subscribeUncategorized(): Observable<List<LibraryManga>> {
+  private fun preparedUncategorized(): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -48,11 +48,9 @@ internal class LibraryRepositoryImpl @Inject constructor(
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
   }
 
-  override fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>> {
+  private fun preparedToCategory(categoryId: Long): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -62,8 +60,30 @@ internal class LibraryRepositoryImpl @Inject constructor(
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
+  }
+
+  override fun subscribeAll(): Observable<List<LibraryManga>> {
+    return preparedAll().asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  }
+
+  override fun subscribeUncategorized(): Observable<List<LibraryManga>> {
+    return preparedUncategorized().asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  }
+
+  override fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>> {
+    return preparedToCategory(categoryId).asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  }
+
+  override fun findAll(): Single<List<LibraryManga>> {
+    return preparedAll().asImmediateSingle()
+  }
+
+  override fun findUncategorized(): Single<List<LibraryManga>> {
+    return preparedUncategorized().asImmediateSingle()
+  }
+
+  override fun findToCategory(categoryId: Long): Single<List<LibraryManga>> {
+    return preparedToCategory(categoryId).asImmediateSingle()
   }
 
   override fun findFavoriteSourceIds(): Single<List<Long>> {
@@ -72,7 +92,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .withQuery(RawQuery.builder().query(FavoriteSourceIdsGetResolver.query).build())
       .withGetResolver(FavoriteSourceIdsGetResolver)
       .prepare()
-      .asRxSingle()
+      .asImmediateSingle()
   }
 
 }

@@ -23,7 +23,7 @@ class GetOrAddMangaFromSource @Inject internal constructor(
       .switchIfEmpty(Single.defer {
         val newManga = Manga(
           id = -1,
-          source = sourceId,
+          sourceId = sourceId,
           key = manga.key,
           title = manga.title,
           artist = manga.artist,

@@ -11,10 +11,10 @@ package tachiyomi.domain.manga.model
 import tachiyomi.source.model.MangaInfo
 
 data class Manga(
-  val id: Long = -1,
-  val source: Long,
-  val key: String,
-  val title: String,
+  override val id: Long = -1,
+  override val sourceId: Long,
+  override val key: String,
+  override val title: String,
   val artist: String = "",
   val author: String = "",
   val description: String = "",
@@ -27,4 +27,4 @@ data class Manga(
   val dateAdded: Long = 0,
   val viewer: Int = 0,
   val flags: Int = 0
-)
+) : MangaBase

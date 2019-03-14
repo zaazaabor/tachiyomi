@@ -23,6 +23,10 @@ fun ContentValues.optLong(key: String, optional: Optional<Long>) {
   if (optional is Optional.Some) put(key, optional.value)
 }
 
+fun ContentValues.optFloat(key: String, optional: Optional<Float>) {
+  if (optional is Optional.Some) put(key, optional.value)
+}
+
 fun ContentValues.optBoolean(key: String, optional: Optional<Boolean>) {
   if (optional is Optional.Some) put(key, if (optional.value) 1 else 0)
 }

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.data.manga
+package tachiyomi.data.manga.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
@@ -17,6 +17,8 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.core.db.asImmediateCompletable
+import tachiyomi.core.db.asImmediateMaybe
+import tachiyomi.core.db.asImmediateSingle
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.data.manga.sql.MangaTable
@@ -69,7 +71,7 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(mangaId)
         .build())
       .prepare()
-      .asRxMaybe()
+      .asImmediateMaybe()
   }
 
   override fun find(key: String, sourceId: Long): Maybe<Manga> {
@@ -81,14 +83,14 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(key, sourceId)
         .build())
       .prepare()
-      .asRxMaybe()
+      .asImmediateMaybe()
   }
 
   override fun save(manga: Manga): Single<Manga> {
     return storio.put()
       .`object`(manga)
       .prepare()
-      .asRxSingle()
+      .asImmediateSingle()
       .map { manga.copy(id = it.insertedId()!!) }
   }
 
@@ -108,7 +110,7 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(0)
         .build())
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
 }

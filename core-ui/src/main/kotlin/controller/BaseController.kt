@@ -28,7 +28,7 @@ import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.*
 import tachiyomi.core.ui.BuildConfig
 import timber.log.Timber
-import timber.log.warn
+import timber.log.debug
 
 abstract class BaseController(
   bundle: Bundle? = null
@@ -152,7 +152,7 @@ abstract class BaseController(
     val builder = StringBuilder()
     builder.appendln("Current backstack:")
     printBackstack(builder, rootRouter, 0)
-    Timber.warn { builder.toString() }
+    Timber.debug { builder.toString() }
   }
 
   private fun printBackstack(builder: StringBuilder, router: Router, level: Int) {

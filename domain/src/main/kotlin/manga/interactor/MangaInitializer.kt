@@ -83,7 +83,7 @@ class MangaInitializer @Inject internal constructor(
   }
 
   fun interact(manga: Manga, force: Boolean = false): Maybe<Manga> {
-    val source = sourceManager.get(manga.source) ?: return Maybe.empty()
+    val source = sourceManager.get(manga.sourceId) ?: return Maybe.empty()
     return interact(source, manga, force)
   }
 

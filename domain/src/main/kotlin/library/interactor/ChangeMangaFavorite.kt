@@ -27,7 +27,7 @@ class ChangeMangaFavorite @Inject constructor(
   private val libraryPreferences: LibraryPreferences,
   private val libraryCovers: LibraryCovers,
   private val transactions: Provider<Transaction>,
-  private val setCategoriesForMangas: Provider<SetCategoriesForMangas>
+  private val setCategoriesForMangas: SetCategoriesForMangas
 ) {
 
   fun interact(manga: Manga) = Single.defer {
@@ -46,10 +46,7 @@ class ChangeMangaFavorite @Inject constructor(
     val mangaIds = listOf(manga.id)
     val setCategoryOperation = if (nowFavorite) {
       val defaultCategory = libraryPreferences.defaultCategory().get()
-//      val mangaCategories = mangaIds.map { mangaId ->
-//        MangaCategory(mangaId, defaultCategory)
-//      }
-      setCategoriesForMangas.get().interact(listOf(defaultCategory), mangaIds)
+      setCategoriesForMangas.interact(listOf(defaultCategory), mangaIds)
         .flatMapCompletable { result ->
           when (result) {
             SetCategoriesForMangas.Result.Success -> Completable.complete()
@@ -60,19 +57,17 @@ class ChangeMangaFavorite @Inject constructor(
       mangaCategoryRepository.deleteForMangas(mangaIds)
     }
 
-    val transaction = transactions.get()
-    transaction.begin()
-
-    mangaRepository.savePartial(update)
-      .andThen(setCategoryOperation)
+    transactions.get()
+      .withCompletable {
+        mangaRepository.savePartial(update)
+          .andThen(setCategoryOperation)
+      }
       .toSingle<Result> { Result.Success }
       .doOnSuccess {
         if (!nowFavorite) {
           libraryCovers.delete(manga.id)
         }
       }
-      .doOnSuccess { transaction.commit() }
-      .doFinally { transaction.end() }
       .onErrorReturn(Result::InternalError)
   }
 

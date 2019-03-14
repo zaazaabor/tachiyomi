@@ -13,29 +13,29 @@ import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.chapter.model.ChapterUpdate
 
 interface ChapterRepository {
 
-  fun subscribeChapters(mangaId: Long): Flowable<List<Chapter>>
+  fun subscribeForManga(mangaId: Long): Flowable<List<Chapter>>
 
-  fun subscribeChapter(chapterId: Long): Flowable<Optional<Chapter>>
+  fun subscribe(chapterId: Long): Flowable<Optional<Chapter>>
 
-  fun getChapters(mangaId: Long): Single<List<Chapter>>
+  fun findForManga(mangaId: Long): Single<List<Chapter>>
 
-  fun getChapter(chapterId: Long): Maybe<Chapter>
+  fun find(chapterId: Long): Maybe<Chapter>
 
-  fun getChapter(chapterKey: String, mangaId: Long): Maybe<Chapter>
+  fun find(chapterKey: String, mangaId: Long): Maybe<Chapter>
 
-  fun saveChapters(chapters: List<Chapter>): Completable
+  fun save(chapters: List<Chapter>): Completable
 
-  fun deleteChapter(chapterId: Long): Completable
+  fun savePartial(update: List<ChapterUpdate>): Completable
 
-  fun deleteChapters(chapterIds: List<Long>): Completable
+  fun saveNewOrder(chapters: List<Chapter>): Completable
 
-  fun syncChapters(diff: SyncChaptersFromSource.Diff, sourceChapters: List<Chapter>): Completable
+  fun delete(chapterId: Long): Completable
 
-  fun syncChapter(chapter: Chapter, sourceChapters: List<Chapter>): Completable
+  fun delete(chapterIds: List<Long>): Completable
 
 }

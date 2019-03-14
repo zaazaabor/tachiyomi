@@ -21,9 +21,6 @@ class SetCategoriesForMangas @Inject constructor(
 ) {
 
   fun interact(categoryIds: Collection<Long>, mangaIds: Collection<Long>) = Single.defer {
-    val transaction = transactions.get()
-    transaction.begin()
-
     val newMangaCategories = mutableListOf<MangaCategory>()
     for (categoryId in categoryIds) {
       // System categories don't need entries
@@ -35,11 +32,12 @@ class SetCategoriesForMangas @Inject constructor(
       }
     }
 
-    mangaCategoryRepository.deleteForMangas(mangaIds)
-      .andThen(mangaCategoryRepository.save(newMangaCategories))
+    transactions.get()
+      .withCompletable {
+        mangaCategoryRepository.deleteForMangas(mangaIds)
+          .andThen(mangaCategoryRepository.save(newMangaCategories))
+      }
       .toSingle<Result> { Result.Success }
-      .doOnSuccess { transaction.commit() }
-      .doFinally { transaction.end() }
       .onErrorReturn(Result::InternalError)
   }
 

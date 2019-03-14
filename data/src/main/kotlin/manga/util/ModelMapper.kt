@@ -14,7 +14,7 @@ import tachiyomi.source.model.MangaInfo
 internal fun MangaInfo.asDbManga(sourceId: Long): Manga {
   return Manga(
     id = -1,
-    source = sourceId,
+    sourceId = sourceId,
     key = key,
     title = title,
     artist = artist,

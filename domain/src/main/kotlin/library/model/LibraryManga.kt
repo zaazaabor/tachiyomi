@@ -8,13 +8,15 @@
 
 package tachiyomi.domain.library.model
 
+import tachiyomi.domain.manga.model.MangaBase
+
 data class LibraryManga(
-  val mangaId: Long,
-  val sourceId: Long,
-  val key: String,
-  val title: String,
+  override val id: Long,
+  override val sourceId: Long,
+  override val key: String,
+  override val title: String,
   val status: Int,
   val cover: String,
   val lastUpdate: Long = 0,
   val unread: Int
-)
+) : MangaBase

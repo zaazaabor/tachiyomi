@@ -25,5 +25,6 @@ class AppInitializers @Inject constructor(
   rxJavaInitializer: RxJavaInitializer,
   sourceManagerInitializer: SourceManagerInitializer,
   cyaneaInitializer: CyaneaInitializer,
+  channelsInitializer: NotificationChannelsInitializer,
   emojiCompatInitializer: EmojiCompatInitializer
 )

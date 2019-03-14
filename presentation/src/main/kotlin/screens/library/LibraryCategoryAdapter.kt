@@ -33,7 +33,7 @@ class LibraryCategoryAdapter(
 
   override fun onBindViewHolder(holder: MangaHolder, position: Int, payloads: MutableList<Any>) {
     val item = getItem(position)
-    val isSelected by lazy { item.mangaId in nowSelectedManga }
+    val isSelected by lazy { item.id in nowSelectedManga }
 
     if (payloads.isEmpty()) {
       holder.bind(item, isSelected, this)
@@ -83,7 +83,7 @@ class LibraryCategoryAdapter(
   ) : ItemCallback<LibraryManga>(oldList, newList) {
 
     override fun areItemsTheSame(oldItem: LibraryManga, newItem: LibraryManga): Boolean {
-      return oldItem.mangaId == newItem.mangaId
+      return oldItem.id == newItem.id
     }
 
     // TODO improve this
@@ -99,7 +99,7 @@ class LibraryCategoryAdapter(
     }
 
     private fun selectionChanged(manga: LibraryManga): Boolean {
-      return manga.mangaId in oldSelected != manga.mangaId in newSelected
+      return manga.id in oldSelected != manga.id in newSelected
     }
 
   }

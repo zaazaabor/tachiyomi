@@ -18,12 +18,12 @@ class GetChapter @Inject constructor(
 ) {
 
   fun interact(id: Long): Maybe<Chapter> {
-    return repository.getChapter(id)
+    return repository.find(id)
       .onErrorComplete()
   }
 
   fun interact(key: String, sourceId: Long): Maybe<Chapter> {
-    return repository.getChapter(key, sourceId)
+    return repository.find(key, sourceId)
       .onErrorComplete()
   }
 

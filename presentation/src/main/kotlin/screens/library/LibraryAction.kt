@@ -53,16 +53,21 @@ sealed class Action {
 
   data class ToggleSelection(val manga: LibraryManga) : Action() {
     override fun reduce(state: ViewState) =
-      state.copy(selectedManga = if (manga.mangaId in state.selectedManga) {
-        state.selectedManga - manga.mangaId
+      state.copy(selectedManga = if (manga.id in state.selectedManga) {
+        state.selectedManga - manga.id
       } else {
-        state.selectedManga + manga.mangaId
+        state.selectedManga + manga.id
       })
   }
 
   object UnselectMangas : Action() {
     override fun reduce(state: ViewState) =
       state.copy(selectedManga = emptySet())
+  }
+
+  data class UpdateCategory(val loading: Boolean) : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(showUpdatingCategory = loading)
   }
 
   open fun reduce(state: ViewState) = state

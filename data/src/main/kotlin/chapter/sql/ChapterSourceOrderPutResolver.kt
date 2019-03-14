@@ -16,7 +16,7 @@ import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
 import tachiyomi.core.db.inTransactionReturn
 import tachiyomi.domain.chapter.model.Chapter
 
-class ChapterSourceOrderPutResolver : PutResolver<Chapter>() {
+object ChapterSourceOrderPutResolver : PutResolver<Chapter>() {
 
   override fun performPut(db: StorIOSQLite, chapter: Chapter) = db.inTransactionReturn {
     val updateQuery = mapToUpdateQuery(chapter)

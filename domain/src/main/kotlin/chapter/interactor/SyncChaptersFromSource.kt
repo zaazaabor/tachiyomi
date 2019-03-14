@@ -8,17 +8,22 @@
 
 package tachiyomi.domain.chapter.interactor
 
+import io.reactivex.Completable
 import io.reactivex.Single
+import tachiyomi.core.db.Transaction
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.chapter.util.ChapterRecognition
-import tachiyomi.domain.manga.model.Manga
-import tachiyomi.source.Source
-import tachiyomi.source.model.ChapterInfo
+import tachiyomi.domain.manga.model.MangaBase
+import tachiyomi.domain.source.SourceManager
+import tachiyomi.source.model.MangaInfo
 import javax.inject.Inject
+import javax.inject.Provider
 
 class SyncChaptersFromSource @Inject constructor(
-  private val chapterRepository: ChapterRepository
+  private val chapterRepository: ChapterRepository,
+  private val sourceManager: SourceManager,
+  private val transactions: Provider<Transaction>
 ) {
 
   data class Diff(
@@ -27,18 +32,17 @@ class SyncChaptersFromSource @Inject constructor(
     val updated: List<Chapter> = emptyList()
   )
 
-  fun interact(
-    rawSourceChapters: List<ChapterInfo>,
-    manga: Manga,
-    source: Source
-  ): Single<List<Chapter>> {
+  fun interact(manga: MangaBase): Single<Diff> = Single.defer {
+    val mangaInfo = MangaInfo(manga.key, manga.title)
+    val source = sourceManager.get(manga.sourceId)!!
+    val rawSourceChapters = source.fetchChapterList(mangaInfo)
 
     if (rawSourceChapters.isEmpty()) {
-      return Single.error(Exception("No chapters found"))
+      return@defer Single.error<Diff>(Exception("No chapters found"))
     }
 
     // Chapters from db.
-    return chapterRepository.getChapters(manga.id).flatMap { dbChapters ->
+    chapterRepository.findForManga(manga.id).flatMap { dbChapters ->
 
       // Set the date fetch for new items in reverse order to allow another sorting method.
       // Sources MUST return the chapters from most to less recent, which is common.
@@ -53,7 +57,8 @@ class SyncChaptersFromSource @Inject constructor(
           dateUpload = meta.dateUpload,
           dateFetch = endDateFetch--,
           scanlator = meta.scanlator,
-          number = meta.number.takeIf { it >= 0f } ?: ChapterRecognition.parse(meta, manga, source),
+          number = meta.number.takeIf { it >= 0f } ?: ChapterRecognition.parse(meta, manga.title,
+            source),
           sourceOrder = i
         )
       }
@@ -100,7 +105,7 @@ class SyncChaptersFromSource @Inject constructor(
 
       // Return if there's nothing to add, delete or change, avoiding unnecessary db transactions.
       if (toAdd.isEmpty() && toDelete.isEmpty() && toUpdate.isEmpty()) {
-        return@flatMap Single.just(emptyList<Chapter>())
+        return@flatMap Single.just(Diff())
       }
 
       val diff = Diff(toAdd, toDelete, toUpdate)
@@ -110,19 +115,38 @@ class SyncChaptersFromSource @Inject constructor(
       val toDeleteNumbers = toDelete.asSequence()
         .mapNotNull { chapter -> if (chapter.isRecognizedNumber) chapter.number else null }
         .toSet()
-      val chaptersToNotify = toAdd.toList() - toAdd.filter { it.number in toDeleteNumbers }
 
-      chapterRepository.syncChapters(diff, sourceChapters)
-        .andThen(Single.just(chaptersToNotify))
+      val chaptersToNotify = toAdd.toList() - toAdd.filter { it.number in toDeleteNumbers }
+      val notifyDiff = Diff(chaptersToNotify, toDelete, toUpdate)
+
+      val chaptersToSave = diff.added + diff.updated
+      val saveCompletable = if (chaptersToSave.isNotEmpty()) {
+        chapterRepository.save(chaptersToSave)
+      } else {
+        Completable.complete()
+      }
+      val deleteCompletable = if (diff.deleted.isNotEmpty()) {
+        chapterRepository.delete(diff.deleted.map { it.id })
+      } else {
+        Completable.complete()
+      }
+
+      transactions.get()
+        .withCompletable {
+          saveCompletable
+            .andThen(deleteCompletable)
+            .andThen(chapterRepository.saveNewOrder(sourceChapters))
+        }
+        .andThen(Single.just(notifyDiff))
     }
   }
 
   // Checks if the chapter in db needs update
   private fun metaChanged(dbChapter: Chapter, sourceChapter: Chapter): Boolean {
     return dbChapter.scanlator != sourceChapter.scanlator ||
-           dbChapter.name != sourceChapter.name ||
-           dbChapter.dateUpload != sourceChapter.dateUpload ||
-           dbChapter.number != sourceChapter.number
+      dbChapter.name != sourceChapter.name ||
+      dbChapter.dateUpload != sourceChapter.dateUpload ||
+      dbChapter.number != sourceChapter.number
   }
 
 }

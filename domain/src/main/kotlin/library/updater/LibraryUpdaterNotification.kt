@@ -6,20 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.db
+package tachiyomi.domain.library.updater
 
-import io.reactivex.Completable
+import tachiyomi.domain.library.model.LibraryManga
 
-interface Transaction {
+interface LibraryUpdaterNotification {
 
-  fun begin()
+  fun showProgress(manga: LibraryManga, current: Int, total: Int)
 
-  fun commit()
+  fun showResult(updates: List<LibraryManga>)
+
+  fun start()
 
   fun end()
-
-  fun withCompletable(source: () -> Completable): Completable {
-    return Completable.using(::begin, { source().doOnComplete(::commit) }, { end() })
-  }
 
 }

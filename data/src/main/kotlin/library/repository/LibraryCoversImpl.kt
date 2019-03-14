@@ -13,7 +13,7 @@ import tachiyomi.domain.library.repository.LibraryCovers
 import java.io.File
 import javax.inject.Inject
 
-class LibraryCoversImpl @Inject constructor(
+internal class LibraryCoversImpl @Inject constructor(
   context: Application
 ) : LibraryCovers {
 

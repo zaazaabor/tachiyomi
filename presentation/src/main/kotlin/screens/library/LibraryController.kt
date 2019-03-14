@@ -63,6 +63,8 @@ class LibraryController : MvpController<LibraryPresenter>(),
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
 
+    library_swipe_refresh.setOnRefreshListener { onSwipeRefresh() }
+
     adapter = LibraryCategoryAdapter(glideProvider.get(), this)
     library_recycler.layoutManager = GridLayoutManager(view.context, 2)
     library_recycler.adapter = adapter
@@ -103,6 +105,7 @@ class LibraryController : MvpController<LibraryPresenter>(),
     if (state.selectedManga !== prevState?.selectedManga) {
       renderSelectedManga(state.selectedManga)
     }
+    renderUpdatingCategory(state.showUpdatingCategory) // Changes internally checked
   }
 
   private fun renderCategories(categories: List<Category>, selectedCategoryId: Long?) {
@@ -128,9 +131,13 @@ class LibraryController : MvpController<LibraryPresenter>(),
     actionModeCallback?.render(selectedManga, actionMode)
   }
 
+  private fun renderUpdatingCategory(showUpdatingCategory: Boolean) {
+    library_swipe_refresh.isRefreshing = showUpdatingCategory
+  }
+
   override fun onMangaClick(manga: LibraryManga) {
     if (actionMode == null) {
-      findRootRouter().pushController(MangaController(manga.mangaId).withHorizontalTransition())
+      findRootRouter().pushController(MangaController(manga.id).withHorizontalTransition())
     } else {
       onMangaLongClick(manga)
     }
@@ -138,6 +145,10 @@ class LibraryController : MvpController<LibraryPresenter>(),
 
   override fun onMangaLongClick(manga: LibraryManga) {
     presenter.toggleMangaSelection(manga)
+  }
+
+  private fun onSwipeRefresh() {
+    presenter.updateSelectedCategory()
   }
 
   private fun onCategorySettingsClick() {

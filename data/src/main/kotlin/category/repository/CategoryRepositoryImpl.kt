@@ -13,6 +13,7 @@ import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import tachiyomi.core.db.asImmediateCompletable
 import tachiyomi.core.db.withId
@@ -74,6 +75,19 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .toObservable()
+  }
+
+  override fun find(categoryId: Long): Maybe<Category> {
+    return categories
+      .firstOrError()
+      .flatMapMaybe { categories ->
+        val category = categories.find { it.id == categoryId }
+        if (category != null) {
+          Maybe.just(category)
+        } else {
+          Maybe.empty()
+        }
+      }
   }
 
   override fun save(category: Category): Completable {

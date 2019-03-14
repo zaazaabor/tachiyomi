@@ -6,13 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.domain.category.model
+package tachiyomi.domain.manga.model
 
-import tachiyomi.core.stdlib.Optional
-
-data class CategoryUpdate(
-  val id: Long,
-  val name: Optional<String> = Optional.None,
-  val order: Optional<Int> = Optional.None,
-  val updateInterval: Optional<Int> = Optional.None
-)
+interface MangaBase {
+  val id: Long
+  val sourceId: Long
+  val key: String
+  val title: String
+}

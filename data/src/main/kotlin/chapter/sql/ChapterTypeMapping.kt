@@ -56,7 +56,7 @@ internal class ChapterPutResolver : DefaultPutResolver<Chapter>() {
   }
 
   override fun mapToContentValues(obj: Chapter): ContentValues {
-    return ContentValues(11).apply {
+    return ContentValues(12).apply {
       put(COL_ID, obj.id.takeIf { it != -1L })
       put(COL_MANGA_ID, obj.mangaId)
       put(COL_KEY, obj.key)

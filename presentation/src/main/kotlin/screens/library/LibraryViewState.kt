@@ -19,5 +19,6 @@ data class ViewState(
   val library: List<LibraryManga> = emptyList(),
   val filters: List<LibraryFilter> = emptyList(),
   val sort: LibrarySort = LibrarySort.Title(true),
-  val selectedManga: Set<Long> = emptySet()
+  val selectedManga: Set<Long> = emptySet(),
+  val showUpdatingCategory: Boolean = false
 )

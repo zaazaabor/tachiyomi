@@ -11,22 +11,24 @@ package tachiyomi.data.chapter.repository
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject
-import com.pushtorefresh.storio3.sqlite.operations.put.PreparedPutCollectionOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
-import tachiyomi.core.db.inTransaction
+import tachiyomi.core.db.asImmediateCompletable
+import tachiyomi.core.db.asImmediateMaybe
+import tachiyomi.core.db.asImmediateSingle
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.data.chapter.sql.ChapterSourceOrderPutResolver
 import tachiyomi.data.chapter.sql.ChapterTable
-import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
+import tachiyomi.data.chapter.sql.ChapterUpdatePutResolver
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import javax.inject.Inject
 
@@ -56,27 +58,27 @@ class ChapterRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeChapters(mangaId: Long): Flowable<List<Chapter>> {
+  override fun subscribeForManga(mangaId: Long): Flowable<List<Chapter>> {
     return preparedChapters(mangaId)
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged() // TODO do we want to run a distinct?
   }
 
-  override fun subscribeChapter(chapterId: Long): Flowable<Optional<Chapter>> {
+  override fun subscribe(chapterId: Long): Flowable<Optional<Chapter>> {
     return preparedChapter(chapterId).asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
       .map { it.toOptional() }
   }
 
-  override fun getChapters(mangaId: Long): Single<List<Chapter>> {
-    return preparedChapters(mangaId).asRxSingle()
+  override fun findForManga(mangaId: Long): Single<List<Chapter>> {
+    return preparedChapters(mangaId).asImmediateSingle()
   }
 
-  override fun getChapter(chapterId: Long): Maybe<Chapter> {
-    return preparedChapter(chapterId).asRxMaybe()
+  override fun find(chapterId: Long): Maybe<Chapter> {
+    return preparedChapter(chapterId).asImmediateMaybe()
   }
 
-  override fun getChapter(chapterKey: String, mangaId: Long): Maybe<Chapter> {
+  override fun find(chapterKey: String, mangaId: Long): Maybe<Chapter> {
     return storio.get()
       .`object`(Chapter::class.java)
       .withQuery(Query.builder()
@@ -85,65 +87,44 @@ class ChapterRepositoryImpl @Inject constructor(
         .whereArgs(chapterKey, mangaId)
         .build())
       .prepare()
-      .asRxMaybe()
+      .asImmediateMaybe()
   }
 
-  override fun saveChapters(chapters: List<Chapter>): Completable {
-    return storio.put().`object`(chapters).prepare().asRxCompletable()
+  override fun save(chapters: List<Chapter>): Completable {
+    return storio.put()
+      .objects(chapters)
+      .prepare()
+      .asImmediateCompletable()
   }
 
-  override fun deleteChapter(chapterId: Long): Completable {
+  override fun savePartial(update: List<ChapterUpdate>): Completable {
+    return storio.put()
+      .objects(update)
+      .withPutResolver(ChapterUpdatePutResolver)
+      .prepare()
+      .asImmediateCompletable()
+  }
+
+  override fun saveNewOrder(chapters: List<Chapter>): Completable {
+    return storio.put()
+      .objects(chapters)
+      .withPutResolver(ChapterSourceOrderPutResolver)
+      .prepare()
+      .asImmediateCompletable()
+  }
+
+  override fun delete(chapterId: Long): Completable {
     return storio.delete()
       .withId(ChapterTable.TABLE, ChapterTable.COL_ID, chapterId)
       .prepare()
-      .asRxCompletable()
+      .asImmediateCompletable()
   }
 
-  override fun deleteChapters(chapterIds: List<Long>): Completable {
+  override fun delete(chapterIds: List<Long>): Completable {
     return storio.delete()
       .withIds(ChapterTable.TABLE, ChapterTable.COL_ID, chapterIds)
       .prepare()
-      .asRxCompletable()
-  }
-
-  override fun syncChapters(
-    diff: SyncChaptersFromSource.Diff,
-    sourceChapters: List<Chapter>
-  ): Completable {
-    return Completable.fromAction {
-      storio.inTransaction {
-        val chaptersToSave = diff.added + diff.updated
-        if (chaptersToSave.isNotEmpty()) {
-          storio.put().objects(chaptersToSave).prepare().executeAsBlocking()
-        }
-        if (diff.deleted.isNotEmpty()) {
-          storio.delete().objects(diff.deleted).prepare().executeAsBlocking()
-        }
-
-        fixChaptersSourceOrder(sourceChapters).executeAsBlocking()
-      }
-    }
-  }
-
-  override fun syncChapter(
-    chapter: Chapter,
-    sourceChapters: List<Chapter>
-  ): Completable {
-    return Completable.fromAction {
-      storio.inTransaction {
-        storio.put().`object`(chapter).prepare().executeAsBlocking()
-        fixChaptersSourceOrder(sourceChapters).executeAsBlocking()
-      }
-    }
-  }
-
-  private fun fixChaptersSourceOrder(
-    chapters: List<Chapter>
-  ): PreparedPutCollectionOfObjects<Chapter> {
-    return storio.put()
-      .objects(chapters)
-      .withPutResolver(ChapterSourceOrderPutResolver())
-      .prepare()
+      .asImmediateCompletable()
   }
 
 }

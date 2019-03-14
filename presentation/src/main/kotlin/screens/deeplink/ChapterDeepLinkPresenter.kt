@@ -75,7 +75,7 @@ class ChapterDeepLinkPresenter @Inject constructor(
       .map(Action::MangaReady)
 
     val findChapterIntent = findManga
-      .flatMapSingle { findOrInitChapterFromSource.interact(params.chapterKey, source, it) }
+      .flatMapSingle { findOrInitChapterFromSource.interact(params.chapterKey, it) }
       .map(Action::ChapterReady)
 
     return Observable.merge(findMangaIntent, findChapterIntent)

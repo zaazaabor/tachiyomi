@@ -24,7 +24,7 @@ class MangaHeaderHolder(private val view: View) : BaseViewHolder(view) {
     manga_author.text = manga.author
     manga_artist.text = manga.artist
     manga_status.text = manga.status.toString()
-    manga_source.text = manga.source.toString()
+    manga_source.text = manga.sourceId.toString()
 
     GlideApp.with(view.context)
       .load(MangaCover.from(manga))

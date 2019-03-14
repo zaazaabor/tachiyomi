@@ -30,8 +30,7 @@ class CreateCategoryWithName @Inject constructor(
           val newCategory = Category(
             id = -1,
             name = name,
-            order = nextOrder,
-            flags = 0
+            order = nextOrder
           )
           categoryRepository.save(newCategory)
             .toSingle { Result.Success }

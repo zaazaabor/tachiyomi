@@ -23,7 +23,8 @@ import tachiyomi.data.chapter.repository.ChapterRepositoryImpl
 import tachiyomi.data.library.prefs.LibraryPreferencesProvider
 import tachiyomi.data.library.repository.LibraryCoversImpl
 import tachiyomi.data.library.repository.LibraryRepositoryImpl
-import tachiyomi.data.manga.MangaRepositoryImpl
+import tachiyomi.data.library.updater.LibraryUpdaterImpl
+import tachiyomi.data.manga.repository.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.category.repository.CategoryRepository
@@ -32,6 +33,7 @@ import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.library.repository.LibraryRepository
+import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
 import toothpick.config.Module
@@ -54,6 +56,7 @@ object DataModule : Module() {
     bindTo<LibraryRepository, LibraryRepositoryImpl>().singletonInScope()
     bindProvider<LibraryPreferences, LibraryPreferencesProvider>()
     bindTo<LibraryCovers, LibraryCoversImpl>().singletonInScope()
+    bindTo<LibraryUpdater, LibraryUpdaterImpl>().singletonInScope()
 
     bind(CatalogInstaller::class.java).singletonInScope()
     bindTo<CatalogRepository, CatalogRepositoryImpl>().singletonInScope()
