@@ -13,7 +13,7 @@
     android:theme="?actionBarTheme"
     app:title="@string/label_library2" />
 
-  <tachiyomi.ui.screens.library.LibraryTabs
+  <tachiyomi.ui.library.LibraryTabs
     android:id="@+id/library_tabs"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

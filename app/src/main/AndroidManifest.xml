@@ -23,7 +23,7 @@
     android:theme="@style/Theme">
 
     <activity
-      android:name="tachiyomi.ui.screens.MainActivity"
+      android:name="tachiyomi.ui.MainActivity"
       android:launchMode="singleTask"
       android:windowSoftInputMode="adjustPan">
       <intent-filter>
@@ -36,10 +36,10 @@
     </activity>
 
     <activity
-      android:name="tachiyomi.ui.screens.reader.ReaderActivity" />
+      android:name="tachiyomi.ui.reader.ReaderActivity" />
 
     <activity
-      android:name="tachiyomi.ui.screens.deeplink.DeepLinkHandlerActivity"
+      android:name="tachiyomi.ui.deeplink.DeepLinkHandlerActivity"
       android:label="Extension"
       android:theme="@android:style/Theme.NoDisplay">
       <intent-filter>
@@ -63,17 +63,17 @@
       tools:node="remove" />
 
     <activity
-      android:name="tachiyomi.ui.screens.settings.AppearanceActivity"
+      android:name="tachiyomi.ui.settings.AppearanceActivity"
       android:label="@string/toolbar_appearance"
       android:theme="@style/Theme.Cyanea.Light.DarkActionBar" />
 
     <activity
-      android:name="tachiyomi.ui.screens.settings.ThemePickerActivity"
+      android:name="tachiyomi.ui.settings.ThemePickerActivity"
       android:label="@string/toolbar_themepicker"
       android:theme="@style/Theme.Cyanea.Light.DarkActionBar" />
 
     <service
-      android:name="tachiyomi.ui.screens.library.LibraryUpdaterNotificationImpl$Service"
+      android:name="tachiyomi.ui.library.LibraryUpdaterNotificationImpl$Service"
       android:exported="false" />
 
   </application>
