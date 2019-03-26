@@ -16,5 +16,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 class CoroutineDispatchers(
   val io: CoroutineDispatcher,
   val computation: CoroutineDispatcher,
+  val single: CoroutineDispatcher,
   val main: CoroutineDispatcher
 )

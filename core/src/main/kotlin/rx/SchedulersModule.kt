@@ -51,6 +51,7 @@ object SchedulersModule : Module() {
       return CoroutineDispatchers(
         io = rxSchedulers.io.asCoroutineDispatcher(),
         computation = rxSchedulers.computation.asCoroutineDispatcher(),
+        single = rxSchedulers.single.asCoroutineDispatcher(),
         main = Dispatchers.Main
       )
     }

@@ -26,7 +26,7 @@ object Deps {
   const val androidKTX = "androidx.core:core-ktx:1.0.1"
 
   object workManager {
-    private const val version = "2.0.0-rc01"
+    private const val version = "2.0.0"
     const val runtime = "androidx.work:work-runtime:$version"
     const val rx2 = "androidx.work:work-rxjava2:$version"
   }
@@ -34,7 +34,7 @@ object Deps {
   const val storio = "com.pushtorefresh.storio3:sqlite:3.0.0"
 
   const val rxJava = "io.reactivex.rxjava2:rxjava:2.2.7"
-  const val rxAndroid = "io.reactivex.rxjava2:rxandroid:2.1.0"
+  const val rxAndroid = "io.reactivex.rxjava2:rxandroid:2.1.1"
   const val rxKotlin = "io.reactivex.rxjava2:rxkotlin:2.3.0"
   const val rxRelay = "com.jakewharton.rxrelay2:rxrelay:2.1.0"
   const val rxPreferences = "com.f2prateek.rx.preferences2:rx-preferences:2.0.0"
@@ -48,14 +48,14 @@ object Deps {
   }
 
   object toothpick {
-    private const val version = "2.0.0"
+    private const val version = "2.1.0"
     const val runtime = "com.github.stephanenicolas.toothpick:toothpick-runtime:$version"
     const val smoothie = "com.github.stephanenicolas.toothpick:smoothie:$version"
     const val compiler = "com.github.stephanenicolas.toothpick:toothpick-compiler:$version"
     const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing:$version"
   }
 
-  const val okhttp = "com.squareup.okhttp3:okhttp:3.12.0"
+  const val okhttp = "com.squareup.okhttp3:okhttp:3.14.0"
   const val duktape = "com.squareup.duktape:duktape-android:1.3.0"
   const val gson = "com.google.code.gson:gson:2.8.5"
   const val kotson = "com.github.salomonbrys.kotson:kotson:2.5.0"
@@ -74,13 +74,13 @@ object Deps {
   const val cyanea = "com.github.jaredrummler:Cyanea:a1c14cad4b"
 
   object materialDialog {
-    private const val version = "2.0.0"
+    private const val version = "2.5.0"
     const val core = "com.afollestad.material-dialogs:core:$version"
     const val input = "com.afollestad.material-dialogs:input:$version"
   }
 
   object glide {
-    private const val version = "4.8.0"
+    private const val version = "4.9.0"
     const val core = "com.github.bumptech.glide:glide:$version"
     const val okhttp = "com.github.bumptech.glide:okhttp3-integration:$version"
     const val compiler = "com.github.bumptech.glide:compiler:$version"
