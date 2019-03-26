@@ -8,7 +8,7 @@
 
 package tachiyomi.ui.deeplink
 
-import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.deeplink.ChapterDeepLinkViewState as ViewState
 import tachiyomi.ui.deeplink.ChapterDeepLinkAction as Action

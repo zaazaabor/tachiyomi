@@ -10,8 +10,8 @@ package tachiyomi.domain.library.interactor
 
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
-import tachiyomi.domain.category.model.MangaCategory
-import tachiyomi.domain.category.repository.MangaCategoryRepository
+import tachiyomi.domain.library.model.MangaCategory
+import tachiyomi.domain.library.repository.MangaCategoryRepository
 import javax.inject.Inject
 import javax.inject.Provider
 

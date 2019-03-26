@@ -8,8 +8,6 @@
 
 package tachiyomi.domain.library.model
 
-import tachiyomi.domain.category.model.Category
-
 data class LibraryCategory(
   val category: Category,
   val mangas: List<LibraryManga>

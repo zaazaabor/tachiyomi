@@ -16,12 +16,12 @@ import io.reactivex.Observable
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.category.interactor.CreateCategoryWithName
-import tachiyomi.domain.category.interactor.DeleteCategories
-import tachiyomi.domain.category.interactor.RenameCategory
-import tachiyomi.domain.category.interactor.ReorderCategory
-import tachiyomi.domain.category.interactor.SubscribeCategories
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.interactor.CreateCategoryWithName
+import tachiyomi.domain.library.interactor.DeleteCategories
+import tachiyomi.domain.library.interactor.RenameCategory
+import tachiyomi.domain.library.interactor.ReorderCategory
+import tachiyomi.domain.library.interactor.SubscribeCategories
+import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 

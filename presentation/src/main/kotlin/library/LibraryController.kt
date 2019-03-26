@@ -19,7 +19,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.library_controller.*
 import tachiyomi.core.rx.scanWithPrevious
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController

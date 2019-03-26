@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.adapter.BaseListAdapter
 import tachiyomi.ui.adapter.ItemCallback
 

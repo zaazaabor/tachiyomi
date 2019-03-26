@@ -12,9 +12,9 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
 import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.category.repository.MangaCategoryRepository
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.LibraryCovers
+import tachiyomi.domain.library.repository.MangaCategoryRepository
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository

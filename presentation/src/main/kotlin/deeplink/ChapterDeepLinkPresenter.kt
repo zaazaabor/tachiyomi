@@ -15,7 +15,7 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.chapter.interactor.FindOrInitChapterFromSource
+import tachiyomi.domain.manga.interactor.FindOrInitChapterFromSource
 import tachiyomi.domain.manga.interactor.FindOrInitMangaFromChapterKey
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.DeepLinkSource

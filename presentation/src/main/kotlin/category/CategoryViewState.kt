@@ -8,7 +8,7 @@
 
 package tachiyomi.ui.category
 
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 
 data class ViewState(
   val categories: List<Category> = emptyList(),

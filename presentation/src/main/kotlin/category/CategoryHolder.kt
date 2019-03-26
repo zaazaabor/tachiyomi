@@ -11,7 +11,7 @@ package tachiyomi.ui.category
 import android.view.MotionEvent
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.category_item.*
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.R
 import tachiyomi.ui.adapter.BaseViewHolder
 import tachiyomi.ui.util.inflate

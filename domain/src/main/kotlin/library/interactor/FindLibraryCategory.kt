@@ -9,7 +9,7 @@
 package tachiyomi.domain.library.interactor
 
 import io.reactivex.Single
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject

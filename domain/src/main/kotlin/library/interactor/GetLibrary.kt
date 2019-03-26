@@ -12,8 +12,8 @@
 //import io.reactivex.BackpressureStrategy
 //import io.reactivex.Flowable
 //import tachiyomi.core.rx.combineLatest
-//import tachiyomi.domain.category.Category
-//import tachiyomi.domain.category.repository.CategoryRepository
+//import tachiyomi.domain.library.Category
+//import tachiyomi.domain.library.repository.CategoryRepository
 //import tachiyomi.domain.library.model.Library
 //import tachiyomi.domain.library.model.LibraryCategory
 //import tachiyomi.domain.library.model.LibraryFilter

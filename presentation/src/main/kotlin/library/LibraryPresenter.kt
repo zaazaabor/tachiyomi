@@ -17,7 +17,7 @@ import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.SubscribeLibraryCategory
 import tachiyomi.domain.library.interactor.SubscribeUserCategories

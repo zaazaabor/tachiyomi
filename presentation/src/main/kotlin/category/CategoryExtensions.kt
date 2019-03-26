@@ -9,7 +9,7 @@
 package tachiyomi.ui.category
 
 import android.content.Context
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.R
 
 fun Category.getVisibleName(context: Context): String {

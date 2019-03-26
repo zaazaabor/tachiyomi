@@ -14,7 +14,7 @@ import io.reactivex.processors.BehaviorProcessor
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
 import tachiyomi.core.rx.filterNotNull
-import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
+import tachiyomi.domain.manga.interactor.SyncChaptersFromSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SubscribeManga
 import tachiyomi.domain.manga.model.Manga

@@ -10,10 +10,10 @@ package tachiyomi.domain.library.interactor
 
 import io.reactivex.Observable
 import io.reactivex.Single
-import tachiyomi.domain.category.repository.CategoryRepository
-import tachiyomi.domain.chapter.interactor.SyncChaptersFromSource
+import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.library.updater.LibraryUpdaterNotification
+import tachiyomi.domain.manga.interactor.SyncChaptersFromSource
 import timber.log.Timber
 import timber.log.debug
 import java.util.concurrent.TimeUnit

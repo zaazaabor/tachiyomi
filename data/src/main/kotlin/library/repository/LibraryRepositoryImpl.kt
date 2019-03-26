@@ -15,10 +15,10 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.core.db.asImmediateSingle
-import tachiyomi.data.category.sql.MangaCategoryTable
-import tachiyomi.data.chapter.sql.ChapterTable
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.sql.LibraryMangaGetResolver
+import tachiyomi.data.library.sql.MangaCategoryTable
+import tachiyomi.data.manga.sql.ChapterTable
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository

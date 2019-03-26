@@ -11,8 +11,7 @@ package tachiyomi.data.library.sql
 import android.database.Cursor
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
-import tachiyomi.data.category.sql.MangaCategoryTable
-import tachiyomi.data.chapter.sql.ChapterTable
+import tachiyomi.data.manga.sql.ChapterTable
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.data.manga.sql.MangaTable as Manga
 

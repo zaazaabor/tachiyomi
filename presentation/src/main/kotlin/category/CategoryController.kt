@@ -19,7 +19,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.category_controller.*
 import tachiyomi.core.rx.scanWithPrevious
-import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.home.HomeChildController

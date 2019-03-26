@@ -10,6 +10,7 @@ package tachiyomi.domain.source
 
 import tachiyomi.source.Source
 
+// TODO remove or merge into catalog feature
 interface SourceManager {
 
   fun get(key: Long): Source?
