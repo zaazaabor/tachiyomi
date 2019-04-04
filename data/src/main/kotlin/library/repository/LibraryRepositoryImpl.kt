@@ -13,8 +13,7 @@ import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
-import io.reactivex.Single
-import tachiyomi.core.db.asImmediateSingle
+import tachiyomi.core.db.asBlocking
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.sql.LibraryMangaGetResolver
 import tachiyomi.data.library.sql.MangaCategoryTable
@@ -74,25 +73,25 @@ internal class LibraryRepositoryImpl @Inject constructor(
     return preparedToCategory(categoryId).asRxFlowable(BackpressureStrategy.LATEST).toObservable()
   }
 
-  override fun findAll(): Single<List<LibraryManga>> {
-    return preparedAll().asImmediateSingle()
+  override fun findAll(): List<LibraryManga> {
+    return preparedAll().asBlocking()
   }
 
-  override fun findUncategorized(): Single<List<LibraryManga>> {
-    return preparedUncategorized().asImmediateSingle()
+  override fun findUncategorized(): List<LibraryManga> {
+    return preparedUncategorized().asBlocking()
   }
 
-  override fun findToCategory(categoryId: Long): Single<List<LibraryManga>> {
-    return preparedToCategory(categoryId).asImmediateSingle()
+  override fun findToCategory(categoryId: Long): List<LibraryManga> {
+    return preparedToCategory(categoryId).asBlocking()
   }
 
-  override fun findFavoriteSourceIds(): Single<List<Long>> {
+  override fun findFavoriteSourceIds(): List<Long> {
     return storio.get()
       .listOfObjects(Long::class.java)
       .withQuery(RawQuery.builder().query(FavoriteSourceIdsGetResolver.query).build())
       .withGetResolver(FavoriteSourceIdsGetResolver)
       .prepare()
-      .asImmediateSingle()
+      .asBlocking()
   }
 
 }

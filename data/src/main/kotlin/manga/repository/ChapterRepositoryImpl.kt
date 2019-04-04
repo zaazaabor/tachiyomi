@@ -13,13 +13,8 @@ import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Maybe
-import io.reactivex.Single
-import tachiyomi.core.db.asImmediateCompletable
-import tachiyomi.core.db.asImmediateMaybe
-import tachiyomi.core.db.asImmediateSingle
+import io.reactivex.Observable
+import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
@@ -58,27 +53,29 @@ class ChapterRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeForManga(mangaId: Long): Flowable<List<Chapter>> {
+  override fun subscribeForManga(mangaId: Long): Observable<List<Chapter>> {
     return preparedChapters(mangaId)
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged() // TODO do we want to run a distinct?
+      .toObservable()
   }
 
-  override fun subscribe(chapterId: Long): Flowable<Optional<Chapter>> {
+  override fun subscribe(chapterId: Long): Observable<Optional<Chapter>> {
     return preparedChapter(chapterId).asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
       .map { it.toOptional() }
+      .toObservable()
   }
 
-  override fun findForManga(mangaId: Long): Single<List<Chapter>> {
-    return preparedChapters(mangaId).asImmediateSingle()
+  override fun findForManga(mangaId: Long): List<Chapter> {
+    return preparedChapters(mangaId).asBlocking()
   }
 
-  override fun find(chapterId: Long): Maybe<Chapter> {
-    return preparedChapter(chapterId).asImmediateMaybe()
+  override fun find(chapterId: Long): Chapter? {
+    return preparedChapter(chapterId).asBlocking()
   }
 
-  override fun find(chapterKey: String, mangaId: Long): Maybe<Chapter> {
+  override fun find(chapterKey: String, mangaId: Long): Chapter? {
     return storio.get()
       .`object`(Chapter::class.java)
       .withQuery(Query.builder()
@@ -87,44 +84,44 @@ class ChapterRepositoryImpl @Inject constructor(
         .whereArgs(chapterKey, mangaId)
         .build())
       .prepare()
-      .asImmediateMaybe()
+      .asBlocking()
   }
 
-  override fun save(chapters: List<Chapter>): Completable {
-    return storio.put()
+  override fun save(chapters: List<Chapter>) {
+    storio.put()
       .objects(chapters)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun savePartial(update: List<ChapterUpdate>): Completable {
-    return storio.put()
+  override fun savePartial(update: List<ChapterUpdate>) {
+    storio.put()
       .objects(update)
       .withPutResolver(ChapterUpdatePutResolver)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun saveNewOrder(chapters: List<Chapter>): Completable {
-    return storio.put()
+  override fun saveNewOrder(chapters: List<Chapter>) {
+    storio.put()
       .objects(chapters)
       .withPutResolver(ChapterSourceOrderPutResolver)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun delete(chapterId: Long): Completable {
-    return storio.delete()
+  override fun delete(chapterId: Long) {
+    storio.delete()
       .withId(ChapterTable.TABLE, ChapterTable.COL_ID, chapterId)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun delete(chapterIds: List<Long>): Completable {
-    return storio.delete()
+  override fun delete(chapterIds: List<Long>) {
+    storio.delete()
       .withIds(ChapterTable.TABLE, ChapterTable.COL_ID, chapterIds)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
 }

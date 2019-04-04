@@ -46,17 +46,10 @@ class SubscribeLocalCatalogs @Inject constructor(
   private fun sortByFavorites(
     catalogsFlow: Observable<List<CatalogLocal>>
   ): Observable<List<CatalogLocal>> {
-    val favoriteIdsFlow = libraryRepository.findFavoriteSourceIds()
-      .map { favoriteIds ->
-        var position = 0
-        favoriteIds.associateWith { position++ }
-      }
-      .toObservable()
+    var position = 0
+    val favoriteIds = libraryRepository.findFavoriteSourceIds().associateWith { position++ }
 
-    return Observables.combineLatest(
-      catalogsFlow,
-      favoriteIdsFlow
-    ) { catalogs, favoriteIds ->
+    return catalogsFlow.map { catalogs ->
       catalogs.sortedWith(FavoritesComparator(favoriteIds).thenBy { it.name })
     }
   }

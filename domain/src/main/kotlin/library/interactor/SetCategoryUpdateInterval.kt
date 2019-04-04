@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Completable
 import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.CategoryUpdate
@@ -21,24 +20,21 @@ class SetCategoryUpdateInterval @Inject constructor(
   private val libraryUpdater: LibraryUpdater
 ) {
 
-  fun interact(categoryId: Long, intervalInHours: Int) = Single.defer {
+  fun interact(categoryId: Long, intervalInHours: Int) = Single.fromCallable {
     val update = CategoryUpdate(
       id = categoryId,
       updateInterval = Optional.of(intervalInHours)
     )
-    val scheduleOperation = Completable.fromAction {
-      if (intervalInHours > 0) {
-        libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
-      } else {
-        libraryUpdater.unschedule(categoryId, LibraryUpdater.Target.Chapters)
-      }
+    categoryRepository.savePartial(update)
+
+    if (intervalInHours > 0) {
+      libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
+    } else {
+      libraryUpdater.unschedule(categoryId, LibraryUpdater.Target.Chapters)
     }
 
-    categoryRepository.savePartial(update)
-      .andThen(scheduleOperation)
-      .toSingle<Result> { Result.Success }
-      .onErrorReturn(Result::InternalError)
-  }
+    Result.Success as Result
+  }.onErrorReturn(Result::InternalError)
 
   sealed class Result {
     object Success : Result()

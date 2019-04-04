@@ -18,11 +18,11 @@ class GetManga @Inject constructor(
 ) {
 
   fun interact(mangaId: Long): Maybe<Manga> {
-    return mangaRepository.find(mangaId)
+    return Maybe.fromCallable { mangaRepository.find(mangaId) }
   }
 
   fun interact(mangaKey: String, sourceId: Long): Maybe<Manga> {
-    return mangaRepository.find(mangaKey, sourceId)
+    return Maybe.fromCallable { mangaRepository.find(mangaKey, sourceId) }
   }
 
 }

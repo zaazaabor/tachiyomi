@@ -21,38 +21,26 @@ class DeleteCategories @Inject constructor(
   private val libraryUpdater: LibraryUpdater
 ) {
 
-  fun interact(categoryId: Long): Single<Result> {
-    if (categoryId <= 0) {
-      return Single.just(Result.SystemCategoryUndeletableError)
-    }
-
-    return categoryRepository.delete(categoryId)
-      .toSingle<Result> { Result.Success }
-      .doOnSuccess {
-        if (libraryPreferences.defaultCategory().get() == categoryId) {
-          libraryPreferences.defaultCategory().delete()
-        }
-      }
-      .onErrorReturn(Result::InternalError)
-  }
-
-  fun interact(categoryIds: Collection<Long>): Single<Result> {
+  fun interact(categoryIds: Collection<Long>) = Single.fromCallable {
     val safeCategoryIds = categoryIds.filter { it > 0 }
     if (safeCategoryIds.isEmpty()) {
-      return Single.just(Result.Success)
+      return@fromCallable Result.NothingToDelete
     }
 
-    return categoryRepository.delete(safeCategoryIds)
-      .toSingle<Result> { Result.Success }
-      .doOnSuccess {
-        if (libraryPreferences.defaultCategory().get() in safeCategoryIds) {
-          libraryPreferences.defaultCategory().delete()
-        }
-        for (id in safeCategoryIds) {
-          libraryUpdater.unscheduleAll(id)
-        }
-      }
-      .onErrorReturn(Result::InternalError)
+    categoryRepository.delete(safeCategoryIds)
+
+    if (libraryPreferences.defaultCategory().get() in safeCategoryIds) {
+      libraryPreferences.defaultCategory().delete()
+    }
+    for (id in safeCategoryIds) {
+      libraryUpdater.unscheduleAll(id)
+    }
+
+    Result.Success as Result
+  }.onErrorReturn(Result::InternalError)
+
+  fun interact(categoryId: Long): Single<Result> {
+    return interact(listOf(categoryId))
   }
 
   fun interact(category: Category): Single<Result> {
@@ -61,7 +49,7 @@ class DeleteCategories @Inject constructor(
 
   sealed class Result {
     object Success : Result()
-    object SystemCategoryUndeletableError : Result()
+    object NothingToDelete : Result()
     data class InternalError(val error: Throwable) : Result()
   }
 

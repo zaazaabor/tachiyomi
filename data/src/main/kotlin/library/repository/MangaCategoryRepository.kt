@@ -9,8 +9,7 @@
 package tachiyomi.data.library.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
-import io.reactivex.Completable
-import tachiyomi.core.db.asImmediateCompletable
+import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
 import tachiyomi.data.library.sql.MangaCategoryTable
@@ -22,32 +21,32 @@ internal class MangaCategoryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : MangaCategoryRepository {
 
-  override fun save(mangaCategory: MangaCategory): Completable {
-    return storio.put()
+  override fun save(mangaCategory: MangaCategory) {
+    storio.put()
       .`object`(mangaCategory)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun save(mangaCategories: Collection<MangaCategory>): Completable {
-    return storio.put()
+  override fun save(mangaCategories: Collection<MangaCategory>) {
+    storio.put()
       .objects(mangaCategories)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun deleteForManga(mangaId: Long): Completable {
-    return storio.delete()
+  override fun deleteForManga(mangaId: Long) {
+    storio.delete()
       .withId(MangaCategoryTable.TABLE, MangaCategoryTable.COL_MANGA_ID, mangaId)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun deleteForMangas(mangaIds: Collection<Long>): Completable {
-    return storio.delete()
+  override fun deleteForMangas(mangaIds: Collection<Long>) {
+    storio.delete()
       .withIds(MangaCategoryTable.TABLE, MangaCategoryTable.COL_MANGA_ID, mangaIds)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
 }

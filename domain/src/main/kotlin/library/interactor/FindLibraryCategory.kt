@@ -10,7 +10,6 @@ package tachiyomi.domain.library.interactor
 
 import io.reactivex.Single
 import tachiyomi.domain.library.model.Category
-import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -18,8 +17,8 @@ class FindLibraryCategory @Inject constructor(
   private val libraryRepository: LibraryRepository
 ) {
 
-  fun interact(categoryId: Long): Single<List<LibraryManga>> {
-    return when (categoryId) {
+  fun interact(categoryId: Long) = Single.fromCallable {
+    when (categoryId) {
       Category.ALL_ID -> libraryRepository.findAll()
       Category.UNCATEGORIZED_ID -> libraryRepository.findUncategorized()
       else -> libraryRepository.findToCategory(categoryId)

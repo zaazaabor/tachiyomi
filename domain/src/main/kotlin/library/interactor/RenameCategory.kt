@@ -19,36 +19,34 @@ class RenameCategory @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(categoryId: Long, newName: String): Single<Result> {
+  fun interact(categoryId: Long, newName: String) = Single.fromCallable f@{
     if (newName.isBlank()) {
-      return Single.just(Result.EmptyNameError)
+      return@f Result.EmptyNameError
     }
-    return categoryRepository.subscribe()
-      .firstOrError()
-      .flatMap { categories ->
-        val category = categories.find { it.id == categoryId }
-          ?: return@flatMap Single.just(Result.NotFoundError)
 
-        if (category.isSystemCategory) {
-          return@flatMap Single.just(Result.CantBeRenamedError)
-        }
+    val categories = categoryRepository.findAll()
 
-        // Allow to rename if it doesn't exist or it's the same category
-        val categoryWithSameName = categories.find { it.name == newName }
-        if (categoryWithSameName != null && categoryWithSameName.id != categoryId) {
-          return@flatMap Single.just(Result.NameAlreadyExistsError)
-        }
+    val category = categories.find { it.id == categoryId }
+      ?: return@f Result.NotFoundError
 
-        val update = CategoryUpdate(
-          id = categoryId,
-          name = Optional.of(newName)
-        )
+    if (category.isSystemCategory) {
+      return@f Result.CantBeRenamedError
+    }
 
-        categoryRepository.savePartial(update)
-          .andThen(Single.just<Result>(Result.Success))
-          .onErrorReturn(Result::InternalError)
-      }
-  }
+    // Allow to rename if it doesn't exist or it's the same category
+    val categoryWithSameName = categories.find { it.name == newName }
+    if (categoryWithSameName != null && categoryWithSameName.id != categoryId) {
+      return@f Result.NameAlreadyExistsError
+    }
+
+    val update = CategoryUpdate(
+      id = categoryId,
+      name = Optional.of(newName)
+    )
+
+    categoryRepository.savePartial(update)
+    Result.Success
+  }.onErrorReturn(Result::InternalError)
 
   fun interact(category: Category, newName: String): Single<Result> {
     return interact(category.id, newName)

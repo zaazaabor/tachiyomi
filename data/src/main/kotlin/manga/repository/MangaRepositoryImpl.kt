@@ -12,13 +12,8 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.Single
-import tachiyomi.core.db.asImmediateCompletable
-import tachiyomi.core.db.asImmediateMaybe
-import tachiyomi.core.db.asImmediateSingle
+import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.toOptional
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.data.manga.sql.MangaTable
@@ -62,7 +57,7 @@ internal class MangaRepositoryImpl @Inject constructor(
       .toObservable()
   }
 
-  override fun find(mangaId: Long): Maybe<Manga> {
+  override fun find(mangaId: Long): Manga? {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -71,10 +66,10 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(mangaId)
         .build())
       .prepare()
-      .asImmediateMaybe()
+      .asBlocking()
   }
 
-  override fun find(key: String, sourceId: Long): Maybe<Manga> {
+  override fun find(key: String, sourceId: Long): Manga? {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -83,34 +78,34 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(key, sourceId)
         .build())
       .prepare()
-      .asImmediateMaybe()
+      .asBlocking()
   }
 
-  override fun save(manga: Manga): Single<Manga> {
+  override fun save(manga: Manga): Long? {
     return storio.put()
       .`object`(manga)
       .prepare()
-      .asImmediateSingle()
-      .map { manga.copy(id = it.insertedId()!!) }
+      .asBlocking()
+      ?.insertedId()
   }
 
-  override fun savePartial(update: MangaUpdate): Completable {
-    return storio.put()
+  override fun savePartial(update: MangaUpdate) {
+    storio.put()
       .`object`(update)
       .withPutResolver(MangaUpdatePutResolver)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun deleteNonFavorite(): Completable {
-    return storio.delete()
+  override fun deleteNonFavorite() {
+    storio.delete()
       .byQuery(DeleteQuery.builder()
         .table(MangaTable.TABLE)
         .where("${MangaTable.COL_FAVORITE} = ?")
         .whereArgs(0)
         .build())
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
 }

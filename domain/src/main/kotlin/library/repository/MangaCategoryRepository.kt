@@ -8,17 +8,16 @@
 
 package tachiyomi.domain.library.repository
 
-import io.reactivex.Completable
 import tachiyomi.domain.library.model.MangaCategory
 
 interface MangaCategoryRepository {
 
-  fun save(mangaCategory: MangaCategory): Completable
+  fun save(mangaCategory: MangaCategory)
 
-  fun save(mangaCategories: Collection<MangaCategory>): Completable
+  fun save(mangaCategories: Collection<MangaCategory>)
 
-  fun deleteForManga(mangaId: Long): Completable
+  fun deleteForManga(mangaId: Long)
 
-  fun deleteForMangas(mangaIds: Collection<Long>): Completable
+  fun deleteForMangas(mangaIds: Collection<Long>)
 
 }

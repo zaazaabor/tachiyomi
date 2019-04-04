@@ -8,10 +8,7 @@
 
 package tachiyomi.domain.manga.repository
 
-import io.reactivex.Completable
-import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
@@ -22,14 +19,14 @@ interface MangaRepository {
 
   fun subscribe(key: String, sourceId: Long): Observable<Optional<Manga>>
 
-  fun find(mangaId: Long): Maybe<Manga>
+  fun find(mangaId: Long): Manga?
 
-  fun find(key: String, sourceId: Long): Maybe<Manga>
+  fun find(key: String, sourceId: Long): Manga?
 
-  fun save(manga: Manga): Single<Manga>
+  fun save(manga: Manga): Long?
 
-  fun savePartial(update: MangaUpdate): Completable
+  fun savePartial(update: MangaUpdate)
 
-  fun deleteNonFavorite(): Completable
+  fun deleteNonFavorite()
 
 }

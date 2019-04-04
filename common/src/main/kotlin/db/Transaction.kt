@@ -22,4 +22,14 @@ interface Transaction {
     return Completable.using(::begin, { source().doOnComplete(::commit) }, { end() })
   }
 
+  fun withAction(action: () -> Any?) {
+    begin()
+    try {
+      action()
+      commit()
+    } finally {
+      end()
+    }
+  }
+
 }

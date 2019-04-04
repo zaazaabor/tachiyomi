@@ -78,7 +78,8 @@ class MangaInitializer @Inject internal constructor(
     )
 
     mangaRepository.savePartial(update)
-      .andThen(Maybe.just(updatedManga))
+
+    Maybe.just(updatedManga)
       .doOnSuccess { libraryCovers.find(manga.id).setLastModified(now) }
   }
 

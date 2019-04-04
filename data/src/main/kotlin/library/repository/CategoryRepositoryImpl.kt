@@ -9,13 +9,12 @@
 package tachiyomi.data.library.repository
 
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
+import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Maybe
 import io.reactivex.Observable
-import tachiyomi.core.db.asImmediateCompletable
+import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
 import tachiyomi.data.library.sql.CategoryTable
@@ -32,17 +31,24 @@ internal class CategoryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : CategoryRepository {
 
-  private val categories = storio.get()
-    .listOfObjects(Category::class.java)
-    .withQuery(Query.builder()
-      .table(CategoryTable.TABLE)
-      .orderBy(CategoryTable.COL_ORDER)
-      .build())
-    .prepare()
+  private lateinit var cachedCategories: List<Category>
+
+  private val categories = preparedCategories()
     .asRxFlowable(BackpressureStrategy.LATEST)
     .toObservable()
+    .doOnNext { cachedCategories = it }
     .replay(1)
     .autoConnect()
+
+  private fun preparedCategories(): PreparedGetListOfObjects<Category> {
+    return storio.get()
+      .listOfObjects(Category::class.java)
+      .withQuery(Query.builder()
+        .table(CategoryTable.TABLE)
+        .orderBy(CategoryTable.COL_ORDER)
+        .build())
+      .prepare()
+  }
 
   override fun subscribe(): Observable<List<Category>> {
     return categories
@@ -77,61 +83,61 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .toObservable()
   }
 
-  override fun find(categoryId: Long): Maybe<Category> {
-    return categories
-      .firstOrError()
-      .flatMapMaybe { categories ->
-        val category = categories.find { it.id == categoryId }
-        if (category != null) {
-          Maybe.just(category)
-        } else {
-          Maybe.empty()
-        }
-      }
+  override fun findAll(): List<Category> {
+    return if (::cachedCategories.isInitialized) {
+      cachedCategories
+    } else {
+      // TODO test if this is actually ever needed
+      preparedCategories().asBlocking()
+    }
   }
 
-  override fun save(category: Category): Completable {
-    return storio.put()
+  override fun find(categoryId: Long): Category? {
+    return findAll().find { it.id == categoryId }
+  }
+
+  override fun save(category: Category) {
+    storio.put()
       .`object`(category)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun save(categories: Collection<Category>): Completable {
-    return storio.put()
+  override fun save(categories: Collection<Category>) {
+    storio.put()
       .objects(categories)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun savePartial(update: CategoryUpdate): Completable {
-    return storio.put()
+  override fun savePartial(update: CategoryUpdate) {
+    storio.put()
       .`object`(update)
       .withPutResolver(CategoryUpdatePutResolver)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun savePartial(updates: Collection<CategoryUpdate>): Completable {
-    return storio.put()
+  override fun savePartial(updates: Collection<CategoryUpdate>) {
+    storio.put()
       .objects(updates)
       .withPutResolver(CategoryUpdatePutResolver)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun delete(categoryId: Long): Completable {
-    return storio.delete()
+  override fun delete(categoryId: Long) {
+    storio.delete()
       .withId(CategoryTable.TABLE, CategoryTable.COL_ID, categoryId)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
-  override fun delete(categoryIds: Collection<Long>): Completable {
-    return storio.delete()
+  override fun delete(categoryIds: Collection<Long>) {
+    storio.delete()
       .withIds(CategoryTable.TABLE, CategoryTable.COL_ID, categoryIds)
       .prepare()
-      .asImmediateCompletable()
+      .asBlocking()
   }
 
 }

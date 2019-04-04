@@ -17,6 +17,6 @@ class DeleteNonFavoriteManga @Inject internal constructor(
 ) {
 
   fun interact(): Completable {
-    return mangaRepository.deleteNonFavorite()
+    return Completable.fromAction { mangaRepository.deleteNonFavorite() }
   }
 }

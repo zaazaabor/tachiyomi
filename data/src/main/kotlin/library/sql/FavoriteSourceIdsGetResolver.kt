@@ -15,10 +15,9 @@ import tachiyomi.data.manga.sql.MangaTable
 
 internal object FavoriteSourceIdsGetResolver : DefaultGetResolver<Long>() {
 
-  val query = """
+  const val query = """
     SELECT ${MangaTable.COL_SOURCE}
-    FROM ${MangaTable.TABLE}
-    WHERE ${MangaTable.COL_FAVORITE} = 1
+    FROM ${MangaTable.LIBRARY}
     GROUP BY ${MangaTable.COL_SOURCE}
     ORDER BY COUNT(${MangaTable.COL_SOURCE}) DESC
   """

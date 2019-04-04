@@ -17,29 +17,24 @@ class CreateCategoryWithName @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(name: String): Single<Result> {
+  fun interact(name: String): Single<Result> = Single.fromCallable {
     if (name.isBlank()) {
-      return Single.just(Result.EmptyCategoryNameError)
+      return@fromCallable Result.EmptyCategoryNameError
     }
-    return categoryRepository.subscribe()
-      .firstOrError()
-      .flatMap<Result> { categories ->
-        if (categories.none { name.equals(it.name, ignoreCase = true) }) {
-          val nextOrder = categories.maxBy { it.order }?.order?.plus(1) ?: 0
+    val categories = categoryRepository.findAll()
+    if (categories.any { name.equals(it.name, ignoreCase = true) }) {
+      return@fromCallable Result.CategoryAlreadyExistsError(name)
+    }
 
-          val newCategory = Category(
-            id = -1,
-            name = name,
-            order = nextOrder
-          )
-          categoryRepository.save(newCategory)
-            .toSingle { Result.Success }
-        } else {
-          Single.just(Result.CategoryAlreadyExistsError(name))
-        }
-      }
-      .onErrorReturn(Result::InternalError)
-  }
+    val nextOrder = categories.maxBy { it.order }?.order?.plus(1) ?: 0
+    val newCategory = Category(
+      id = -1,
+      name = name,
+      order = nextOrder
+    )
+    categoryRepository.save(newCategory)
+    Result.Success
+  }.onErrorReturn(Result::InternalError)
 
   sealed class Result {
     object Success : Result()

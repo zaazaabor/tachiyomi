@@ -11,11 +11,10 @@ package tachiyomi.domain.manga.interactor
 import io.reactivex.Single
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.manga.repository.ChapterRepository
 import javax.inject.Inject
 
 class FindOrInitChapterFromSource @Inject constructor(
-  private val chapterRepository: ChapterRepository,
+  private val getChapter: GetChapter,
   private val syncChaptersFromSource: SyncChaptersFromSource
 ) {
 
@@ -23,10 +22,10 @@ class FindOrInitChapterFromSource @Inject constructor(
     chapterKey: String,
     manga: Manga
   ): Single<Chapter> {
-    return chapterRepository.find(chapterKey, manga.id)
+    return getChapter.interact(chapterKey, manga.id)
       .switchIfEmpty(Single.defer {
         syncChaptersFromSource.interact(manga)
-          .flatMap { chapterRepository.find(chapterKey, manga.id).toSingle() }
+          .flatMap { getChapter.interact(chapterKey, manga.id).toSingle() }
       })
   }
 

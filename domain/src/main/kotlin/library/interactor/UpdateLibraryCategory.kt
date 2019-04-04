@@ -8,6 +8,7 @@
 
 package tachiyomi.domain.library.interactor
 
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import tachiyomi.domain.library.repository.CategoryRepository
@@ -59,14 +60,14 @@ class UpdateLibraryCategory @Inject constructor(
       return
     }
 
-    val rescheduleOperation = categoryRepository.find(categoryId)
-      .doOnSuccess { category ->
-        if (category.updateInterval > 0) {
-          Timber.debug { "Rescheduling category $categoryId" }
-          libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters,
-            category.updateInterval)
-        }
+    val rescheduleOperation = Completable.fromAction {
+      val category = categoryRepository.find(categoryId)
+      if (category != null && category.updateInterval > 0) {
+        Timber.debug { "Rescheduling category $categoryId" }
+        libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters,
+          category.updateInterval)
       }
+    }
 
     result.work
       // Let the work be marked as completed, 1ms should be enough (we only need to run async)

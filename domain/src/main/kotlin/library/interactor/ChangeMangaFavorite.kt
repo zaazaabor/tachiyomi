@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Completable
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
 import tachiyomi.core.stdlib.Optional
@@ -30,7 +29,7 @@ class ChangeMangaFavorite @Inject constructor(
   private val setCategoriesForMangas: SetCategoriesForMangas
 ) {
 
-  fun interact(manga: Manga) = Single.defer {
+  fun interact(manga: Manga) = Single.fromCallable {
     val now = System.currentTimeMillis()
     val nowFavorite = !manga.favorite
     val update = if (nowFavorite) {
@@ -44,32 +43,30 @@ class ChangeMangaFavorite @Inject constructor(
     }
 
     val mangaIds = listOf(manga.id)
+
     val setCategoryOperation = if (nowFavorite) {
       val defaultCategory = libraryPreferences.defaultCategory().get()
-      setCategoriesForMangas.interact(listOf(defaultCategory), mangaIds)
-        .flatMapCompletable { result ->
-          when (result) {
-            SetCategoriesForMangas.Result.Success -> Completable.complete()
-            is SetCategoriesForMangas.Result.InternalError -> Completable.error(result.error)
-          }
+      Runnable {
+        val result = setCategoriesForMangas.execute(listOf(defaultCategory), mangaIds)
+        if (result is SetCategoriesForMangas.Result.InternalError) {
+          throw result.error
         }
+      }
     } else {
-      mangaCategoryRepository.deleteForMangas(mangaIds)
+      Runnable { mangaCategoryRepository.deleteForMangas(mangaIds) }
     }
 
-    transactions.get()
-      .withCompletable {
-        mangaRepository.savePartial(update)
-          .andThen(setCategoryOperation)
-      }
-      .toSingle<Result> { Result.Success }
-      .doOnSuccess {
-        if (!nowFavorite) {
-          libraryCovers.delete(manga.id)
-        }
-      }
-      .onErrorReturn(Result::InternalError)
-  }
+    transactions.get().withAction {
+      mangaRepository.savePartial(update)
+      setCategoryOperation.run()
+    }
+
+    if (!nowFavorite) {
+      libraryCovers.delete(manga.id)
+    }
+
+    Result.Success as Result
+  }.onErrorReturn(Result::InternalError)
 
   sealed class Result {
     object Success : Result()

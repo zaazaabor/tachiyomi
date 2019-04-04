@@ -9,7 +9,6 @@
 package tachiyomi.domain.library.repository
 
 import io.reactivex.Observable
-import io.reactivex.Single
 import tachiyomi.domain.library.model.LibraryManga
 
 interface LibraryRepository {
@@ -20,12 +19,12 @@ interface LibraryRepository {
 
   fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>>
 
-  fun findAll(): Single<List<LibraryManga>>
+  fun findAll(): List<LibraryManga>
 
-  fun findUncategorized(): Single<List<LibraryManga>>
+  fun findUncategorized(): List<LibraryManga>
 
-  fun findToCategory(categoryId: Long): Single<List<LibraryManga>>
+  fun findToCategory(categoryId: Long): List<LibraryManga>
 
-  fun findFavoriteSourceIds(): Single<List<Long>>
+  fun findFavoriteSourceIds(): List<Long>
 
 }

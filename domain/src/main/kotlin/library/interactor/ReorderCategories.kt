@@ -19,31 +19,29 @@ class ReorderCategory @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(categoryId: Long, newPosition: Int): Single<Result> {
-    return categoryRepository.subscribe()
-      .firstOrError()
-      .flatMap { categories ->
-        val currPosition = categories.indexOfFirst { it.id == categoryId }
-        if (currPosition == newPosition || currPosition == -1) {
-          return@flatMap Single.just(Result.Unchanged)
-        }
+  fun interact(categoryId: Long, newPosition: Int) = Single.fromCallable {
+    val categories = categoryRepository.findAll()
 
-        val reorderedCategories = categories.toMutableList()
-        val movedCategory = reorderedCategories.removeAt(currPosition)
-        reorderedCategories.add(newPosition, movedCategory)
+    // If nothing changed, return
+    val currPosition = categories.indexOfFirst { it.id == categoryId }
+    if (currPosition == newPosition || currPosition == -1) {
+      return@fromCallable Result.Unchanged
+    }
 
-        val updates = reorderedCategories.mapIndexed { index, category ->
-          CategoryUpdate(
-            id = category.id,
-            order = Optional.of(index)
-          )
-        }
+    val reorderedCategories = categories.toMutableList()
+    val movedCategory = reorderedCategories.removeAt(currPosition)
+    reorderedCategories.add(newPosition, movedCategory)
 
-        categoryRepository.savePartial(updates)
-          .toSingle<Result> { Result.Success }
-      }
-      .onErrorReturn(Result::InternalError)
-  }
+    val updates = reorderedCategories.mapIndexed { index, category ->
+      CategoryUpdate(
+        id = category.id,
+        order = Optional.of(index)
+      )
+    }
+
+    categoryRepository.savePartial(updates)
+    Result.Success
+  }.onErrorReturn(Result::InternalError)
 
   fun interact(category: Category, newPosition: Int): Single<Result> {
     return interact(category.id, newPosition)
