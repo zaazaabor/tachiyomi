@@ -10,9 +10,9 @@ package tachiyomi.app
 
 import android.app.Application
 import tachiyomi.app.initializers.AppInitializers
+import tachiyomi.core.CoreModule
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.http.HttpModule
-import tachiyomi.core.rx.SchedulersModule
 import tachiyomi.data.di.DataModule
 import tachiyomi.ui.di.UiModule
 import toothpick.Toothpick
@@ -40,7 +40,7 @@ class App : Application() {
     scope.installModules(
       SmoothieApplicationModule(this),
       HttpModule,
-      SchedulersModule,
+      CoreModule,
       DataModule,
       UiModule
     )

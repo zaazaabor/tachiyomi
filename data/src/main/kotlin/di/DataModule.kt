@@ -26,6 +26,8 @@ import tachiyomi.data.library.updater.LibraryUpdaterImpl
 import tachiyomi.data.manga.repository.ChapterRepositoryImpl
 import tachiyomi.data.manga.repository.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
+import tachiyomi.data.sync.api.SyncDeviceAndroid
+import tachiyomi.data.sync.prefs.SyncPreferencesProvider
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.CategoryRepository
@@ -36,6 +38,8 @@ import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.manga.repository.ChapterRepository
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
+import tachiyomi.domain.sync.api.SyncDevice
+import tachiyomi.domain.sync.prefs.SyncPreferences
 import toothpick.config.Module
 
 object DataModule : Module() {
@@ -57,6 +61,9 @@ object DataModule : Module() {
     bindProvider<LibraryPreferences, LibraryPreferencesProvider>()
     bindTo<LibraryCovers, LibraryCoversImpl>().singletonInScope()
     bindTo<LibraryUpdater, LibraryUpdaterImpl>().singletonInScope()
+
+    bindProvider<SyncPreferences, SyncPreferencesProvider>()
+    bindTo<SyncDevice, SyncDeviceAndroid>().singletonInScope()
 
     bind(CatalogInstaller::class.java).singletonInScope()
     bindTo<CatalogRepository, CatalogRepositoryImpl>().singletonInScope()

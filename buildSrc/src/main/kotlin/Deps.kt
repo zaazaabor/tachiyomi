@@ -23,6 +23,12 @@ object Deps {
     const val workManager = "androidx.work:work-runtime:2.0.0-rc01"
   }
 
+  object lifecycle {
+    private const val version = "2.0.0"
+    const val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
+    const val runtime = "androidx.lifecycle:lifecycle-runtime:$version"
+  }
+
   const val androidKTX = "androidx.core:core-ktx:1.0.1"
 
   object workManager {
@@ -39,6 +45,7 @@ object Deps {
   const val rxRelay = "com.jakewharton.rxrelay2:rxrelay:2.1.0"
   const val rxPreferences = "com.f2prateek.rx.preferences2:rx-preferences:2.0.0"
   const val rxRedux = "com.freeletics.rxredux:rxredux:1.0.1"
+  const val rxConnectivity = "com.github.pwittchen:reactivenetwork-rx2:3.0.2"
 
   object rxBinding {
     private const val version = "2.2.0"

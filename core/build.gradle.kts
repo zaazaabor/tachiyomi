@@ -24,6 +24,9 @@ dependencies {
   implementation(Deps.coroutines.core)
   implementation(Deps.coroutines.android)
   implementation(Deps.coroutines.rx2)
+  implementation(Deps.rxRelay)
+  implementation(Deps.rxConnectivity)
+  implementation(Deps.lifecycle.extensions)
 
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)

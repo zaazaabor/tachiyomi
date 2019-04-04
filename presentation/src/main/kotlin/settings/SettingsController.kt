@@ -18,8 +18,10 @@ import com.jaredrummler.cyanea.Cyanea
 import kotlinx.android.synthetic.main.settings_controller.*
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.BaseController
+import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.controller.withoutTransition
 import tachiyomi.ui.home.HomeChildController
+import tachiyomi.ui.sync.SyncController
 
 class SettingsController : BaseController(), HomeChildController {
 
@@ -36,26 +38,33 @@ class SettingsController : BaseController(), HomeChildController {
 
     val childRouter = getChildRouter(settings_container)
     if (!childRouter.hasRootController()) {
-      childRouter.pushController(SettingsGeneralController().withoutTransition())
+      childRouter.pushController(ContentController().withoutTransition())
     }
   }
 
-}
+  class ContentController : PreferenceController(), HomeChildController {
 
-class SettingsGeneralController : PreferenceController(), HomeChildController {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+      addPreferencesFromResource(R.xml.settings_general)
 
-  override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-    addPreferencesFromResource(R.xml.settings_general)
-
-    val appearance = findPreference("pref_general_appearance")
-    appearance.icon.setTint(Cyanea.instance.accent)
-    appearance.setOnPreferenceClickListener {
-      activity?.run {
-        startActivity(Intent(this, AppearanceActivity::class.java))
-        overridePendingTransition(R.anim.enter_right, R.anim.exit_left)
+      val appearance = findPreference("prefmain_appearance")
+      appearance.icon.setTint(Cyanea.instance.accent)
+      appearance.setOnPreferenceClickListener {
+        activity?.run {
+          startActivity(Intent(this, AppearanceActivity::class.java))
+          overridePendingTransition(R.anim.enter_right, R.anim.exit_left)
+        }
+        true
       }
-      true
+
+      val sync = findPreference("prefmain_sync")
+      sync.icon.setTint(Cyanea.instance.accent)
+      sync.setOnPreferenceClickListener {
+        parentController?.router?.pushController(SyncController().withHorizontalTransition())
+        true
+      }
     }
+
   }
 
 }

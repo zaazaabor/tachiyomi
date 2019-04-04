@@ -19,22 +19,17 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import kotlinx.android.synthetic.main.home_controller_bottomnav.*
-import tachiyomi.core.di.AppScope
 import tachiyomi.ui.R
+import tachiyomi.ui.catalog.CatalogController
 import tachiyomi.ui.controller.BaseController
 import tachiyomi.ui.controller.withFadeTransition
 import tachiyomi.ui.controller.withoutTransition
-import tachiyomi.ui.catalog.CatalogController
 import tachiyomi.ui.library.LibraryController
 import tachiyomi.ui.settings.SettingsController
 
 class HomeController : BaseController() {
 
   private val childRouterChangeListener = HomeControllerChangeListener()
-
-  init {
-    AppScope.inject(this)
-  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
