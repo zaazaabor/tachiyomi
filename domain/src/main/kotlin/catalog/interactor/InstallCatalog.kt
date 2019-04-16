@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
@@ -18,7 +18,7 @@ class InstallCatalog @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(catalog: CatalogRemote): Observable<InstallStep> {
+  suspend fun await(catalog: CatalogRemote): Flow<InstallStep> {
     return catalogRepository.installCatalog(catalog)
   }
 

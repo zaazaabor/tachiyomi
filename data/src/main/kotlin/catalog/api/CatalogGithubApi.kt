@@ -8,15 +8,15 @@
 
 package tachiyomi.data.catalog.api
 
-import com.github.salomonbrys.kotson.fromJson
-import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.int
-import com.github.salomonbrys.kotson.long
-import com.github.salomonbrys.kotson.nullBool
-import com.github.salomonbrys.kotson.string
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import io.reactivex.Single
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.content
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.long
+import kotlinx.serialization.parse
 import okhttp3.Response
 import tachiyomi.core.http.GET
 import tachiyomi.core.http.Http
@@ -27,8 +27,6 @@ import timber.log.warn
 import javax.inject.Inject
 
 internal class CatalogGithubApi @Inject constructor(private val http: Http) {
-
-  private val gson = Gson() // TODO consider injecting a default instance
 
   // TODO create a new branch for 1.x extensions
 //  private val repoUrl = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"
@@ -45,18 +43,19 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
   private fun parseResponse(response: Response): List<CatalogRemote> {
     val text = response.body()?.use { it.string() } ?: return emptyList()
 
-    val json = gson.fromJson<JsonArray>(text)
+    val json = Json.parse<JsonArray>(text)
 
     return json.map { element ->
-      val name = element["name"].string
-      val pkgName = element["pkg"].string
-      val versionName = element["version"].string
+      element as JsonObject
+      val name = element["name"].content
+      val pkgName = element["pkg"].content
+      val versionName = element["version"].content
       val versionCode = element["code"].int
-      val lang = element["lang"].string
-      val apkName = element["apk"].string
+      val lang = element["lang"].content
+      val apkName = element["apk"].content
       val sourceId = element["id"].long
-      val description = element["description"].string
-      val nsfw = element["nsfw"].nullBool ?: false
+      val description = element["description"].content
+      val nsfw = element["nsfw"].booleanOrNull ?: false
 
       val apkUrl = "$repoUrl/apk/$apkName"
       val iconUrl = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"

@@ -8,37 +8,29 @@
 
 package tachiyomi.ui.category
 
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.SimpleSideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
-import io.reactivex.rxkotlin.ofType
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import tachiyomi.domain.library.interactor.CreateCategoryWithName
 import tachiyomi.domain.library.interactor.DeleteCategories
+import tachiyomi.domain.library.interactor.GetCategories
 import tachiyomi.domain.library.interactor.RenameCategory
 import tachiyomi.domain.library.interactor.ReorderCategory
-import tachiyomi.domain.library.interactor.SubscribeCategories
 import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
 
 class CategoryPresenter @Inject constructor(
-  private val subscribeCategories: SubscribeCategories,
+  private val getCategories: GetCategories,
   private val createCategoryWithName: CreateCategoryWithName,
   private val deleteCategories: DeleteCategories,
   private val renameCategory: RenameCategory,
-  private val reorderCategory: ReorderCategory,
-  private val schedulers: RxSchedulers
+  private val reorderCategory: ReorderCategory
 ) : BasePresenter() {
-
-  /**
-   * Subject which allows emitting actions and subscribing to a specific one while supporting
-   * backpressure.
-   */
-  private val actions = PublishRelay.create<Action>()
 
   /**
    * Behavior subject containing the last emitted view state.
@@ -50,114 +42,110 @@ class CategoryPresenter @Inject constructor(
    */
   val stateObserver: Observable<ViewState> = state
 
+  private val store = scope.createStore(
+    name = "Category presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    reducer = { state, action -> action.reduce(state) }
+  )
+
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = getInitialViewState(),
-        sideEffects = listOf(
-          ::loadCategoriesSideEffect,
-          ::createCategorySideEffect,
-          ::deleteCategorySideEffect,
-          ::renameCategorySideEffect,
-          ::reorderCategorySideEffect
-        ),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .logOnNext()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    loadCategories()
   }
 
   private fun getInitialViewState(): ViewState {
     return ViewState()
   }
 
-  @Suppress("unused_parameter")
-  private fun loadCategoriesSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return subscribeCategories.interact()
-      .map(Action::CategoriesUpdate)
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
+
+    // Category creation side effect
+    sideEffects += SimpleSideEffect("Create a category") { _, action, _, handler ->
+      when (action) {
+        is Action.CreateCategory -> handler {
+          createCategoryWithName.await(action.name)
+          null // Ignore results (for now)
+        }
+        else -> null
+      }
+    }
+
+    // Category deletion side effect
+    sideEffects += SimpleSideEffect("Delete categories") { _, action, _, handler ->
+      when (action) {
+        is Action.DeleteCategories -> handler {
+          val result = deleteCategories.await(action.categoryIds)
+          when (result) {
+            // Unselect categories when the operation succeeds
+            DeleteCategories.Result.Success -> Action.UnselectCategories
+            else -> null
+          }
+        }
+        else -> null
+      }
+    }
+
+    // Rename categories side effect
+    sideEffects += SimpleSideEffect("Rename a category") { _, action, _, handler ->
+      when (action) {
+        is Action.RenameCategory -> handler {
+          val result = renameCategory.await(action.categoryId, action.newName)
+          when (result) {
+            // Unselect categories when the operation succeeds
+            RenameCategory.Result.Success -> Action.UnselectCategories
+            else -> null
+          }
+        }
+        else -> null
+      }
+    }
+
+    // Reorder categories side effect
+    sideEffects += SimpleSideEffect("Reorder a category") { _, action, _, handler ->
+      when (action) {
+        is Action.ReorderCategory -> handler {
+          reorderCategory.await(action.category, action.newPosition)
+          null // Do nothing for now
+        }
+        else -> null
+      }
+    }
+
+    return sideEffects
   }
 
-  @Suppress("unused_parameter")
-  private fun createCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.CreateCategory>()
-      .flatMap {
-        createCategoryWithName.interact(it.name)
-          .flatMapObservable { Observable.empty<Action>() }
-          .onErrorReturn(Action::Error)
+  private fun loadCategories() {
+    scope.launch(dispatchers.computation) {
+      getCategories.subscribe().collect {
+        store.dispatch(Action.CategoriesUpdate(it))
       }
-  }
-
-  @Suppress("unused_parameter")
-  private fun deleteCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.DeleteCategories>()
-      .flatMap {
-        deleteCategories.interact(it.categoryIds)
-          .toObservable()
-          .ofType<DeleteCategories.Result.Success>()
-          .map { Action.UnselectCategories }
-      }
-  }
-
-  @Suppress("unused_parameter")
-  private fun renameCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.RenameCategory>()
-      .flatMap { action ->
-        renameCategory.interact(action.categoryId, action.newName)
-          .filter { it is RenameCategory.Result.Success }
-          .flatMapObservable { Observable.just(Action.UnselectCategories) }
-      }
-  }
-
-  @Suppress("unused_parameter")
-  private fun reorderCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.ReorderCategory>()
-      .flatMap {
-        reorderCategory.interact(it.category, it.newPosition)
-          .flatMapObservable { Observable.empty<Action>() }
-      }
+    }
   }
 
   fun createCategory(name: String) {
-    actions.accept(Action.CreateCategory(name))
+    store.dispatch(Action.CreateCategory(name))
   }
 
   fun deleteCategories(categories: Set<Long>) {
-    actions.accept(Action.DeleteCategories(categories))
+    store.dispatch(Action.DeleteCategories(categories))
   }
 
   fun renameCategory(categoryId: Long, newName: String) {
-    actions.accept(Action.RenameCategory(categoryId, newName))
+    store.dispatch(Action.RenameCategory(categoryId, newName))
   }
 
   fun reorderCategory(category: Category, newPosition: Int) {
-    actions.accept(Action.ReorderCategory(category, newPosition))
+    store.dispatch(Action.ReorderCategory(category, newPosition))
   }
 
   fun toggleCategorySelection(category: Category) {
-    actions.accept(Action.ToggleCategorySelection(category))
+    store.dispatch(Action.ToggleCategorySelection(category))
   }
 
   fun unselectCategories() {
-    actions.accept(Action.UnselectCategories)
+    store.dispatch(Action.UnselectCategories)
   }
 
   fun getCategory(id: Long): Category? {

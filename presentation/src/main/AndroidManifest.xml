@@ -1,1 +1,7 @@
-<manifest package="tachiyomi.ui"/>
+<manifest package="tachiyomi.ui"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <application>
+    <receiver android:name=".library.LibraryUpdaterNotificationImpl$CancelReceiver" />
+  </application>
+</manifest>

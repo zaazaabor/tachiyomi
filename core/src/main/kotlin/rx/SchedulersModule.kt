@@ -49,9 +49,9 @@ object SchedulersModule : Module() {
 
     override fun get(): CoroutineDispatchers {
       return CoroutineDispatchers(
-        io = rxSchedulers.io.asCoroutineDispatcher(),
-        computation = rxSchedulers.computation.asCoroutineDispatcher(),
-        single = rxSchedulers.single.asCoroutineDispatcher(),
+        io = Dispatchers.IO,
+        computation = Dispatchers.Default,
+        single = rxSchedulers.single.asCoroutineDispatcher(), // TODO new thread when Rx is removed
         main = Dispatchers.Main
       )
     }

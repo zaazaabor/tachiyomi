@@ -8,7 +8,9 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.single
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
@@ -19,14 +21,15 @@ class UpdateCatalog @Inject constructor(
   private val installCatalog: InstallCatalog
 ) {
 
-  fun interact(catalog: CatalogInstalled): Observable<InstallStep> {
-    return catalogRepository.getRemoteCatalogsObservable()
-      .firstOrError()
-      .map { catalogs ->
-        catalogs.find { it.pkgName == catalog.pkgName }
-          ?: throw Exception("Catalog with pkg ${catalog.pkgName} not found")
-      }
-      .flatMapObservable { installCatalog.interact(it) }
+  suspend fun await(catalog: CatalogInstalled): Flow<InstallStep> {
+    val catalogs = catalogRepository.getRemoteCatalogsFlow().single()
+
+    val catalogToUpdate = catalogs.find { it.pkgName == catalog.pkgName }
+    return if (catalogToUpdate == null) {
+      emptyFlow()
+    } else {
+      installCatalog.await(catalogToUpdate)
+    }
   }
 
 }

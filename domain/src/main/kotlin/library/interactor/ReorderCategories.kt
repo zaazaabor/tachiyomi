@@ -8,7 +8,9 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
@@ -16,16 +18,17 @@ import tachiyomi.domain.library.repository.CategoryRepository
 import javax.inject.Inject
 
 class ReorderCategory @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(categoryId: Long, newPosition: Int) = Single.fromCallable {
-    val categories = categoryRepository.findAll()
+  suspend fun await(categoryId: Long, newPosition: Int) = withContext(NonCancellable) f@{
+    val categories = withContext(dispatchers.io) { categoryRepository.findAll() }
 
     // If nothing changed, return
     val currPosition = categories.indexOfFirst { it.id == categoryId }
     if (currPosition == newPosition || currPosition == -1) {
-      return@fromCallable Result.Unchanged
+      return@f Result.Unchanged
     }
 
     val reorderedCategories = categories.toMutableList()
@@ -39,12 +42,16 @@ class ReorderCategory @Inject constructor(
       )
     }
 
-    categoryRepository.savePartial(updates)
+    try {
+      withContext(dispatchers.io) { categoryRepository.savePartial(updates) }
+    } catch (e: Exception) {
+      return@f Result.InternalError(e)
+    }
     Result.Success
-  }.onErrorReturn(Result::InternalError)
+  }
 
-  fun interact(category: Category, newPosition: Int): Single<Result> {
-    return interact(category.id, newPosition)
+  suspend fun await(category: Category, newPosition: Int): Result {
+    return await(category.id, newPosition)
   }
 
   sealed class Result {

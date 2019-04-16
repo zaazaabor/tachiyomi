@@ -14,6 +14,8 @@ import tachiyomi.domain.catalog.model.InstallStep
 
 sealed class Action {
 
+  object Init : Action()
+
   data class ItemsUpdate(val items: List<Any>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(items = items)
@@ -27,6 +29,15 @@ sealed class Action {
   data class InstallingCatalogsUpdate(val installingCatalogs: Map<String, InstallStep>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(installingCatalogs = installingCatalogs)
+  }
+
+  data class InstallStepUpdate(val pkgName: String, val step: InstallStep) : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(installingCatalogs = if (step == InstallStep.Installed) {
+        state.installingCatalogs - pkgName
+      } else {
+        state.installingCatalogs + (pkgName to step)
+      })
   }
 
   data class RefreshingCatalogs(val isRefreshing: Boolean) : Action() {

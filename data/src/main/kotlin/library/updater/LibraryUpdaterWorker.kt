@@ -9,12 +9,14 @@
 package tachiyomi.data.library.updater
 
 import android.content.Context
-import androidx.work.RxWorker
+import androidx.concurrent.futures.ResolvableFuture
+import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import io.reactivex.Scheduler
-import io.reactivex.Single
+import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
-import tachiyomi.core.rx.RxSchedulers
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import timber.log.Timber
 import timber.log.debug
@@ -23,10 +25,10 @@ import javax.inject.Inject
 class LibraryUpdaterWorker(
   context: Context,
   params: WorkerParameters
-) : RxWorker(context, params) {
+) : ListenableWorker(context, params) {
 
   @Inject
-  lateinit var schedulers: RxSchedulers
+  lateinit var dispatchers: CoroutineDispatchers
 
   @Inject
   lateinit var updater: UpdateLibraryCategory
@@ -37,20 +39,19 @@ class LibraryUpdaterWorker(
 
   private val categoryId = params.inputData.getLong(CATEGORY_KEY, -1)
 
-  override fun createWork() = Single.defer<Result> {
+  override fun startWork(): ListenableFuture<Result> {
+    val future = ResolvableFuture.create<Result>()
     Timber.debug { "Starting scheduled update for category $categoryId" }
     if (categoryId == -1L) {
-      return@defer Single.just(Result.failure())
+      future.set(Result.failure())
+      return future
     }
 
-    updater.interact(categoryId)
-      .flatMapCompletable { it.work }
-      .toSingle { Result.success() }
-      .onErrorReturn { Result.failure() }
-  }
-
-  override fun getBackgroundScheduler(): Scheduler {
-    return schedulers.single // Work is scheduled on an IO thread anyways
+    GlobalScope.launch(dispatchers.io) {
+      updater.execute(categoryId).awaitWork()
+      future.set(Result.success())
+    }
+    return future
   }
 
   companion object {

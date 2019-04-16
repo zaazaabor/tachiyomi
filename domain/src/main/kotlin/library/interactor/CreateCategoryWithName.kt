@@ -8,22 +8,26 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.repository.CategoryRepository
 import javax.inject.Inject
 
 class CreateCategoryWithName @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(name: String): Single<Result> = Single.fromCallable {
+  suspend fun await(name: String): Result = withContext(NonCancellable) f@{
     if (name.isBlank()) {
-      return@fromCallable Result.EmptyCategoryNameError
+      return@f Result.EmptyCategoryNameError
     }
-    val categories = categoryRepository.findAll()
+
+    val categories = withContext(dispatchers.io) { categoryRepository.findAll() }
     if (categories.any { name.equals(it.name, ignoreCase = true) }) {
-      return@fromCallable Result.CategoryAlreadyExistsError(name)
+      return@f Result.CategoryAlreadyExistsError(name)
     }
 
     val nextOrder = categories.maxBy { it.order }?.order?.plus(1) ?: 0
@@ -32,9 +36,15 @@ class CreateCategoryWithName @Inject constructor(
       name = name,
       order = nextOrder
     )
-    categoryRepository.save(newCategory)
+
+    try {
+      withContext(dispatchers.io) { categoryRepository.save(newCategory) }
+    } catch (e: Exception) {
+      return@f Result.InternalError(e)
+    }
+
     Result.Success
-  }.onErrorReturn(Result::InternalError)
+  }
 
   sealed class Result {
     object Success : Result()

@@ -12,12 +12,13 @@ import io.reactivex.Single
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.repository.CategoryRepository
+import tachiyomi.domain.library.updater.LibraryUpdateScheduler
 import tachiyomi.domain.library.updater.LibraryUpdater
 import javax.inject.Inject
 
 class SetCategoryUpdateInterval @Inject constructor(
   private val categoryRepository: CategoryRepository,
-  private val libraryUpdater: LibraryUpdater
+  private val libraryScheduler: LibraryUpdateScheduler
 ) {
 
   fun interact(categoryId: Long, intervalInHours: Int) = Single.fromCallable {
@@ -28,9 +29,9 @@ class SetCategoryUpdateInterval @Inject constructor(
     categoryRepository.savePartial(update)
 
     if (intervalInHours > 0) {
-      libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
+      libraryScheduler.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
     } else {
-      libraryUpdater.unschedule(categoryId, LibraryUpdater.Target.Chapters)
+      libraryScheduler.unschedule(categoryId, LibraryUpdater.Target.Chapters)
     }
 
     Result.Success as Result

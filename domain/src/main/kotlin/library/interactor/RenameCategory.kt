@@ -8,7 +8,9 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
@@ -16,15 +18,16 @@ import tachiyomi.domain.library.repository.CategoryRepository
 import javax.inject.Inject
 
 class RenameCategory @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(categoryId: Long, newName: String) = Single.fromCallable f@{
+  suspend fun await(categoryId: Long, newName: String) = withContext(NonCancellable) f@{
     if (newName.isBlank()) {
       return@f Result.EmptyNameError
     }
 
-    val categories = categoryRepository.findAll()
+    val categories = withContext(dispatchers.io) { categoryRepository.findAll() }
 
     val category = categories.find { it.id == categoryId }
       ?: return@f Result.NotFoundError
@@ -44,12 +47,17 @@ class RenameCategory @Inject constructor(
       name = Optional.of(newName)
     )
 
-    categoryRepository.savePartial(update)
-    Result.Success
-  }.onErrorReturn(Result::InternalError)
+    try {
+      withContext(dispatchers.io) { categoryRepository.savePartial(update) }
+    } catch (e: Exception) {
+      return@f Result.InternalError(e)
+    }
 
-  fun interact(category: Category, newName: String): Single<Result> {
-    return interact(category.id, newName)
+    Result.Success
+  }
+
+  suspend fun await(category: Category, newName: String): Result {
+    return await(category.id, newName)
   }
 
   sealed class Result {

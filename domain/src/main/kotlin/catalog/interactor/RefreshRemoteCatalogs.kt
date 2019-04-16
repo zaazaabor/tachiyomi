@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Completable
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import javax.inject.Inject
 
@@ -16,7 +15,7 @@ class RefreshRemoteCatalogs @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(forceRefresh: Boolean): Completable {
+  suspend fun await(forceRefresh: Boolean) {
     return catalogRepository.refreshRemoteCatalogs(forceRefresh)
   }
 

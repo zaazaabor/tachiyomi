@@ -9,13 +9,14 @@
 package tachiyomi.domain.library.repository
 
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.model.CategoryWithCount
 
 interface CategoryRepository {
 
-  fun subscribe(): Observable<List<Category>>
+  fun subscribeAll(): Flow<List<Category>>
 
   fun subscribeWithCount(): Observable<List<CategoryWithCount>>
 

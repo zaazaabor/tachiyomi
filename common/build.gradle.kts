@@ -6,11 +6,12 @@ plugins {
 
 dependencies {
   api(Deps.kotlin.stdlib)
+  api(Deps.kotlin.serialization)
   api(Deps.rxJava)
   api(Deps.okhttp)
   api(Deps.jsoup)
-  api(Deps.gson)
   api(Deps.coroutines.core)
+  api(Deps.coroutines.rx2)
   api(Deps.timber.jdk)
 
   implementation(Deps.toothpick.runtime)

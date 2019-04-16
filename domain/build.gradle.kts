@@ -2,13 +2,13 @@ plugins {
   id("java-library")
   id("kotlin")
   id("kotlin-kapt")
+  id("kotlinx-serialization")
 }
 
 dependencies {
   implementationProject(Projects.common)
   implementationProject(Projects.sourceApi)
 
-  implementation(Deps.kotlin.stdlib)
   implementation(Deps.rxJava)
   implementation(Deps.rxRelay)
   implementation(Deps.rxKotlin)

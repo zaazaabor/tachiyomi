@@ -8,156 +8,132 @@
 
 package tachiyomi.ui.catalog
 
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
-import io.reactivex.rxkotlin.Observables
-import io.reactivex.rxkotlin.ofType
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import tachiyomi.core.stdlib.debounce
+import tachiyomi.domain.catalog.interactor.GetCatalogs
 import tachiyomi.domain.catalog.interactor.InstallCatalog
 import tachiyomi.domain.catalog.interactor.RefreshRemoteCatalogs
-import tachiyomi.domain.catalog.interactor.SubscribeCatalogs
 import tachiyomi.domain.catalog.interactor.UpdateCatalog
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
-import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.presenter.BasePresenter
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
-  private val subscribeCatalogs: SubscribeCatalogs,
+  private val getCatalogs: GetCatalogs,
   private val installCatalog: InstallCatalog,
   private val updateCatalog: UpdateCatalog,
-  private val refreshRemoteCatalogs: RefreshRemoteCatalogs,
-  private val schedulers: RxSchedulers
+  private val refreshRemoteCatalogs: RefreshRemoteCatalogs
 ) : BasePresenter() {
-
-  private val actions = PublishRelay.create<Action>()
 
   val state = BehaviorRelay.create<ViewState>()
 
+  private val store = scope.createStore(
+    name = "Catalog presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    logSinks = listOf(TimberLogSink()),
+    reducer = { state, action -> action.reduce(state) }
+  )
+
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = ViewState(),
-        sideEffects = listOf(
-          ::loadCatalogsSideEffect,
-          ::installCatalogSideEffect,
-          ::refreshRemoteCatalogsSideEffect
-        ),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .logOnNext()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.dispatch(Action.Init)
   }
 
-  @Suppress("unused_parameter")
-  private fun loadCatalogsSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    val catalogs = subscribeCatalogs.interact(excludeRemoteInstalled = true)
-      .subscribeOn(schedulers.io)
-      .observeOn(schedulers.io)
+  private fun getInitialViewState(): ViewState {
+    return ViewState()
+  }
 
-    val selectedLanguage = actions.ofType<Action.SetLanguageChoice>()
-      .observeOn(schedulers.io)
-      .map { it.choice }
-      .startWith(stateFn().languageChoice)
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    return Observables.combineLatest(
-      catalogs,
-      selectedLanguage
-    ) { (local, remote), choice ->
-      val items = mutableListOf<Any>()
+    sideEffects += FlowSideEffect("Subscribe to catalogs") { stateFn, action, _, handler ->
+      when (action) {
+        is Action.Init, is Action.SetLanguageChoice -> handler {
+          val choice = stateFn().languageChoice
+          getCatalogs.subscribe(excludeRemoteInstalled = true).map { (local, remote) ->
+            val items = mutableListOf<Any>()
 
-      if (local.isNotEmpty()) {
-        items.add(CatalogHeader.Installed)
+            if (local.isNotEmpty()) {
+              items.add(CatalogHeader.Installed)
 
-        val (updatable, upToDate) = local.partition { it is CatalogInstalled && it.hasUpdate }
-        when {
-          updatable.isEmpty() -> {
-            items.addAll(upToDate)
-          }
-          upToDate.isEmpty() -> {
-            items.add(CatalogSubheader.UpdateAvailable(updatable.size))
-            items.addAll(updatable)
-          }
-          else -> {
-            items.add(CatalogSubheader.UpdateAvailable(updatable.size))
-            items.addAll(updatable)
-            items.add(CatalogSubheader.UpToDate)
-            items.addAll(upToDate)
+              val (updatable, upToDate) = local.partition { it is CatalogInstalled && it.hasUpdate }
+              when {
+                updatable.isEmpty() -> {
+                  items.addAll(upToDate)
+                }
+                upToDate.isEmpty() -> {
+                  items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+                  items.addAll(updatable)
+                }
+                else -> {
+                  items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+                  items.addAll(updatable)
+                  items.add(CatalogSubheader.UpToDate)
+                  items.addAll(upToDate)
+                }
+              }
+            }
+
+            if (remote.isNotEmpty()) {
+              val choices = LanguageChoices(getLanguageChoices(remote, local), choice)
+              val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
+
+              items.add(CatalogHeader.Available)
+              items.add(choices)
+              items.addAll(availableCatalogsFiltered)
+            }
+
+            Action.ItemsUpdate(items)
           }
         }
+        else -> null
       }
+    }
 
-      if (remote.isNotEmpty()) {
-        val choices = LanguageChoices(getLanguageChoices(remote, local), choice)
-        val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
-
-        items.add(CatalogHeader.Available)
-        items.add(choices)
-        items.addAll(availableCatalogsFiltered)
-      }
-
-      items
-    }.map(Action::ItemsUpdate)
-  }
-
-  @Suppress("unused_parameter")
-  private fun installCatalogSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    val installCatalogsObservable = actions.ofType<Action.InstallCatalog>()
-      .flatMap { action ->
-        installCatalog.interact(action.catalog).map { action.catalog.pkgName to it }
-      }
-
-    val updateCatalogsObservable = actions.ofType<Action.UpdateCatalog>()
-      .flatMap { action ->
-        updateCatalog.interact(action.catalog).map { action.catalog.pkgName to it }
-      }
-
-    return Observable.merge(installCatalogsObservable, updateCatalogsObservable)
-      .scan(emptyMap<String, InstallStep>()) { state, pkgAndStep ->
-        val (pkgName, step) = pkgAndStep
-        if (step == InstallStep.Installed) {
-          state - pkgName
-        } else {
-          state + pkgAndStep
+    sideEffects += MultiFlowSideEffect("Install catalog") { _, action, _, handler ->
+      when (action) {
+        is Action.InstallCatalog -> handler {
+          val catalog = action.catalog
+          installCatalog.await(catalog).map { Action.InstallStepUpdate(catalog.pkgName, it) }
         }
+        is Action.UpdateCatalog -> handler {
+          val catalog = action.catalog
+          updateCatalog.await(catalog).map { Action.InstallStepUpdate(catalog.pkgName, it) }
+        }
+        else -> null
       }
-      .map(Action::InstallingCatalogsUpdate)
-  }
+    }
 
-  private fun refreshRemoteCatalogsSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.RefreshCatalogs>()
-      .startWith(Action.RefreshCatalogs(false))
-      .observeOn(schedulers.io)
-      .flatMap {
-        refreshRemoteCatalogs.interact(it.force)
-          .onErrorComplete()
-          .andThen(Observable.just(Action.RefreshingCatalogs(false)))
-          .startWith(Action.RefreshingCatalogs(true))
-          // Debounce for a frame. Sometimes this completable returns immediately, so with this
-          // we avoid showing the progress bar if not really needed
-          .debounce(16, TimeUnit.MILLISECONDS)
+    sideEffects += FlowSideEffect("Refresh catalogs") { _, action, _, handler ->
+      when (action) {
+        Action.Init, is Action.RefreshCatalogs -> handler {
+          val force = if (action is Action.RefreshCatalogs) action.force else false
+
+          // TODO there should be a better way to do this
+          val deferred = scope.async { refreshRemoteCatalogs.await(force) }
+          flow {
+            emit(Action.RefreshingCatalogs(true))
+            runCatching { deferred.await() }
+            emit(Action.RefreshingCatalogs(false))
+          }
+            // Debounce for a frame. Sometimes this operation returns immediately, so with this
+            // we avoid showing the progress bar if not really needed
+            .debounce(16)
+        }
+        else -> null
       }
+    }
+
+    return sideEffects
   }
 
   private fun getLanguageChoices(
@@ -208,18 +184,18 @@ class CatalogsPresenter @Inject constructor(
   }
 
   fun setLanguageChoice(languageChoice: LanguageChoice) {
-    actions.accept(Action.SetLanguageChoice(languageChoice))
+    store.dispatch(Action.SetLanguageChoice(languageChoice))
   }
 
   fun installCatalog(catalog: Catalog) {
     when (catalog) {
-      is CatalogInstalled -> actions.accept(Action.UpdateCatalog(catalog))
-      is CatalogRemote -> actions.accept(Action.InstallCatalog(catalog))
+      is CatalogInstalled -> store.dispatch(Action.UpdateCatalog(catalog))
+      is CatalogRemote -> store.dispatch(Action.InstallCatalog(catalog))
     }
   }
 
   fun refreshCatalogs() {
-    actions.accept(Action.RefreshCatalogs(true))
+    store.dispatch(Action.RefreshCatalogs(true))
   }
 
 }

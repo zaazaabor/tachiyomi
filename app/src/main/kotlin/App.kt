@@ -29,6 +29,9 @@ class App : Application() {
 
   override fun onCreate() {
     super.onCreate()
+    if (BuildConfig.DEBUG) {
+      System.setProperty("kotlinx.coroutines.debug", "on")
+    }
 
     Toothpick.setConfiguration(if (BuildConfig.DEBUG) {
       Configuration.forDevelopment()

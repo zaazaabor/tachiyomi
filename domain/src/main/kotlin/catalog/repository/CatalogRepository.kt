@@ -8,8 +8,7 @@
 
 package tachiyomi.domain.catalog.repository
 
-import io.reactivex.Completable
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
@@ -19,16 +18,16 @@ interface CatalogRepository {
 
   val installedCatalogs: List<CatalogInstalled>
 
-  fun getInternalCatalogsObservable(): Observable<List<CatalogInternal>>
+  fun getInternalCatalogsFlow(): Flow<List<CatalogInternal>>
 
-  fun getInstalledCatalogsObservable(): Observable<List<CatalogInstalled>>
+  fun getInstalledCatalogsFlow(): Flow<List<CatalogInstalled>>
 
-  fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>>
+  fun getRemoteCatalogsFlow(): Flow<List<CatalogRemote>>
 
-  fun refreshRemoteCatalogs(forceRefresh: Boolean): Completable
+  suspend fun refreshRemoteCatalogs(forceRefresh: Boolean)
 
-  fun installCatalog(catalog: CatalogRemote): Observable<InstallStep>
+  fun installCatalog(catalog: CatalogRemote): Flow<InstallStep>
 
-  fun uninstallCatalog(catalog: CatalogInstalled): Completable
+  suspend fun uninstallCatalog(catalog: CatalogInstalled)
 
 }

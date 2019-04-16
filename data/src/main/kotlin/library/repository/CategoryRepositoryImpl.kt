@@ -14,9 +14,11 @@ import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
+import tachiyomi.core.rx.asFlow
 import tachiyomi.data.library.sql.CategoryTable
 import tachiyomi.data.library.sql.CategoryUpdatePutResolver
 import tachiyomi.data.library.sql.CategoryWithCountGetResolver
@@ -50,8 +52,8 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribe(): Observable<List<Category>> {
-    return categories
+  override fun subscribeAll(): Flow<MutableList<Category>> {
+    return categories.asFlow()
   }
 
   override fun subscribeWithCount(): Observable<List<CategoryWithCount>> {

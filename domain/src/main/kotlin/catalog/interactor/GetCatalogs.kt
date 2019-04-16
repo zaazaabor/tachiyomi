@@ -8,27 +8,27 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Observable
-import io.reactivex.rxkotlin.Observables
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combineLatest
 import tachiyomi.domain.catalog.model.CatalogInstalled
+import tachiyomi.domain.catalog.model.CatalogLocal
+import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.CatalogSort
 import javax.inject.Inject
 
-class SubscribeCatalogs @Inject constructor(
-  private val localCatalogs: SubscribeLocalCatalogs,
-  private val remoteCatalogs: SubscribeRemoteCatalogs
+class GetCatalogs @Inject constructor(
+  private val localCatalogs: GetLocalCatalogs,
+  private val remoteCatalogs: GetRemoteCatalogs
 ) {
 
-  fun interact(
+  fun subscribe(
     sort: CatalogSort = CatalogSort.Favorites,
     excludeRemoteInstalled: Boolean = false,
     withNsfw: Boolean = true
-  ) = Observable.defer {
-    Observables.combineLatest(
-      localCatalogs.interact(sort),
-      remoteCatalogs.interact(withNsfw = withNsfw)
-    ).map { localAndRemote ->
-      val (local, remote) = localAndRemote
+  ): Flow<Pair<List<CatalogLocal>, List<CatalogRemote>>> {
+    val localFlow = localCatalogs.subscribe(sort)
+    val remoteFlow = remoteCatalogs.subscribe(withNsfw = withNsfw)
+    return localFlow.combineLatest(remoteFlow) { local, remote ->
       if (excludeRemoteInstalled) {
         val installedPkgs = local
           .asSequence()
@@ -38,7 +38,7 @@ class SubscribeCatalogs @Inject constructor(
 
         local to remote.filter { it.pkgName !in installedPkgs }
       } else {
-        localAndRemote
+        local to remote
       }
     }
   }

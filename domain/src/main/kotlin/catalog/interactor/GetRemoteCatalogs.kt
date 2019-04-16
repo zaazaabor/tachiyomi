@@ -8,23 +8,27 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Observable
-import tachiyomi.core.stdlib.Optional
-import tachiyomi.domain.catalog.model.CatalogInstalled
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import javax.inject.Inject
 
-class SubscribeInstalledCatalog @Inject constructor(
+class GetRemoteCatalogs @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(pkgName: String): Observable<Optional<CatalogInstalled>> {
-    return catalogRepository.getInstalledCatalogsObservable()
+  fun subscribe(
+    withNsfw: Boolean = true
+  ): Flow<List<CatalogRemote>> {
+    return catalogRepository.getRemoteCatalogsFlow()
       .map { catalogs ->
-        val catalog = catalogs.find { it.pkgName == pkgName }
-        Optional.of(catalog)
+        if (withNsfw) {
+          catalogs
+        } else {
+          catalogs.filter { !it.nsfw }
+        }
       }
-      .distinctUntilChanged()
   }
 
 }

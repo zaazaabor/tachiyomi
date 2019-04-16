@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.catalog.interactor
 
-import io.reactivex.Completable
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.repository.CatalogRepository
 import javax.inject.Inject
@@ -17,7 +16,7 @@ class UninstallCatalog @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  fun interact(catalog: CatalogInstalled): Completable {
+  suspend fun await(catalog: CatalogInstalled) {
     return catalogRepository.uninstallCatalog(catalog)
   }
 

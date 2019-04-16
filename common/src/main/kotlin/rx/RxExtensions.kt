@@ -13,6 +13,11 @@ import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.internal.disposables.DisposableContainer
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.reactive.openSubscription
+import kotlinx.coroutines.rx2.openSubscription
 
 /**
  * Adds this disposable to a [disposables] container.
@@ -55,4 +60,24 @@ inline fun <T, R> Observable<T>.filterNotNull(crossinline block: (T) -> R?): Obs
 
 fun <T, U, R> Flowable<T>.combineLatest(o2: Flowable<U>, combineFn: (T, U) -> R): Flowable<R> {
   return Flowable.combineLatest(this, o2, BiFunction<T, U, R>(combineFn))
+}
+
+fun <T> Observable<T>.asFlow(): Flow<T> {
+  return flow {
+    val channel = openSubscription()
+
+    channel.consumeEach { value ->
+      emit(value)
+    }
+  }
+}
+
+fun <T> Flowable<T>.asFlow(): Flow<T> {
+  return flow {
+    val channel = openSubscription()
+
+    channel.consumeEach { value ->
+      emit(value)
+    }
+  }
 }

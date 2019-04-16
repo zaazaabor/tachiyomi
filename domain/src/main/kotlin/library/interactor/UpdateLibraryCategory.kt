@@ -8,16 +8,18 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.Single
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.repository.CategoryRepository
+import tachiyomi.domain.library.updater.LibraryUpdateScheduler
 import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.library.updater.LibraryUpdaterNotification
 import tachiyomi.domain.manga.interactor.SyncChaptersFromSource
 import timber.log.Timber
 import timber.log.debug
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class UpdateLibraryCategory @Inject constructor(
@@ -25,33 +27,35 @@ class UpdateLibraryCategory @Inject constructor(
   private val syncChaptersFromSource: SyncChaptersFromSource,
   private val notifier: LibraryUpdaterNotification,
   private val libraryUpdater: LibraryUpdater,
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val dispatchers: CoroutineDispatchers,
+  private val libraryScheduler: LibraryUpdateScheduler
 ) {
 
-  fun interact(categoryId: Long): Single<LibraryUpdater.QueueResult> = Single.defer {
-    val completable = findLibraryCategory.interact(categoryId)
-      .flatMapCompletable { mangas ->
-        var progress = 0
-        val total = mangas.size
+  suspend fun execute(categoryId: Long): LibraryUpdater.QueueResult {
+    val operation: (Job) -> Any = { job ->
+      Timber.debug { "Updating category $categoryId ${Thread.currentThread()}" }
+      notifier.start()
 
-        Observable.fromIterable(mangas)
-          .concatMapSingle { manga ->
-            notifier.showProgress(manga, progress++, total)
-            syncChaptersFromSource.interact(manga)
-          }
-          .ignoreElements()
-      }
-      .doOnSubscribe {
-        Timber.debug { "Updating category $categoryId" }
-        notifier.start()
-      }
-      .doFinally {
-        Timber.debug { "Finished updating category $categoryId" }
+      job.invokeOnCompletion {
+        Timber.debug { "Finished updating category $categoryId ${Thread.currentThread()}" }
         notifier.end()
       }
 
-    libraryUpdater.enqueue(categoryId, LibraryUpdater.Target.Chapters, completable)
-      .doOnSuccess { result -> rescheduleCategory(result, categoryId) }
+      val mangas = findLibraryCategory.execute(categoryId)
+      val total = mangas.size
+
+      for ((progress, manga) in mangas.withIndex()) {
+        if (!job.isActive) break
+
+        notifier.showProgress(manga, progress, total)
+        syncChaptersFromSource.interact(manga).ignoreElement().blockingAwait()
+      }
+    }
+
+    val result = libraryUpdater.enqueue(categoryId, LibraryUpdater.Target.Chapters, operation)
+    rescheduleCategory(result, categoryId)
+    return result
   }
 
   private fun rescheduleCategory(result: LibraryUpdater.QueueResult, categoryId: Long) {
@@ -60,21 +64,18 @@ class UpdateLibraryCategory @Inject constructor(
       return
     }
 
-    val rescheduleOperation = Completable.fromAction {
-      val category = categoryRepository.find(categoryId)
+    GlobalScope.launch(dispatchers.single) {
+      result.awaitWork()
+
+      val category = withContext(dispatchers.io) {
+        categoryRepository.find(categoryId)
+      }
       if (category != null && category.updateInterval > 0) {
         Timber.debug { "Rescheduling category $categoryId" }
-        libraryUpdater.schedule(categoryId, LibraryUpdater.Target.Chapters,
+        libraryScheduler.schedule(categoryId, LibraryUpdater.Target.Chapters,
           category.updateInterval)
       }
     }
-
-    result.work
-      // Let the work be marked as completed, 1ms should be enough (we only need to run async)
-      .delay(1, TimeUnit.MILLISECONDS)
-      .andThen(rescheduleOperation)
-      // We have to run on another subscription
-      .subscribe()
   }
 
 }

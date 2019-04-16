@@ -22,7 +22,7 @@ import tachiyomi.data.library.repository.CategoryRepositoryImpl
 import tachiyomi.data.library.repository.LibraryCoversImpl
 import tachiyomi.data.library.repository.LibraryRepositoryImpl
 import tachiyomi.data.library.repository.MangaCategoryRepositoryImpl
-import tachiyomi.data.library.updater.LibraryUpdaterImpl
+import tachiyomi.data.library.updater.LibraryUpdateSchedulerImpl
 import tachiyomi.data.manga.repository.ChapterRepositoryImpl
 import tachiyomi.data.manga.repository.MangaRepositoryImpl
 import tachiyomi.data.source.SourceManagerProvider
@@ -34,7 +34,7 @@ import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.library.repository.LibraryRepository
 import tachiyomi.domain.library.repository.MangaCategoryRepository
-import tachiyomi.domain.library.updater.LibraryUpdater
+import tachiyomi.domain.library.updater.LibraryUpdateScheduler
 import tachiyomi.domain.manga.repository.ChapterRepository
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.SourceManager
@@ -60,7 +60,7 @@ object DataModule : Module() {
     bindTo<LibraryRepository, LibraryRepositoryImpl>().singletonInScope()
     bindProvider<LibraryPreferences, LibraryPreferencesProvider>()
     bindTo<LibraryCovers, LibraryCoversImpl>().singletonInScope()
-    bindTo<LibraryUpdater, LibraryUpdaterImpl>().singletonInScope()
+    bindTo<LibraryUpdateScheduler, LibraryUpdateSchedulerImpl>().singletonInScope()
 
     bindProvider<SyncPreferences, SyncPreferencesProvider>()
     bindTo<SyncDevice, SyncDeviceAndroid>().singletonInScope()

@@ -8,9 +8,10 @@
 
 package tachiyomi.domain.sync.api
 
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import io.reactivex.Single
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.json
 import okhttp3.Credentials
 import okhttp3.MediaType
 import okhttp3.Request
@@ -27,7 +28,6 @@ class SyncAPI @Inject constructor(
 ) {
 
   private val client = http.defaultClient
-  private val gson = GsonBuilder().create()
   private val jsonMediaType by lazy { MediaType.parse("application/json; charset=utf-8") }
 
   private val addressPref = store.address()
@@ -37,19 +37,20 @@ class SyncAPI @Inject constructor(
   val token get() = tokenPref.get()
 
   fun login(address: String, username: String, password: String): Single<LoginResult> {
+    @Serializable
     data class Response(val secret: String)
 
     val credentials = Credentials.basic(username, password)
 
-    val json = JsonObject().apply {
-      addProperty("deviceId", device.getId())
-      addProperty("deviceName", device.getName())
-      addProperty("platform", device.getPlatform())
+    val reqBody = json {
+      "deviceId" to device.getId()
+      "deviceName" to device.getName()
+      "platform" to device.getPlatform()
     }
 
     val request = Request.Builder()
       .url("$address/api/v3/auth/tokens")
-      .post(RequestBody.create(jsonMediaType, json.toString()))
+      .post(RequestBody.create(jsonMediaType, reqBody.toString()))
       .addHeader("Authorization", credentials)
       .build()
 
@@ -58,7 +59,7 @@ class SyncAPI @Inject constructor(
         response.use {
           if (response.code() == 200) {
             val body = response.body()?.string() ?: throw Exception("Failed to read body")
-            val responseBody = gson.fromJson(body, Response::class.java)
+            val responseBody = Json.parse(Response.serializer(), body)
             LoginResult.Token(responseBody.secret)
           } else {
             LoginResult.InvalidCredentials

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.internal.AndroidExtensionsExtension
-
 plugins {
   id("com.android.library")
   id("kotlin-android")
@@ -40,15 +38,16 @@ dependencies {
   implementation(Deps.rxKotlin)
   implementation(Deps.rxRelay)
   implementation(Deps.rxRedux)
+  implementation(Deps.coroutines.rx2)
   implementation(Deps.rxBinding.platform)
   implementation(Deps.rxBinding.support)
   implementation(Deps.rxBinding.appcompat)
 
-  implementation(Deps.kotlin.stdlib)
-
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)
 
+  implementation(Deps.coRedux)
+  implementation(Deps.coReduxLog)
   implementation(Deps.materialDimens)
   implementation(Deps.materialDialog.core)
   implementation(Deps.materialDialog.input)
@@ -61,7 +60,5 @@ dependencies {
 }
 
 androidExtensions {
-  configure(delegateClosureOf<AndroidExtensionsExtension> {
-    isExperimental = true
-  })
+  isExperimental = true
 }

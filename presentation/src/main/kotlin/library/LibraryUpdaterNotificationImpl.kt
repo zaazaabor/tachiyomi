@@ -11,6 +11,8 @@ package tachiyomi.ui.library
 import android.app.Application
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -20,6 +22,7 @@ import io.reactivex.subjects.PublishSubject
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.library.updater.LibraryUpdaterNotification
 import tachiyomi.ui.R
 import java.util.concurrent.TimeUnit
@@ -35,12 +38,20 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
 
   private val ongoingId = 1
 
-  private val ongoingNotification = NotificationCompat.Builder(context, channel)
+  private val cancelIntent = PendingIntent.getBroadcast(context, 0,
+    Intent(context, CancelReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT
+  )
+
+  private val notificationBuilder = NotificationCompat.Builder(context, channel)
     .setContentTitle(context.getString(R.string.app_name))
     .setSmallIcon(R.drawable.ic_refresh_white_24dp)
     .setOngoing(true)
     .setOnlyAlertOnce(true)
-    .addAction(0, context.getString(android.R.string.cancel), null) // TODO pending intent
+    .addAction(0, context.getString(android.R.string.cancel), cancelIntent)
+
+  private var _currentNotification: Notification? = null
+
+  val currentNotification: Notification get() = _currentNotification ?: notificationBuilder.build()
 
   private val serviceRelay = PublishSubject.create<Boolean>()
 
@@ -58,10 +69,12 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
   }
 
   override fun showProgress(manga: LibraryManga, current: Int, total: Int) {
-    notificationManager.notify(ongoingId, ongoingNotification
+    val notification = notificationBuilder
       .setContentTitle(manga.title)
       .setProgress(total, current, false)
-      .build())
+      .build()
+    _currentNotification = notification
+    notificationManager.notify(ongoingId, notification)
   }
 
   override fun showResult(updates: List<LibraryManga>) {
@@ -75,15 +88,7 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
   override fun end() {
     serviceRelay.onNext(false)
     notificationManager.cancel(ongoingId)
-  }
-
-  private fun getInitialNotification(): Notification {
-    return NotificationCompat.Builder(context, channel)
-      .setContentTitle(context.getString(R.string.app_name))
-      .setSmallIcon(R.drawable.ic_refresh_white_24dp)
-      .setOngoing(true)
-      .setOnlyAlertOnce(true)
-      .build()
+    _currentNotification = null
   }
 
   private fun getIntent(context: Context): Intent {
@@ -96,7 +101,7 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
       super.onCreate()
       val notifications = AppScope.getInstance<LibraryUpdaterNotification>()
       notifications as LibraryUpdaterNotificationImpl
-      val notification = notifications.getInitialNotification()
+      val notification = notifications.currentNotification
       startForeground(notifications.ongoingId, notification)
     }
 
@@ -106,6 +111,14 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
       return START_NOT_STICKY
+    }
+
+  }
+
+  class CancelReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent?) {
+      val updater = AppScope.getInstance<LibraryUpdater>()
+      updater.cancelFirst()
     }
 
   }

@@ -13,11 +13,16 @@ import android.os.SystemClock
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
 import tachiyomi.core.db.inTransaction
 import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.rx.asFlow
 import tachiyomi.data.BuildConfig
 import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver
@@ -47,27 +52,27 @@ internal class CatalogRepositoryImpl @Inject constructor(
     private set
 
   /**
-   * Relay used to notify the installed catalogs.
-   */
-  private val installedCatalogsRelay = BehaviorSubject.create<List<CatalogInstalled>>()
-
-  /**
    * List of the currently installed catalogs.
    */
   override var installedCatalogs = emptyList<CatalogInstalled>()
     private set(value) {
       field = value
-      installedCatalogsRelay.onNext(value)
+      installedCatalogsChannel.offer(value)
     }
+
+  /**
+   * Relay used to notify the installed catalogs.
+   */
+  private val installedCatalogsChannel = ConflatedBroadcastChannel(installedCatalogs)
 
   var remoteCatalogs = emptyList<CatalogRemote>()
     private set(value) {
       field = value
-      remoteCatalogsRelay.onNext(value)
+      remoteCatalogsChannel.offer(value)
       setUpdateFieldOfInstalledCatalogs(value)
     }
 
-  private val remoteCatalogsRelay = BehaviorSubject.createDefault(remoteCatalogs)
+  private val remoteCatalogsChannel = ConflatedBroadcastChannel(remoteCatalogs)
 
   private var lastTimeApiChecked: Long? = null
 
@@ -101,16 +106,16 @@ internal class CatalogRepositoryImpl @Inject constructor(
     CatalogInstallReceiver(InstallationListener(), loader, dispatchers).register(context)
   }
 
-  override fun getInternalCatalogsObservable(): Observable<List<CatalogInternal>> {
-    return Observable.just(internalCatalogs)
+  override fun getInternalCatalogsFlow(): Flow<List<CatalogInternal>> {
+    return flowOf(internalCatalogs)
   }
 
-  override fun getInstalledCatalogsObservable(): Observable<List<CatalogInstalled>> {
-    return installedCatalogsRelay
+  override fun getInstalledCatalogsFlow(): Flow<List<CatalogInstalled>> {
+    return installedCatalogsChannel.asFlow()
   }
 
-  override fun getRemoteCatalogsObservable(): Observable<List<CatalogRemote>> {
-    return remoteCatalogsRelay
+  override fun getRemoteCatalogsFlow(): Flow<List<CatalogRemote>> {
+    return remoteCatalogsChannel.asFlow()
   }
 
   private fun initInternalCatalogs(): List<CatalogInternal> {
@@ -130,21 +135,24 @@ internal class CatalogRepositoryImpl @Inject constructor(
         .build())
       .prepare()
       .asRxSingle()
-      .doOnSuccess { remoteCatalogs = it }
-      .flatMapCompletable { refreshRemoteCatalogs(false) }
+      .doOnSuccess {
+        remoteCatalogs = it
+        GlobalScope.launch(dispatchers.io) { refreshRemoteCatalogs(false) }
+      }
+      .ignoreElement()
       .onErrorComplete()
       .subscribe()
   }
 
-  override fun refreshRemoteCatalogs(forceRefresh: Boolean): Completable {
+  override suspend fun refreshRemoteCatalogs(forceRefresh: Boolean) {
     val lastCheck = lastTimeApiChecked
     if (!forceRefresh && lastCheck != null
       && lastCheck - SystemClock.elapsedRealtime() < minTimeApiCheck) {
-      return Completable.complete()
+      return
     }
     lastTimeApiChecked = SystemClock.elapsedRealtime()
 
-    return api.findCatalogs()
+    api.findCatalogs()
       .doOnSuccess { newCatalogs ->
         storio.inTransaction {
           storio.delete()
@@ -161,6 +169,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
         remoteCatalogs = newCatalogs
       }
       .ignoreElement()
+      .await()
   }
 
   /**
@@ -187,12 +196,12 @@ internal class CatalogRepositoryImpl @Inject constructor(
     }
   }
 
-  override fun installCatalog(catalog: CatalogRemote): Observable<InstallStep> {
-    return installer.downloadAndInstall(catalog)
+  override fun installCatalog(catalog: CatalogRemote): Flow<InstallStep> {
+    return installer.downloadAndInstall(catalog).asFlow()
   }
 
-  override fun uninstallCatalog(catalog: CatalogInstalled): Completable {
-    return installer.uninstallApk(catalog.pkgName)
+  override suspend fun uninstallCatalog(catalog: CatalogInstalled) {
+    return installer.uninstallApk(catalog.pkgName).await()
   }
 
   /**

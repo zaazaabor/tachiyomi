@@ -1,12 +1,13 @@
 object Deps {
 
   object kotlin {
-    const val version = "1.3.20"
+    const val version = "1.3.30"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
+    const val serialization = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0"
   }
 
   object coroutines {
-    private const val version = "1.1.1"
+    private const val version = "1.2.0"
     const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
     const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version"
     const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$version"
@@ -21,6 +22,8 @@ object Deps {
     const val card = "androidx.cardview:cardview:1.0.0"
     const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
     const val workManager = "androidx.work:work-runtime:2.0.0-rc01"
+    const val concurrent = "androidx.concurrent:concurrent-futures:1.0.0-alpha03"
+
   }
 
   object lifecycle {
@@ -64,7 +67,6 @@ object Deps {
 
   const val okhttp = "com.squareup.okhttp3:okhttp:3.14.0"
   const val duktape = "com.squareup.duktape:duktape-android:1.3.0"
-  const val gson = "com.google.code.gson:gson:2.8.5"
   const val kotson = "com.github.salomonbrys.kotson:kotson:2.5.0"
   const val jsoup = "org.jsoup:jsoup:1.11.3"
 
@@ -74,6 +76,8 @@ object Deps {
     const val android = "com.jakewharton.timber:timber-android:$version"
   }
 
+  const val coRedux = "com.freeletics.coredux:core:1.0.0"
+  const val coReduxLog = "com.freeletics.coredux:log-common:1.0.1-SNAPSHOT"
   const val conductor = "com.bluelinelabs:conductor:2.1.5"
   const val conductorPreference = "com.github.inorichi:conductor-support-preference:78e2344"
   const val materialDimens = "com.dmitrymalkovich.android:material-design-dimens:1.4"

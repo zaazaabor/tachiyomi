@@ -8,43 +8,43 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
-import tachiyomi.domain.library.model.Category
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.CategoryRepository
-import tachiyomi.domain.library.updater.LibraryUpdater
+import tachiyomi.domain.library.updater.LibraryUpdateScheduler
 import javax.inject.Inject
 
 class DeleteCategories @Inject constructor(
   private val categoryRepository: CategoryRepository,
   private val libraryPreferences: LibraryPreferences,
-  private val libraryUpdater: LibraryUpdater
+  private val libraryScheduler: LibraryUpdateScheduler,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(categoryIds: Collection<Long>) = Single.fromCallable {
+  suspend fun await(categoryIds: Collection<Long>) = withContext(NonCancellable) f@{
     val safeCategoryIds = categoryIds.filter { it > 0 }
     if (safeCategoryIds.isEmpty()) {
-      return@fromCallable Result.NothingToDelete
+      return@f Result.NothingToDelete
     }
 
-    categoryRepository.delete(safeCategoryIds)
+    try {
+      withContext(dispatchers.io) { categoryRepository.delete(safeCategoryIds) }
+    } catch (e: Exception) {
+      return@f Result.InternalError(e)
+    }
 
-    if (libraryPreferences.defaultCategory().get() in safeCategoryIds) {
-      libraryPreferences.defaultCategory().delete()
+    libraryPreferences.defaultCategory().run {
+      if (get() in safeCategoryIds) {
+        delete()
+      }
     }
     for (id in safeCategoryIds) {
-      libraryUpdater.unscheduleAll(id)
+      libraryScheduler.unscheduleAll(id)
     }
 
-    Result.Success as Result
-  }.onErrorReturn(Result::InternalError)
-
-  fun interact(categoryId: Long): Single<Result> {
-    return interact(listOf(categoryId))
-  }
-
-  fun interact(category: Category): Single<Result> {
-    return interact(category.id)
+    Result.Success
   }
 
   sealed class Result {

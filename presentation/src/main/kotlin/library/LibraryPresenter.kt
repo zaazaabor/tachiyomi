@@ -8,6 +8,7 @@
 
 package tachiyomi.ui.library
 
+import android.util.Log
 import com.freeletics.rxredux.StateAccessor
 import com.freeletics.rxredux.reduxStore
 import com.jakewharton.rxrelay2.BehaviorRelay
@@ -15,16 +16,17 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.ofType
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.addTo
-import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.SubscribeLibraryCategory
 import tachiyomi.domain.library.interactor.SubscribeUserCategories
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.prefs.LibraryPreferences
-import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.ui.presenter.BasePresenter
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -34,8 +36,8 @@ class LibraryPresenter @Inject constructor(
   private val subscribeLibraryCategory: SubscribeLibraryCategory,
   private val setCategoriesForMangas: SetCategoriesForMangas,
   private val libraryPreferences: LibraryPreferences,
-  private val schedulers: RxSchedulers,
-  private val updateLibraryCategory: UpdateLibraryCategory
+  private val updateLibraryCategory: UpdateLibraryCategory,
+  private val schedulers: RxSchedulers
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
@@ -172,17 +174,24 @@ class LibraryPresenter @Inject constructor(
         if (action.loading) {
           val categoryId = stateFn().selectedCategoryId
           if (categoryId != null) {
-            updateLibraryCategory.interact(categoryId)
-              .subscribeOn(schedulers.io)
-              .toObservable()
-              .flatMap { result ->
-                if (result is LibraryUpdater.QueueResult.Executing) {
-                  Observable.timer(1, TimeUnit.SECONDS)
-                    .map { Action.UpdateCategory(false) }
-                } else {
-                  Observable.just(Action.UpdateCategory(false))
-                }
-              }
+            GlobalScope.launch {
+              updateLibraryCategory.execute(categoryId).awaitWork()
+              Log.d("P", "Job completed on ${Thread.currentThread()}")
+            }
+
+            Observable.timer(1, TimeUnit.SECONDS).map { Action.UpdateCategory(false) }
+
+//            updateLibraryCategory.interact(categoryId)
+//              .subscribeOn(schedulers.io)
+//              .toObservable()
+//              .flatMap { result ->
+//                if (result is LibraryUpdater.QueueResult.Executing) {
+//                  Observable.timer(1, TimeUnit.SECONDS)
+//                    .map { Action.UpdateCategory(false) }
+//                } else {
+//                  Observable.just(Action.UpdateCategory(false))
+//                }
+//              }
           } else {
             Observable.just(Action.UpdateCategory(false))
           }
