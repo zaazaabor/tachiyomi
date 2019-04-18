@@ -8,7 +8,6 @@
 
 package tachiyomi.data.catalog.api
 
-import io.reactivex.Single
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -20,10 +19,8 @@ import kotlinx.serialization.parse
 import okhttp3.Response
 import tachiyomi.core.http.GET
 import tachiyomi.core.http.Http
-import tachiyomi.core.http.asSingleSuccess
+import tachiyomi.core.http.await
 import tachiyomi.domain.catalog.model.CatalogRemote
-import timber.log.Timber
-import timber.log.warn
 import javax.inject.Inject
 
 internal class CatalogGithubApi @Inject constructor(private val http: Http) {
@@ -32,12 +29,10 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
 //  private val repoUrl = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"
   private val repoUrl = "https://tachiyomi.kanade.eu/repo"
 
-  fun findCatalogs(): Single<List<CatalogRemote>> {
+  suspend fun findCatalogs(): List<CatalogRemote> {
     val call = GET("$repoUrl/index.min.json")
-
-    return http.defaultClient.newCall(call).asSingleSuccess()
-      .map(::parseResponse)
-      .doOnError { Timber.warn(it) { it.message.orEmpty() } }
+    val response = http.defaultClient.newCall(call).await()
+    return parseResponse(response)
   }
 
   private fun parseResponse(response: Response): List<CatalogRemote> {

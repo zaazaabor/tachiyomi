@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.library.repository
 
-import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
@@ -18,13 +17,15 @@ interface CategoryRepository {
 
   fun subscribeAll(): Flow<List<Category>>
 
-  fun subscribeWithCount(): Observable<List<CategoryWithCount>>
+  fun subscribeWithCount(): Flow<List<CategoryWithCount>>
 
-  fun subscribeForManga(mangaId: Long): Observable<List<Category>>
+  fun subscribeForManga(mangaId: Long): Flow<List<Category>>
 
   fun findAll(): List<Category>
 
   fun find(categoryId: Long): Category?
+
+  fun findForManga(mangaId: Long): List<Category>
 
   fun save(category: Category)
 

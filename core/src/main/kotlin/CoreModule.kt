@@ -13,17 +13,16 @@ import tachiyomi.core.di.bindTo
 import tachiyomi.core.os.AndroidAppState
 import tachiyomi.core.os.AppState
 import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.core.rx.CoroutineDispatchersProvider
 import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.RxSchedulersProvider
+import tachiyomi.core.rx.SchedulersModule
 import toothpick.config.Module
 
 object CoreModule : Module() {
 
   init {
     bindTo<AppState, AndroidAppState>().singletonInScope()
-    bindProvider<RxSchedulers, RxSchedulersProvider>()
-    bindProvider<CoroutineDispatchers, CoroutineDispatchersProvider>()
+    bindProvider<RxSchedulers, SchedulersModule.RxSchedulersProvider>()
+    bindProvider<CoroutineDispatchers, SchedulersModule.CoroutineDispatchersProvider>()
   }
 
 }

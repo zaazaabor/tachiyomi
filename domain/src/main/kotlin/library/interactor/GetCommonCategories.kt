@@ -8,23 +8,31 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Observable
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 class GetCommonCategories @Inject constructor(
-  private val categoryRepository: CategoryRepository
+  private val categoryRepository: CategoryRepository,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(mangas: List<Manga>): Single<List<Category>> {
-    return Observable.fromIterable(mangas)
-      .flatMap { categoryRepository.subscribeForManga(it.id).take(1) }
-      .flatMapIterable { it }
-      .distinct { it.id }
-      .toList()
+  suspend fun await(mangas: List<Manga>): List<Category> {
+    return withContext(dispatchers.io) {
+      val commonCategories = sortedSetOf<Category>(compareBy { it.id })
+      mangas.forEachIndexed { index, manga ->
+        val categories = categoryRepository.findForManga(manga.id)
+        if (index == 0) {
+          commonCategories.addAll(categories)
+        } else {
+          commonCategories.retainAll(categories)
+        }
+      }
+      commonCategories.toList()
+    }
   }
 
 }

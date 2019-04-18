@@ -10,6 +10,7 @@ package tachiyomi.ui.presenter
 
 import androidx.annotation.CallSuper
 import com.freeletics.coredux.LogEvent
+import com.freeletics.coredux.LogSink
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.SideEffectLogger
 import com.freeletics.coredux.StateAccessor
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.ui.BuildConfig
 import timber.log.Timber
 import timber.log.debug
 import timber.log.info
@@ -61,6 +63,14 @@ abstract class BasePresenter {
   ) {
     subscribeToChangedStateUpdates {
       scope.launch(dispatchers.main) { stateReceiver(it) }
+    }
+  }
+
+  protected fun getLogSinks(): List<LogSink> {
+    return if (BuildConfig.DEBUG) {
+      listOf(TimberLogSink())
+    } else {
+      emptyList()
     }
   }
 
@@ -144,7 +154,7 @@ abstract class BasePresenter {
     }
   }
 
-  class TimberLogSink(scope: CoroutineScope = GlobalScope) : LoggerLogSink(scope) {
+  private class TimberLogSink(scope: CoroutineScope = GlobalScope) : LoggerLogSink(scope) {
     override fun debug(tag: String, message: String, throwable: Throwable?) {
       Timber.debug(throwable) { message }
     }

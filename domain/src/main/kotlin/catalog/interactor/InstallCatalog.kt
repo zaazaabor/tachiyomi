@@ -18,7 +18,7 @@ class InstallCatalog @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
-  suspend fun await(catalog: CatalogRemote): Flow<InstallStep> {
+  fun await(catalog: CatalogRemote): Flow<InstallStep> {
     return catalogRepository.installCatalog(catalog)
   }
 

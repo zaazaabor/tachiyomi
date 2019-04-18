@@ -23,7 +23,7 @@ import timber.log.debug
 import javax.inject.Inject
 
 class UpdateLibraryCategory @Inject constructor(
-  private val findLibraryCategory: FindLibraryCategory,
+  private val getLibraryCategory: GetLibraryCategory,
   private val syncChaptersFromSource: SyncChaptersFromSource,
   private val notifier: LibraryUpdaterNotification,
   private val libraryUpdater: LibraryUpdater,
@@ -42,7 +42,7 @@ class UpdateLibraryCategory @Inject constructor(
         notifier.end()
       }
 
-      val mangas = findLibraryCategory.execute(categoryId)
+      val mangas = getLibraryCategory.execute(categoryId)
       val total = mangas.size
 
       for ((progress, manga) in mangas.withIndex()) {

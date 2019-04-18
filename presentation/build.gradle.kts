@@ -37,7 +37,6 @@ dependencies {
   implementation(Deps.rxJava)
   implementation(Deps.rxKotlin)
   implementation(Deps.rxRelay)
-  implementation(Deps.rxRedux)
   implementation(Deps.coroutines.rx2)
   implementation(Deps.rxBinding.platform)
   implementation(Deps.rxBinding.support)

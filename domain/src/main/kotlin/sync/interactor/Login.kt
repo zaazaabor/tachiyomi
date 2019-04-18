@@ -13,6 +13,8 @@ import okhttp3.HttpUrl
 import tachiyomi.domain.sync.api.LoginResult
 import tachiyomi.domain.sync.api.SyncAPI
 import tachiyomi.domain.sync.prefs.SyncPreferences
+import timber.log.Timber
+import timber.log.warn
 import javax.inject.Inject
 
 class Login @Inject constructor(
@@ -54,6 +56,8 @@ class Login @Inject constructor(
           is LoginResult.NetworkError -> Result.NetworkError(result.error)
         }
       }
+      .doOnSubscribe { Timber.warn { "Subscribed" } }
+      .doFinally { Timber.warn { "Disposed" } }
   }
 
   sealed class Result {

@@ -13,7 +13,6 @@ import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
@@ -56,7 +55,7 @@ internal class CategoryRepositoryImpl @Inject constructor(
     return categories.asFlow()
   }
 
-  override fun subscribeWithCount(): Observable<List<CategoryWithCount>> {
+  override fun subscribeWithCount(): Flow<List<CategoryWithCount>> {
     return storio.get()
       .listOfObjects(CategoryWithCount::class.java)
       .withQuery(RawQuery.builder()
@@ -66,10 +65,10 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .withGetResolver(CategoryWithCountGetResolver)
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
+      .asFlow()
   }
 
-  override fun subscribeForManga(mangaId: Long): Observable<List<Category>> {
+  override fun subscribeForManga(mangaId: Long): Flow<List<Category>> {
     return storio.get()
       .listOfObjects(Category::class.java)
       .withQuery(RawQuery.builder()
@@ -82,7 +81,7 @@ internal class CategoryRepositoryImpl @Inject constructor(
         .build())
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
-      .toObservable()
+      .asFlow()
   }
 
   override fun findAll(): List<Category> {
@@ -96,6 +95,21 @@ internal class CategoryRepositoryImpl @Inject constructor(
 
   override fun find(categoryId: Long): Category? {
     return findAll().find { it.id == categoryId }
+  }
+
+  override fun findForManga(mangaId: Long): List<Category> {
+    return storio.get()
+      .listOfObjects(Category::class.java)
+      .withQuery(RawQuery.builder()
+        .query("""SELECT ${CategoryTable.TABLE}.*
+          FROM ${CategoryTable.TABLE}
+          JOIN ${MangaCategoryTable.TABLE}
+          ON ${CategoryTable.COL_ID} = ${MangaCategoryTable.COL_CATEGORY_ID}
+          WHERE ${MangaCategoryTable.COL_MANGA_ID} = ?""")
+        .args(mangaId)
+        .build())
+      .prepare()
+      .asBlocking()
   }
 
   override fun save(category: Category) {

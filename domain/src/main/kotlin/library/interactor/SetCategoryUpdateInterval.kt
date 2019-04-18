@@ -8,7 +8,8 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.repository.CategoryRepository
@@ -18,24 +19,29 @@ import javax.inject.Inject
 
 class SetCategoryUpdateInterval @Inject constructor(
   private val categoryRepository: CategoryRepository,
-  private val libraryScheduler: LibraryUpdateScheduler
+  private val libraryScheduler: LibraryUpdateScheduler,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(categoryId: Long, intervalInHours: Int) = Single.fromCallable {
+  suspend fun await(categoryId: Long, intervalInHours: Int): Result {
     val update = CategoryUpdate(
       id = categoryId,
       updateInterval = Optional.of(intervalInHours)
     )
-    categoryRepository.savePartial(update)
+    try {
+      withContext(dispatchers.io) { categoryRepository.savePartial(update) }
 
-    if (intervalInHours > 0) {
-      libraryScheduler.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
-    } else {
-      libraryScheduler.unschedule(categoryId, LibraryUpdater.Target.Chapters)
+      if (intervalInHours > 0) {
+        libraryScheduler.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
+      } else {
+        libraryScheduler.unschedule(categoryId, LibraryUpdater.Target.Chapters)
+      }
+    } catch (e: Exception) {
+      return Result.InternalError(e)
     }
 
-    Result.Success as Result
-  }.onErrorReturn(Result::InternalError)
+    return Result.Success
+  }
 
   sealed class Result {
     object Success : Result()

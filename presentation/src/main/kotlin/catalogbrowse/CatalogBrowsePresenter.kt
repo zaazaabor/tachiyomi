@@ -8,14 +8,13 @@
 
 package tachiyomi.ui.catalogbrowse
 
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.SimpleSideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
-import io.reactivex.rxkotlin.ofType
 import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import tachiyomi.core.rx.asFlow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.domain.library.interactor.ChangeMangaFavorite
 import tachiyomi.domain.manga.interactor.GetManga
@@ -57,12 +56,6 @@ class CatalogBrowsePresenter @Inject constructor(
 ) : BasePresenter() {
 
   /**
-   * Subject which allows emitting actions and subscribing to a specific one while supporting
-   * backpressure.
-   */
-  private val actions = PublishRelay.create<Action>()
-
-  /**
    * Behavior subject containing the last emitted view state.
    */
   private val state = BehaviorRelay.create<ViewState>()
@@ -82,24 +75,17 @@ class CatalogBrowsePresenter @Inject constructor(
    */
   private val gridPreference = catalogPreferences.gridMode()
 
+  private val store = scope.createStore(
+    name = "Catalog browse presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    logSinks = getLogSinks(),
+    reducer = { state, action -> action.reduce(state) }
+  )
+
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = getInitialViewState(),
-        sideEffects = listOf(
-          ::setListingSideEffect,
-          ::setFiltersSideEffect,
-          ::setDisplayModeSideEffect,
-          ::loadNextSideEffect,
-          ::toggleFavoriteSideEffect
-        ),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.dispatch(Action.LoadMore) // Always load the initial page
   }
 
   private fun getInitialViewState(): ViewState {
@@ -121,70 +107,61 @@ class CatalogBrowsePresenter @Inject constructor(
     )
   }
 
-  private fun setListingSideEffect(
-    actions: Observable<Action>,
-    state: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.SetSearchMode.Listing>()
-      .flatMap { action ->
-        val currentState = state()
-        val type = currentState.listings.getOrNull(action.index)
-        if (type == null) {
-          // Do nothing if the index is out of bounds.
-          Observable.empty()
-        } else {
-          // Save this listing as the last used.
-          lastListingPreference.set(action.index)
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-          // Emit an update to listing mode.
-          val queryMode = QueryMode.List(type)
-          Observable.just(Action.QueryModeUpdated(queryMode))
-        }
+    sideEffects += SimpleSideEffect("Set listing mode") f@{ stateFn, action, _, handler ->
+      if (action !is Action.SetSearchMode.Listing) return@f null
+      val type = stateFn().listings.getOrNull(action.index) ?: return@f null
+
+      handler {
+        // Save this listing as the last used.
+        lastListingPreference.set(action.index)
+
+        // Emit an update to listing mode.
+        val queryMode = QueryMode.List(type)
+        Action.QueryModeUpdated(queryMode)
       }
-  }
+    }
 
-  @Suppress("unused_parameter")
-  private fun setFiltersSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.SetSearchMode.Filters>()
-      .flatMap { action ->
-        // Get the filters to apply, update their inner value and ignore the ones with the default
-        // value.
-        val filters = action.filters
-          .asSequence()
-          .onEach { it.updateInnerValue() }
-          .map { it.filter }
-          .filter { !it.isDefaultValue() }
-          .toList()
+    sideEffects += SimpleSideEffect("Set filters mode") f@{ stateFn, action, _, handler ->
+      if (action !is Action.SetSearchMode.Filters) return@f null
 
-        if (filters.isEmpty()) {
-          // Do nothing if there are no filters to apply.
-          Observable.empty()
-        } else {
-          // Emit an update to search/filter mode.
-          val queryMode = QueryMode.Filter(filters)
-          Observable.just(Action.QueryModeUpdated(queryMode))
-        }
+      // Get the filters to apply, update their inner value and ignore the ones with the default
+      // value.
+      val filters = action.filters
+        .asSequence()
+        .onEach { it.updateInnerValue() }
+        .map { it.filter }
+        .filter { !it.isDefaultValue() }
+        .toList()
+
+      // Do nothing if there are no filters to apply.
+      if (filters.isEmpty()) return@f null
+
+      handler {
+        // Emit an update to search/filter mode.
+        val queryMode = QueryMode.Filter(filters)
+        Action.QueryModeUpdated(queryMode)
       }
-  }
+    }
 
-  private fun loadNextSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.filter { it is Action.LoadMore || it is Action.QueryModeUpdated }
-      .startWith(Action.LoadMore) // Always load the initial page
-      .filter {
-        val state = stateFn()
-        state.source != null && state.queryMode != null &&
-          !state.isLoading && state.hasMorePages
+    sideEffects += SimpleSideEffect("Swap display mode") f@{ stateFn, action, _, handler ->
+      if (action is Action.SwapDisplayMode) {
+        gridPreference.set(stateFn().isGridMode)
       }
-      .switchMap {
-        val state = stateFn()
-        val source = state.source!!
-        val queryMode = state.queryMode!!
+      null
+    }
+
+    sideEffects += FlowSideEffect("Load pages") f@{ stateFn, action, _, handler ->
+      if (!(action is Action.LoadMore || action is Action.QueryModeUpdated)) return@f null
+      val state = stateFn()
+      val source = state.source
+      val queryMode = state.queryMode
+      if (source == null || queryMode == null || state.isLoading || !state.hasMorePages)
+        return@f null
+
+      handler {
         val nextPage = state.currentPage + 1
 
         val mangasPageSingle = when (queryMode) {
@@ -194,6 +171,7 @@ class CatalogBrowsePresenter @Inject constructor(
             listMangaPageFromCatalogSource.interact(source, queryMode.listing, nextPage)
         }
 
+        // TODO coroutines approach
         mangasPageSingle
           .subscribeOn(schedulers.io)
           .toObservable()
@@ -209,38 +187,22 @@ class CatalogBrowsePresenter @Inject constructor(
           }
           .startWith(Action.Loading(true, state.currentPage))
           .onErrorReturn(Action::LoadingError)
+          .asFlow()
       }
+    }
 
-  }
+    sideEffects += SimpleSideEffect("Toggle favorite") f@{ stateFn, action, _, handler ->
+      if (action !is Action.ToggleFavorite) return@f null
 
-  /**
-   * Returns the changes of display mode updates.
-   */
-  private fun setDisplayModeSideEffect(
-    actions: Observable<Action>,
-    state: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.SwapDisplayMode>()
-      .flatMap {
-        val newValue = !state().isGridMode
-        gridPreference.set(newValue)
-        Observable.just(Action.DisplayModeUpdated(newValue))
+      // TODO what if the previous job is cancelled? There should be a non-cancellable side effect
+      handler {
+        changeMangaFavorite.await(action.manga)
+        val updatedManga = getManga.await(action.manga.id)
+        updatedManga?.let { Action.MangaInitialized(it) }
       }
-  }
+    }
 
-  private fun toggleFavoriteSideEffect(
-    actions: Observable<Action>,
-    state: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.ToggleFavorite>()
-      .flatMap { action ->
-        changeMangaFavorite.interact(action.manga)
-          .flatMapObservable {
-            getManga.interact(action.manga.id)
-              .toObservable()
-              .map(Action::MangaInitialized)
-          }
-      }
+    return sideEffects
   }
 
   /**
@@ -263,33 +225,35 @@ class CatalogBrowsePresenter @Inject constructor(
    * Emits an action to request a display mode change.
    */
   fun swapDisplayMode() {
-    actions.accept(Action.SwapDisplayMode)
+    store.dispatch(Action.SwapDisplayMode)
   }
 
   /**
    * Emits an action to request the next page of the catalog.
    */
   fun loadMore() {
-    actions.accept(Action.LoadMore)
+    store.dispatch(Action.LoadMore)
   }
 
   /**
    * Emits an action to query the catalog with the listing at the given [index].
    */
   fun setListing(index: Int) {
-    actions.accept(Action.SetSearchMode.Listing(index))
+    store.dispatch(Action.SetSearchMode.Listing(index))
   }
 
   /**
    * Emits an action to query the catalog with the given [filters].
    */
   fun setFilters(filters: List<FilterWrapper<*>>) {
-    actions.accept(Action.SetSearchMode.Filters(filters))
+    store.dispatch(Action.SetSearchMode.Filters(filters))
   }
 
+  /**
+   * Emits an action to change the favorite status of the given [manga].
+   */
   fun toggleFavorite(manga: Manga) {
-    actions.accept(Action.ToggleFavorite(manga))
+    store.dispatch(Action.ToggleFavorite(manga))
   }
 
 }
-

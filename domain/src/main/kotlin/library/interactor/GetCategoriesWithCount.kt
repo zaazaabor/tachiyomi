@@ -8,16 +8,16 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.library.model.CategoryWithCount
 import tachiyomi.domain.library.repository.CategoryRepository
 import javax.inject.Inject
 
-class SubscribeCategoriesWithCount @Inject constructor(
+class GetCategoriesWithCount @Inject constructor(
   private val categoryRepository: CategoryRepository
 ) {
 
-  fun interact(): Observable<List<CategoryWithCount>> {
+  fun subscribe(): Flow<List<CategoryWithCount>> {
     return categoryRepository.subscribeWithCount()
   }
 

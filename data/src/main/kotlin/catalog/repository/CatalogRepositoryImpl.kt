@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.withContext
 import tachiyomi.core.db.inTransaction
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.rx.asFlow
@@ -146,30 +147,28 @@ internal class CatalogRepositoryImpl @Inject constructor(
 
   override suspend fun refreshRemoteCatalogs(forceRefresh: Boolean) {
     val lastCheck = lastTimeApiChecked
-    if (!forceRefresh && lastCheck != null
-      && lastCheck - SystemClock.elapsedRealtime() < minTimeApiCheck) {
+    if (!forceRefresh && lastCheck != null &&
+      lastCheck - SystemClock.elapsedRealtime() < minTimeApiCheck
+    ) {
       return
     }
     lastTimeApiChecked = SystemClock.elapsedRealtime()
 
-    api.findCatalogs()
-      .doOnSuccess { newCatalogs ->
-        storio.inTransaction {
-          storio.delete()
-            .byQuery(DeleteQuery.builder().table(CatalogTable.TABLE).build())
-            .prepare()
-            .executeAsBlocking()
+    withContext(dispatchers.io) {
+      val newCatalogs = api.findCatalogs()
+      storio.inTransaction {
+        storio.delete()
+          .byQuery(DeleteQuery.builder().table(CatalogTable.TABLE).build())
+          .prepare()
+          .executeAsBlocking()
 
-          storio.put()
-            .objects(newCatalogs)
-            .prepare()
-            .executeAsBlocking()
-        }
-
-        remoteCatalogs = newCatalogs
+        storio.put()
+          .objects(newCatalogs)
+          .prepare()
+          .executeAsBlocking()
       }
-      .ignoreElement()
-      .await()
+      remoteCatalogs = newCatalogs
+    }
   }
 
   /**

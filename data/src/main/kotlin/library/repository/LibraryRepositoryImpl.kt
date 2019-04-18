@@ -12,8 +12,9 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.core.db.asBlocking
+import tachiyomi.core.rx.asFlow
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.sql.LibraryMangaGetResolver
 import tachiyomi.data.library.sql.MangaCategoryTable
@@ -61,16 +62,16 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeAll(): Observable<List<LibraryManga>> {
-    return preparedAll().asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  override fun subscribeAll(): Flow<List<LibraryManga>> {
+    return preparedAll().asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeUncategorized(): Observable<List<LibraryManga>> {
-    return preparedUncategorized().asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  override fun subscribeUncategorized(): Flow<List<LibraryManga>> {
+    return preparedUncategorized().asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>> {
-    return preparedToCategory(categoryId).asRxFlowable(BackpressureStrategy.LATEST).toObservable()
+  override fun subscribeToCategory(categoryId: Long): Flow<List<LibraryManga>> {
+    return preparedToCategory(categoryId).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
   override fun findAll(): List<LibraryManga> {
@@ -81,7 +82,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
     return preparedUncategorized().asBlocking()
   }
 
-  override fun findToCategory(categoryId: Long): List<LibraryManga> {
+  override fun findForCategory(categoryId: Long): List<LibraryManga> {
     return preparedToCategory(categoryId).asBlocking()
   }
 

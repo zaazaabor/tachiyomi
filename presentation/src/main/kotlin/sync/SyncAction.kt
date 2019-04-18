@@ -10,7 +10,11 @@ package tachiyomi.ui.sync
 
 sealed class Action {
 
-  data class Login(val address: String, val username: String, val password: String) : Action()
+  data class Login(val address: String, val username: String, val password: String) : Action() {
+    override fun toString(): String {
+      return "Login(address='$address', username='$username', password='secret')"
+    }
+  }
 
   data class Loading(val isLoading: Boolean) : Action() {
     override fun reduce(state: ViewState) =

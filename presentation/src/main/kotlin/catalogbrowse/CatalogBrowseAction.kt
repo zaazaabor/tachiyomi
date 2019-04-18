@@ -11,7 +11,6 @@ package tachiyomi.ui.catalogbrowse
 import tachiyomi.core.stdlib.replaceFirst
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
-import tachiyomi.ui.catalogbrowse.Action.DisplayModeUpdated
 import tachiyomi.ui.catalogbrowse.Action.ErrorDelivered
 import tachiyomi.ui.catalogbrowse.Action.LoadMore
 import tachiyomi.ui.catalogbrowse.Action.Loading
@@ -40,8 +39,6 @@ import tachiyomi.ui.catalogbrowse.Action.SwapDisplayMode
  * [LoadingError] sets the error that can occur when the requested page fails to load.
  */
 sealed class Action {
-
-  object SwapDisplayMode : Action()
 
   object LoadMore : Action()
 
@@ -73,9 +70,9 @@ sealed class Action {
       )
   }
 
-  data class DisplayModeUpdated(val isGridMode: Boolean) : Action() {
+  object SwapDisplayMode : Action() {
     override fun reduce(state: ViewState) =
-      state.copy(isGridMode = isGridMode)
+      state.copy(isGridMode = !state.isGridMode)
   }
 
   data class MangaInitialized(val manga: Manga) : Action() {

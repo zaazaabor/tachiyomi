@@ -39,7 +39,7 @@ class CatalogsPresenter @Inject constructor(
     name = "Catalog presenter",
     initialState = getInitialViewState(),
     sideEffects = getSideEffects(),
-    logSinks = listOf(TimberLogSink()),
+    logSinks = getLogSinks(),
     reducer = { state, action -> action.reduce(state) }
   )
 

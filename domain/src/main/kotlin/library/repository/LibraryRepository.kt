@@ -8,22 +8,22 @@
 
 package tachiyomi.domain.library.repository
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.library.model.LibraryManga
 
 interface LibraryRepository {
 
-  fun subscribeAll(): Observable<List<LibraryManga>>
+  fun subscribeAll(): Flow<List<LibraryManga>>
 
-  fun subscribeUncategorized(): Observable<List<LibraryManga>>
+  fun subscribeUncategorized(): Flow<List<LibraryManga>>
 
-  fun subscribeToCategory(categoryId: Long): Observable<List<LibraryManga>>
+  fun subscribeToCategory(categoryId: Long): Flow<List<LibraryManga>>
 
   fun findAll(): List<LibraryManga>
 
   fun findUncategorized(): List<LibraryManga>
 
-  fun findToCategory(categoryId: Long): List<LibraryManga>
+  fun findForCategory(categoryId: Long): List<LibraryManga>
 
   fun findFavoriteSourceIds(): List<Long>
 

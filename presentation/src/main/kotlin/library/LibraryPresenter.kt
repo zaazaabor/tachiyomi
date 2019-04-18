@@ -8,41 +8,35 @@
 
 package tachiyomi.ui.library
 
-import android.util.Log
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
-import io.reactivex.functions.Function
-import io.reactivex.rxkotlin.ofType
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import tachiyomi.domain.library.interactor.GetLibraryCategory
+import tachiyomi.domain.library.interactor.GetUserCategories
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
-import tachiyomi.domain.library.interactor.SubscribeLibraryCategory
-import tachiyomi.domain.library.interactor.SubscribeUserCategories
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.ui.presenter.BasePresenter
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class LibraryPresenter @Inject constructor(
-  private val subscribeUserCategories: SubscribeUserCategories,
-  private val subscribeLibraryCategory: SubscribeLibraryCategory,
+  private val getUserCategories: GetUserCategories,
+  private val getLibraryCategory: GetLibraryCategory,
   private val setCategoriesForMangas: SetCategoriesForMangas,
   private val libraryPreferences: LibraryPreferences,
-  private val updateLibraryCategory: UpdateLibraryCategory,
-  private val schedulers: RxSchedulers
+  private val updateLibraryCategory: UpdateLibraryCategory
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
-
-  private val actions = PublishRelay.create<Action>()
 
   private val lastSortPreference = libraryPreferences.lastSorting()
 
@@ -50,25 +44,17 @@ class LibraryPresenter @Inject constructor(
 
   private val lastUsedCategoryPreference = libraryPreferences.lastUsedCategory()
 
+  private val store = scope.createStore(
+    name = "Library presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    logSinks = getLogSinks(),
+    reducer = { state, action -> action.reduce(state) }
+  )
+
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = getInitialViewState(),
-        sideEffects = listOf(
-          ::categoriesSideEffect,
-          ::setSelectedCategorySideEffect,
-          ::setFiltersSideEffect,
-          ::setSortSideEffect,
-          ::updateCategorySideEffect
-        ),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .logOnNext()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.dispatch(Action.Init)
   }
 
   private fun getInitialViewState(): ViewState {
@@ -81,45 +67,69 @@ class LibraryPresenter @Inject constructor(
     )
   }
 
-  @Suppress("unused_parameter")
-  private fun categoriesSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    val shared = subscribeUserCategories.interact(true)
-      .share()
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    return Observable.merge(
-      shared.map { Action.CategoriesUpdate(it) },
-      shared.take(1).map {
-        val lastCategoryId = lastUsedCategoryPreference.get()
-        val state = stateFn()
-        val category = state.categories.find { it.id == lastCategoryId }
-          ?: state.categories.firstOrNull()
+    sideEffects += FlowSideEffect("Subscribe user categories") { _, action, _, handler ->
+      when (action) {
+        Action.Init -> handler {
+          var initialSet = false
+          getUserCategories.subscribe(true)
+            .flatMapConcat { categories ->
+              if (initialSet) {
+                flowOf(Action.CategoriesUpdate(categories))
+              } else {
+                initialSet = true
 
-        Action.SetSelectedCategory(category)
+                val lastCategoryId = lastUsedCategoryPreference.get()
+                val category = categories.find { it.id == lastCategoryId }
+                  ?: categories.firstOrNull()
+
+                flowOf(Action.CategoriesUpdate(categories), Action.SetSelectedCategory(category))
+              }
+            }
+        }
+        else -> null
       }
-    )
-  }
+    }
 
-  private fun setSelectedCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action.LibraryUpdate> {
-    return actions.map { stateFn() }
-      .distinctUntilChanged(Function<ViewState, Long?> { it.selectedCategoryId })
-      .switchMap { state ->
-        val selectedId = state.selectedCategoryId
+    var subscribedCategory: Long? = null
+    sideEffects += FlowSideEffect("Subscribe selected category") f@{ stateFn, action, _, handler ->
+      if (action !is Action.SetSelectedCategory) return@f null
+      val selectedId = stateFn().selectedCategoryId
+      if (subscribedCategory == selectedId) return@f null
+      subscribedCategory = selectedId
+
+      handler {
         if (selectedId == null) {
-          Observable.just(Action.LibraryUpdate(emptyList()))
+          flowOf(Action.LibraryUpdate(emptyList()))
         } else {
           lastUsedCategoryPreference.set(selectedId)
 
-          subscribeLibraryCategory.interact(selectedId)
-            .subscribeOn(schedulers.io)
-            .map(Action::LibraryUpdate)
+          getLibraryCategory.subscribe(selectedId)
+            .map { Action.LibraryUpdate(it) }
         }
       }
+    }
+
+    sideEffects += FlowSideEffect("Update selected category") f@{ stateFn, action, _, handler ->
+      if (action !is Action.UpdateCategory) return@f null
+      val categoryId = stateFn().selectedCategoryId ?: return@f null
+
+      handler {
+        GlobalScope.launch {
+          updateLibraryCategory.execute(categoryId).awaitWork()
+        }
+
+        flow {
+          emit(Action.ShowUpdatingCategory(true))
+          delay(1000)
+          emit(Action.ShowUpdatingCategory(false))
+        }
+      }
+    }
+
+    return sideEffects
   }
 
 //  @Suppress("unused_parameter")
@@ -138,100 +148,60 @@ class LibraryPresenter @Inject constructor(
 //      .map(Action::LibraryUpdate)
 //  }
 
-  @Suppress("unused_parameter")
-  private fun setFiltersSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.SetFilters>()
-      .flatMap { action ->
-        filtersPreference.set(action.filters)
-        //getLibrary.setFilters(action.filters)
-        Observable.empty<Action>()
-      }
-  }
-
-  @Suppress("unused_parameter")
-  private fun setSortSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.SetSorting>()
-      .flatMap { action ->
-        lastSortPreference.set(action.sort)
-        //getLibrary.setSorting(action.sort)
-        Observable.empty<Action>()
-      }
-  }
-
-  @Suppress("unused_parameter")
-  private fun updateCategorySideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    return actions.ofType<Action.UpdateCategory>()
-      .flatMap<Action> { action ->
-        if (action.loading) {
-          val categoryId = stateFn().selectedCategoryId
-          if (categoryId != null) {
-            GlobalScope.launch {
-              updateLibraryCategory.execute(categoryId).awaitWork()
-              Log.d("P", "Job completed on ${Thread.currentThread()}")
-            }
-
-            Observable.timer(1, TimeUnit.SECONDS).map { Action.UpdateCategory(false) }
-
-//            updateLibraryCategory.interact(categoryId)
-//              .subscribeOn(schedulers.io)
-//              .toObservable()
-//              .flatMap { result ->
-//                if (result is LibraryUpdater.QueueResult.Executing) {
-//                  Observable.timer(1, TimeUnit.SECONDS)
-//                    .map { Action.UpdateCategory(false) }
-//                } else {
-//                  Observable.just(Action.UpdateCategory(false))
-//                }
-//              }
-          } else {
-            Observable.just(Action.UpdateCategory(false))
-          }
-        } else {
-          Observable.empty()
-        }
-      }
-  }
+//  @Suppress("unused_parameter")
+//  private fun setFiltersSideEffect(
+//    actions: Observable<Action>,
+//    stateFn: StateAccessor<ViewState>
+//  ): Observable<Action> {
+//    return actions.ofType<Action.SetFilters>()
+//      .flatMap { action ->
+//        filtersPreference.set(action.filters)
+//        //getLibrary.setFilters(action.filters)
+//        Observable.empty<Action>()
+//      }
+//  }
+//
+//  @Suppress("unused_parameter")
+//  private fun setSortSideEffect(
+//    actions: Observable<Action>,
+//    stateFn: StateAccessor<ViewState>
+//  ): Observable<Action> {
+//    return actions.ofType<Action.SetSorting>()
+//      .flatMap { action ->
+//        lastSortPreference.set(action.sort)
+//        //getLibrary.setSorting(action.sort)
+//        Observable.empty<Action>()
+//      }
+//  }
 
   fun setSelectedCategory(position: Int) {
     val category = state.value?.categories?.getOrNull(position) ?: return
-    actions.accept(Action.SetSelectedCategory(category))
+    store.dispatch(Action.SetSelectedCategory(category))
+  }
+
+  fun updateSelectedCategory() {
+    store.dispatch(Action.UpdateCategory)
   }
 
   fun toggleMangaSelection(manga: LibraryManga) {
-    actions.accept(Action.ToggleSelection(manga))
+    store.dispatch(Action.ToggleSelection(manga))
   }
 
   fun unselectMangas() {
-    actions.accept(Action.UnselectMangas)
+    store.dispatch(Action.UnselectMangas)
   }
 
   fun setCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>) {
-    setCategoriesForMangas.interact(categoryIds, mangaIds)
-      .subscribeOn(schedulers.io)
-      .doOnSuccess { result ->
-        when (result) {
-          SetCategoriesForMangas.Result.Success -> unselectMangas()
-          is SetCategoriesForMangas.Result.InternalError -> {} // do nothing
-        }
+    scope.launch {
+      val result = setCategoriesForMangas.await(categoryIds, mangaIds)
+      if (result is SetCategoriesForMangas.Result.Success) {
+        unselectMangas()
       }
-      .subscribe()
+    }
   }
 
   fun getCategories(): List<Category> {
     return state.value?.categories.orEmpty()
-  }
-
-  fun updateSelectedCategory() {
-    actions.accept(Action.UpdateCategory(true))
   }
 
 }

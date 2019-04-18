@@ -8,64 +8,68 @@
 
 package tachiyomi.ui.deeplink
 
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
 import tachiyomi.domain.manga.interactor.GetOrAddMangaFromSource
 import tachiyomi.source.model.MangaInfo
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
-import tachiyomi.ui.deeplink.MangaDeepLinkViewState as ViewState
 import tachiyomi.ui.deeplink.MangaDeepLinkAction as Action
+import tachiyomi.ui.deeplink.MangaDeepLinkViewState as ViewState
 
 class MangaDeepLinkPresenter @Inject constructor(
   private val params: MangaDeepLinkParams,
-  private val getOrAddMangaFromSource: GetOrAddMangaFromSource,
-  private val schedulers: RxSchedulers
+  private val getOrAddMangaFromSource: GetOrAddMangaFromSource
 ) : BasePresenter() {
-
-  private val actions = PublishRelay.create<Action>()
 
   private val state = BehaviorRelay.create<ViewState>()
 
   val stateObserver: Observable<ViewState> = state
 
+  private val store = scope.createStore(
+    name = "Manga deeplink presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    logSinks = getLogSinks(),
+    reducer = { state, action -> action.reduce(state) }
+  )
+
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = ViewState(),
-        sideEffects = listOf(::findMangaSideEffect),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    loadManga()
   }
 
-  @Suppress("unused_parameter")
-  private fun findMangaSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
+  private fun getInitialViewState(): ViewState {
+    return ViewState()
+  }
+
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
+    return sideEffects
+  }
+
+  private fun loadManga() {
     if (params.sourceId == null || params.mangaKey == null || params.mangaKey.isEmpty()) {
-      return Observable.just(Action.Error(
+      store.dispatch(Action.Error(
         Exception("Invalid input data: sourceId=${params.sourceId}, mangaKey=${params.mangaKey}"))
       )
+      return
     }
 
-    val mangaInfo = MangaInfo(key = params.mangaKey, title = "")
+    scope.launch {
+      val mangaInfo = MangaInfo(key = params.mangaKey, title = "")
 
-    return getOrAddMangaFromSource.interact(mangaInfo, params.sourceId)
-      .toObservable()
-      .subscribeOn(schedulers.io)
-      .map<Action> { Action.MangaReady(it.id) }
-      .onErrorReturn(Action::Error)
+      try {
+        val manga = getOrAddMangaFromSource.interact(mangaInfo, params.sourceId).await()
+        store.dispatch(Action.MangaReady(manga.id))
+      } catch (e: Exception) {
+        store.dispatch(Action.Error(e))
+      }
+    }
   }
 
 }

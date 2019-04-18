@@ -8,14 +8,14 @@
 
 package tachiyomi.ui.sync
 
-import com.freeletics.rxredux.StateAccessor
-import com.freeletics.rxredux.reduxStore
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
-import io.reactivex.rxkotlin.ofType
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
+import tachiyomi.core.rx.asFlow
 import tachiyomi.domain.sync.interactor.Login
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import tachiyomi.ui.presenter.BasePresenter
@@ -23,28 +23,22 @@ import javax.inject.Inject
 
 class SyncPresenter @Inject constructor(
   private val login: Login,
-  private val syncPreferences: SyncPreferences,
-  schedulers: RxSchedulers
+  private val syncPreferences: SyncPreferences
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
 
-  private val actions = PublishRelay.create<Action>()
+  private val store = scope.createStore(
+    name = "Sync presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    logSinks = getLogSinks(),
+    reducer = { state, action -> action.reduce(state) }
+  )
 
   init {
-    actions
-      .observeOn(schedulers.io)
-      .reduxStore(
-        initialState = getInitialViewState(),
-        sideEffects = listOf(
-          ::loginSideEffect
-        ),
-        reducer = { state, action -> action.reduce(state) }
-      )
-      .distinctUntilChanged()
-      .observeOn(schedulers.main)
-      .subscribe(state::accept)
-      .addTo(disposables)
+    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    listenLoggedin()
   }
 
   private fun getInitialViewState(): ViewState {
@@ -55,27 +49,34 @@ class SyncPresenter @Inject constructor(
     )
   }
 
-  private fun loginSideEffect(
-    actions: Observable<Action>,
-    stateFn: StateAccessor<ViewState>
-  ): Observable<Action> {
-    val performLogin = actions.ofType<Action.Login>()
-      .flatMap { action ->
-        login.interact(action.address, action.username, action.password)
-          .toObservable()
-          .map { Action.Loading(false) }
-          .startWith(Action.Loading(true))
+  private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
+
+    sideEffects += FlowSideEffect("Login") f@{ stateFn, action, _, handler ->
+      if (action !is Action.Login) return@f null
+
+      handler {
+        flow {
+          emit(Action.Loading(true))
+          val result = login.interact(action.address, action.username, action.password).await()
+          emit(Action.Loading(false))
+        }
       }
+    }
 
-    val listenLoggedIn = syncPreferences.token().asObservable()
-      .skip(1)
-      .map { Action.Logged(it.isNotEmpty()) }
+    return sideEffects
+  }
 
-    return Observable.merge(performLogin, listenLoggedIn)
+  private fun listenLoggedin() {
+    scope.launch {
+      syncPreferences.token().asObservable().skip(1).asFlow().collect {
+        store.dispatch(Action.Logged(it.isNotEmpty()))
+      }
+    }
   }
 
   fun login(address: String, username: String, password: String) {
-    actions.accept(Action.Login(address, username, password))
+    store.dispatch(Action.Login(address, username, password))
   }
 
 }

@@ -8,16 +8,18 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import tachiyomi.domain.library.model.Category
 import javax.inject.Inject
 
-class SubscribeUserCategories @Inject constructor(
-  private val subscribeCategoriesWithCount: SubscribeCategoriesWithCount
+class GetUserCategories @Inject constructor(
+  private val getCategoriesWithCount: GetCategoriesWithCount
 ) {
 
-  fun interact(withAllCategory: Boolean): Observable<List<Category>> {
-    return subscribeCategoriesWithCount.interact()
+  fun subscribe(withAllCategory: Boolean): Flow<List<Category>> {
+    return getCategoriesWithCount.subscribe()
       .map { categories ->
         categories.mapNotNull { (category, count) ->
           when (category.id) {

@@ -15,6 +15,8 @@ import tachiyomi.domain.library.model.LibrarySort
 
 sealed class Action {
 
+  object Init : Action()
+
   data class SetFilters(val filters: List<LibraryFilter>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(filters = filters)
@@ -65,7 +67,9 @@ sealed class Action {
       state.copy(selectedManga = emptySet())
   }
 
-  data class UpdateCategory(val loading: Boolean) : Action() {
+  object UpdateCategory : Action()
+
+  data class ShowUpdatingCategory(val loading: Boolean) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(showUpdatingCategory = loading)
   }

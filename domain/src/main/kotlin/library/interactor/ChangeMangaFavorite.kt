@@ -9,7 +9,10 @@
 package tachiyomi.domain.library.interactor
 
 import io.reactivex.Single
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import tachiyomi.core.db.Transaction
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.LibraryCovers
@@ -26,8 +29,55 @@ class ChangeMangaFavorite @Inject constructor(
   private val libraryPreferences: LibraryPreferences,
   private val libraryCovers: LibraryCovers,
   private val transactions: Provider<Transaction>,
-  private val setCategoriesForMangas: SetCategoriesForMangas
+  private val setCategoriesForMangas: SetCategoriesForMangas,
+  private val dispatchers: CoroutineDispatchers
 ) {
+
+  suspend fun await(manga: Manga): Result = withContext(NonCancellable) f@{
+    val now = System.currentTimeMillis()
+    val nowFavorite = !manga.favorite
+    val update = if (nowFavorite) {
+      MangaUpdate(
+        id = manga.id,
+        favorite = Optional.of(true),
+        dateAdded = Optional.of(now)
+      )
+    } else {
+      MangaUpdate(id = manga.id, favorite = Optional.of(false))
+    }
+
+    val mangaIds = listOf(manga.id)
+
+    try {
+      withContext(dispatchers.io) {
+        transactions.get().withAction {
+          mangaRepository.savePartial(update)
+
+          if (nowFavorite) {
+            val defaultCategory = libraryPreferences.defaultCategory().get()
+            val result = setCategoriesForMangas.execute(listOf(defaultCategory), mangaIds)
+            if (result is SetCategoriesForMangas.Result.InternalError) {
+              throw result.error
+            }
+          } else {
+            mangaCategoryRepository.deleteForMangas(mangaIds)
+          }
+        }
+      }
+    } catch (e: Exception) {
+      return@f Result.InternalError(e)
+    }
+
+    if (!nowFavorite) {
+      try {
+        libraryCovers.delete(manga.id)
+      } catch (e: Exception) {
+        // Ignore this exception
+      }
+    }
+
+    Result.Success
+  }
 
   fun interact(manga: Manga) = Single.fromCallable {
     val now = System.currentTimeMillis()

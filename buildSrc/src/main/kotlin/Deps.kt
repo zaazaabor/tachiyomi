@@ -47,7 +47,6 @@ object Deps {
   const val rxKotlin = "io.reactivex.rxjava2:rxkotlin:2.3.0"
   const val rxRelay = "com.jakewharton.rxrelay2:rxrelay:2.1.0"
   const val rxPreferences = "com.f2prateek.rx.preferences2:rx-preferences:2.0.0"
-  const val rxRedux = "com.freeletics.rxredux:rxredux:1.0.1"
   const val rxConnectivity = "com.github.pwittchen:reactivenetwork-rx2:3.0.2"
 
   object rxBinding {
