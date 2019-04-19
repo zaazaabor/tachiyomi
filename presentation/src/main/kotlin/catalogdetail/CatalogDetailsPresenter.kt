@@ -9,7 +9,6 @@
 package tachiyomi.ui.catalogdetail
 
 import com.freeletics.coredux.SideEffect
-import com.freeletics.coredux.SimpleSideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
@@ -18,6 +17,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.catalog.interactor.GetInstalledCatalog
 import tachiyomi.domain.catalog.interactor.UninstallCatalog
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.EmptySideEffect
 import javax.inject.Inject
 
 class CatalogDetailsPresenter @Inject constructor(
@@ -55,13 +55,10 @@ class CatalogDetailsPresenter @Inject constructor(
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    sideEffects += SimpleSideEffect("Uninstall a catalog") f@{ stateFn, action, _, handler ->
+    sideEffects += EmptySideEffect("Uninstall a catalog") f@{ stateFn, action ->
       if (action !is Action.UninstallCatalog) return@f null
       val catalog = stateFn().catalog ?: return@f null
-      handler {
-        uninstallCatalog.await(catalog)
-        null
-      }
+      suspend { uninstallCatalog.await(catalog) }
     }
 
     return sideEffects

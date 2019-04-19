@@ -24,6 +24,8 @@ import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.FlowSideEffect
+import tachiyomi.ui.presenter.FlowSwitchSideEffect
 import javax.inject.Inject
 
 class CatalogsPresenter @Inject constructor(
@@ -55,57 +57,56 @@ class CatalogsPresenter @Inject constructor(
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    sideEffects += FlowSideEffect("Subscribe to catalogs") { stateFn, action, _, handler ->
-      when (action) {
-        is Action.Init, is Action.SetLanguageChoice -> handler {
-          val choice = stateFn().languageChoice
-          getCatalogs.subscribe(excludeRemoteInstalled = true).map { (local, remote) ->
-            val items = mutableListOf<Any>()
+    sideEffects += FlowSwitchSideEffect("Subscribe to catalogs") f@{ stateFn, action ->
+      if (action !is Action.Init && action !is Action.SetLanguageChoice) return@f null
 
-            if (local.isNotEmpty()) {
-              items.add(CatalogHeader.Installed)
+      suspend {
+        val choice = stateFn().languageChoice
+        getCatalogs.subscribe(excludeRemoteInstalled = true).map { (local, remote) ->
+          val items = mutableListOf<Any>()
 
-              val (updatable, upToDate) = local.partition { it is CatalogInstalled && it.hasUpdate }
-              when {
-                updatable.isEmpty() -> {
-                  items.addAll(upToDate)
-                }
-                upToDate.isEmpty() -> {
-                  items.add(CatalogSubheader.UpdateAvailable(updatable.size))
-                  items.addAll(updatable)
-                }
-                else -> {
-                  items.add(CatalogSubheader.UpdateAvailable(updatable.size))
-                  items.addAll(updatable)
-                  items.add(CatalogSubheader.UpToDate)
-                  items.addAll(upToDate)
-                }
+          if (local.isNotEmpty()) {
+            items.add(CatalogHeader.Installed)
+
+            val (updatable, upToDate) = local.partition { it is CatalogInstalled && it.hasUpdate }
+            when {
+              updatable.isEmpty() -> {
+                items.addAll(upToDate)
+              }
+              upToDate.isEmpty() -> {
+                items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+                items.addAll(updatable)
+              }
+              else -> {
+                items.add(CatalogSubheader.UpdateAvailable(updatable.size))
+                items.addAll(updatable)
+                items.add(CatalogSubheader.UpToDate)
+                items.addAll(upToDate)
               }
             }
-
-            if (remote.isNotEmpty()) {
-              val choices = LanguageChoices(getLanguageChoices(remote, local), choice)
-              val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
-
-              items.add(CatalogHeader.Available)
-              items.add(choices)
-              items.addAll(availableCatalogsFiltered)
-            }
-
-            Action.ItemsUpdate(items)
           }
+
+          if (remote.isNotEmpty()) {
+            val choices = LanguageChoices(getLanguageChoices(remote, local), choice)
+            val availableCatalogsFiltered = getRemoteCatalogsForLanguageChoice(remote, choice)
+
+            items.add(CatalogHeader.Available)
+            items.add(choices)
+            items.addAll(availableCatalogsFiltered)
+          }
+
+          Action.ItemsUpdate(items)
         }
-        else -> null
       }
     }
 
-    sideEffects += MultiFlowSideEffect("Install catalog") { _, action, _, handler ->
+    sideEffects += FlowSideEffect("Install catalog") { _, action ->
       when (action) {
-        is Action.InstallCatalog -> handler {
+        is Action.InstallCatalog -> suspend {
           val catalog = action.catalog
           installCatalog.await(catalog).map { Action.InstallStepUpdate(catalog.pkgName, it) }
         }
-        is Action.UpdateCatalog -> handler {
+        is Action.UpdateCatalog -> suspend {
           val catalog = action.catalog
           updateCatalog.await(catalog).map { Action.InstallStepUpdate(catalog.pkgName, it) }
         }
@@ -113,23 +114,22 @@ class CatalogsPresenter @Inject constructor(
       }
     }
 
-    sideEffects += FlowSideEffect("Refresh catalogs") { _, action, _, handler ->
-      when (action) {
-        Action.Init, is Action.RefreshCatalogs -> handler {
-          val force = if (action is Action.RefreshCatalogs) action.force else false
+    sideEffects += FlowSwitchSideEffect("Refresh catalogs") f@{ _, action ->
+      if (action != Action.Init && action !is Action.RefreshCatalogs) return@f null
 
-          // TODO there should be a better way to do this
-          val deferred = scope.async { refreshRemoteCatalogs.await(force) }
-          flow {
-            emit(Action.RefreshingCatalogs(true))
-            runCatching { deferred.await() }
-            emit(Action.RefreshingCatalogs(false))
-          }
-            // Debounce for a frame. Sometimes this operation returns immediately, so with this
-            // we avoid showing the progress bar if not really needed
-            .debounce(16)
+      suspend {
+        val force = if (action is Action.RefreshCatalogs) action.force else false
+
+        // TODO there should be a better way to do this
+        val deferred = scope.async { refreshRemoteCatalogs.await(force) }
+        flow {
+          emit(Action.RefreshingCatalogs(true))
+          runCatching { deferred.await() }
+          emit(Action.RefreshingCatalogs(false))
         }
-        else -> null
+          // Debounce for a frame. Sometimes this operation returns immediately, so with this
+          // we avoid showing the progress bar if not really needed
+          .debounce(16)
       }
     }
 

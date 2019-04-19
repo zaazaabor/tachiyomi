@@ -9,7 +9,6 @@
 package tachiyomi.ui.category
 
 import com.freeletics.coredux.SideEffect
-import com.freeletics.coredux.SimpleSideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
@@ -22,6 +21,8 @@ import tachiyomi.domain.library.interactor.RenameCategory
 import tachiyomi.domain.library.interactor.ReorderCategory
 import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.EmptySideEffect
+import tachiyomi.ui.presenter.SingleSideEffect
 import javax.inject.Inject
 
 class CategoryPresenter @Inject constructor(
@@ -62,55 +63,41 @@ class CategoryPresenter @Inject constructor(
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
     // Category creation side effect
-    sideEffects += SimpleSideEffect("Create a category") { _, action, _, handler ->
-      when (action) {
-        is Action.CreateCategory -> handler {
-          createCategoryWithName.await(action.name)
-          null // Ignore results (for now)
-        }
-        else -> null
-      }
+    sideEffects += EmptySideEffect("Create a category") f@{ _, action ->
+      if (action !is Action.CreateCategory) return@f null
+      suspend { createCategoryWithName.await(action.name) }
     }
 
     // Category deletion side effect
-    sideEffects += SimpleSideEffect("Delete categories") { _, action, _, handler ->
-      when (action) {
-        is Action.DeleteCategories -> handler {
-          val result = deleteCategories.await(action.categoryIds)
-          when (result) {
-            // Unselect categories when the operation succeeds
-            DeleteCategories.Result.Success -> Action.UnselectCategories
-            else -> null
-          }
+    sideEffects += SingleSideEffect("Delete categories") f@{ _, action ->
+      if (action !is Action.DeleteCategories) return@f null
+      suspend {
+        val result = deleteCategories.await(action.categoryIds)
+        when (result) {
+          // Unselect categories when the operation succeeds
+          DeleteCategories.Result.Success -> Action.UnselectCategories
+          else -> null
         }
-        else -> null
       }
     }
 
     // Rename categories side effect
-    sideEffects += SimpleSideEffect("Rename a category") { _, action, _, handler ->
-      when (action) {
-        is Action.RenameCategory -> handler {
-          val result = renameCategory.await(action.categoryId, action.newName)
-          when (result) {
-            // Unselect categories when the operation succeeds
-            RenameCategory.Result.Success -> Action.UnselectCategories
-            else -> null
-          }
+    sideEffects += SingleSideEffect("Rename a category") f@{ _, action ->
+      if (action !is Action.RenameCategory) return@f null
+      suspend {
+        val result = renameCategory.await(action.categoryId, action.newName)
+        when (result) {
+          // Unselect categories when the operation succeeds
+          RenameCategory.Result.Success -> Action.UnselectCategories
+          else -> null
         }
-        else -> null
       }
     }
 
     // Reorder categories side effect
-    sideEffects += SimpleSideEffect("Reorder a category") { _, action, _, handler ->
-      when (action) {
-        is Action.ReorderCategory -> handler {
-          reorderCategory.await(action.category, action.newPosition)
-          null // Do nothing for now
-        }
-        else -> null
-      }
+    sideEffects += EmptySideEffect("Reorder a category") f@{ _, action ->
+      if (action !is Action.ReorderCategory) return@f null
+      suspend { reorderCategory.await(action.category, action.newPosition) }
     }
 
     return sideEffects

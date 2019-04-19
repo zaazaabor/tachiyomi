@@ -19,6 +19,7 @@ import tachiyomi.core.rx.asFlow
 import tachiyomi.domain.sync.interactor.Login
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.FlowSwitchSideEffect
 import javax.inject.Inject
 
 class SyncPresenter @Inject constructor(
@@ -52,10 +53,10 @@ class SyncPresenter @Inject constructor(
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    sideEffects += FlowSideEffect("Login") f@{ stateFn, action, _, handler ->
-      if (action !is Action.Login) return@f null
+    sideEffects += FlowSwitchSideEffect("Login") f@{ stateFn, action ->
+      if (action !is Action.Login || stateFn().isLoading) return@f null
 
-      handler {
+      suspend {
         flow {
           emit(Action.Loading(true))
           val result = login.interact(action.address, action.username, action.password).await()

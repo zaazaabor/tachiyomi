@@ -9,7 +9,6 @@
 package tachiyomi.ui.catalogbrowse
 
 import com.freeletics.coredux.SideEffect
-import com.freeletics.coredux.SimpleSideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
@@ -26,6 +25,10 @@ import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Filter
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.EmptySideEffect
+import tachiyomi.ui.presenter.FlowSwitchSideEffect
+import tachiyomi.ui.presenter.SingleSideEffect
+import tachiyomi.ui.presenter.SingleSwitchSideEffect
 import javax.inject.Inject
 
 /**
@@ -110,11 +113,11 @@ class CatalogBrowsePresenter @Inject constructor(
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    sideEffects += SimpleSideEffect("Set listing mode") f@{ stateFn, action, _, handler ->
+    sideEffects += SingleSwitchSideEffect("Set listing mode") f@{ stateFn, action ->
       if (action !is Action.SetSearchMode.Listing) return@f null
       val type = stateFn().listings.getOrNull(action.index) ?: return@f null
 
-      handler {
+      suspend {
         // Save this listing as the last used.
         lastListingPreference.set(action.index)
 
@@ -124,7 +127,7 @@ class CatalogBrowsePresenter @Inject constructor(
       }
     }
 
-    sideEffects += SimpleSideEffect("Set filters mode") f@{ stateFn, action, _, handler ->
+    sideEffects += SingleSwitchSideEffect("Set filters mode") f@{ _, action ->
       if (action !is Action.SetSearchMode.Filters) return@f null
 
       // Get the filters to apply, update their inner value and ignore the ones with the default
@@ -139,21 +142,22 @@ class CatalogBrowsePresenter @Inject constructor(
       // Do nothing if there are no filters to apply.
       if (filters.isEmpty()) return@f null
 
-      handler {
+      suspend {
         // Emit an update to search/filter mode.
         val queryMode = QueryMode.Filter(filters)
         Action.QueryModeUpdated(queryMode)
       }
     }
 
-    sideEffects += SimpleSideEffect("Swap display mode") f@{ stateFn, action, _, handler ->
+    sideEffects += EmptySideEffect("Swap display mode") f@{ stateFn, action ->
       if (action is Action.SwapDisplayMode) {
-        gridPreference.set(stateFn().isGridMode)
+        suspend { gridPreference.set(stateFn().isGridMode) }
+      } else {
+        null
       }
-      null
     }
 
-    sideEffects += FlowSideEffect("Load pages") f@{ stateFn, action, _, handler ->
+    sideEffects += FlowSwitchSideEffect("Load pages") f@{ stateFn, action ->
       if (!(action is Action.LoadMore || action is Action.QueryModeUpdated)) return@f null
       val state = stateFn()
       val source = state.source
@@ -161,7 +165,7 @@ class CatalogBrowsePresenter @Inject constructor(
       if (source == null || queryMode == null || state.isLoading || !state.hasMorePages)
         return@f null
 
-      handler {
+      suspend {
         val nextPage = state.currentPage + 1
 
         val mangasPageSingle = when (queryMode) {
@@ -191,11 +195,10 @@ class CatalogBrowsePresenter @Inject constructor(
       }
     }
 
-    sideEffects += SimpleSideEffect("Toggle favorite") f@{ stateFn, action, _, handler ->
+    sideEffects += SingleSideEffect("Toggle favorite") f@{ stateFn, action ->
       if (action !is Action.ToggleFavorite) return@f null
 
-      // TODO what if the previous job is cancelled? There should be a non-cancellable side effect
-      handler {
+      suspend {
         changeMangaFavorite.await(action.manga)
         val updatedManga = getManga.await(action.manga.id)
         updatedManga?.let { Action.MangaInitialized(it) }

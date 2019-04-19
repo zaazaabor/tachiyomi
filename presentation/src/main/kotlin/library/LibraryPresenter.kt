@@ -26,6 +26,7 @@ import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.FlowSwitchSideEffect
 import javax.inject.Inject
 
 class LibraryPresenter @Inject constructor(
@@ -70,37 +71,35 @@ class LibraryPresenter @Inject constructor(
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
 
-    sideEffects += FlowSideEffect("Subscribe user categories") { _, action, _, handler ->
-      when (action) {
-        Action.Init -> handler {
-          var initialSet = false
-          getUserCategories.subscribe(true)
-            .flatMapConcat { categories ->
-              if (initialSet) {
-                flowOf(Action.CategoriesUpdate(categories))
-              } else {
-                initialSet = true
+    sideEffects += FlowSwitchSideEffect("Subscribe user categories") f@{ _, action ->
+      if (action !is Action.Init) return@f null
 
-                val lastCategoryId = lastUsedCategoryPreference.get()
-                val category = categories.find { it.id == lastCategoryId }
-                  ?: categories.firstOrNull()
+      suspend {
+        var initialSet = false
+        getUserCategories.subscribe(true).flatMapConcat { categories ->
+          if (initialSet) {
+            flowOf(Action.CategoriesUpdate(categories))
+          } else {
+            initialSet = true
 
-                flowOf(Action.CategoriesUpdate(categories), Action.SetSelectedCategory(category))
-              }
-            }
+            val lastCategoryId = lastUsedCategoryPreference.get()
+            val category = categories.find { it.id == lastCategoryId }
+              ?: categories.firstOrNull()
+
+            flowOf(Action.CategoriesUpdate(categories), Action.SetSelectedCategory(category))
+          }
         }
-        else -> null
       }
     }
 
     var subscribedCategory: Long? = null
-    sideEffects += FlowSideEffect("Subscribe selected category") f@{ stateFn, action, _, handler ->
+    sideEffects += FlowSwitchSideEffect("Subscribe selected category") f@{ stateFn, action ->
       if (action !is Action.SetSelectedCategory) return@f null
       val selectedId = stateFn().selectedCategoryId
       if (subscribedCategory == selectedId) return@f null
       subscribedCategory = selectedId
 
-      handler {
+      suspend {
         if (selectedId == null) {
           flowOf(Action.LibraryUpdate(emptyList()))
         } else {
@@ -112,11 +111,11 @@ class LibraryPresenter @Inject constructor(
       }
     }
 
-    sideEffects += FlowSideEffect("Update selected category") f@{ stateFn, action, _, handler ->
+    sideEffects += FlowSwitchSideEffect("Update selected category") f@{ stateFn, action ->
       if (action !is Action.UpdateCategory) return@f null
       val categoryId = stateFn().selectedCategoryId ?: return@f null
 
-      handler {
+      suspend {
         GlobalScope.launch {
           updateLibraryCategory.execute(categoryId).awaitWork()
         }
