@@ -21,6 +21,7 @@ import tachiyomi.data.library.sql.MangaCategoryTable
 import tachiyomi.data.manga.sql.ChapterTable
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -28,33 +29,36 @@ internal class LibraryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : LibraryRepository {
 
-  private fun preparedAll(): PreparedGetListOfObjects<LibraryManga> {
+  private fun preparedAll(sort: LibrarySort): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
-        .query(LibraryMangaGetResolver.allQuery)
+        .query(LibraryMangaGetResolver.getAllQuery(sort))
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE)
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
   }
 
-  private fun preparedUncategorized(): PreparedGetListOfObjects<LibraryManga> {
+  private fun preparedUncategorized(sort: LibrarySort): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
-        .query(LibraryMangaGetResolver.uncategorizedQuery)
+        .query(LibraryMangaGetResolver.getUncategorizedQuery(sort))
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE)
         .build())
       .withGetResolver(LibraryMangaGetResolver)
       .prepare()
   }
 
-  private fun preparedToCategory(categoryId: Long): PreparedGetListOfObjects<LibraryManga> {
+  private fun preparedToCategory(
+    categoryId: Long,
+    sort: LibrarySort
+  ): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
-        .query(LibraryMangaGetResolver.categoryQuery)
+        .query(LibraryMangaGetResolver.getCategoryQuery(sort))
         .args(categoryId)
         .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE)
         .build())
@@ -62,28 +66,28 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeAll(): Flow<List<LibraryManga>> {
-    return preparedAll().asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+  override fun subscribeAll(sort: LibrarySort): Flow<List<LibraryManga>> {
+    return preparedAll(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeUncategorized(): Flow<List<LibraryManga>> {
-    return preparedUncategorized().asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+  override fun subscribeUncategorized(sort: LibrarySort): Flow<List<LibraryManga>> {
+    return preparedUncategorized(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeToCategory(categoryId: Long): Flow<List<LibraryManga>> {
-    return preparedToCategory(categoryId).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+  override fun subscribeToCategory(categoryId: Long, sort: LibrarySort): Flow<List<LibraryManga>> {
+    return preparedToCategory(categoryId, sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun findAll(): List<LibraryManga> {
-    return preparedAll().asBlocking()
+  override fun findAll(sort: LibrarySort): List<LibraryManga> {
+    return preparedAll(sort).asBlocking()
   }
 
-  override fun findUncategorized(): List<LibraryManga> {
-    return preparedUncategorized().asBlocking()
+  override fun findUncategorized(sort: LibrarySort): List<LibraryManga> {
+    return preparedUncategorized(sort).asBlocking()
   }
 
-  override fun findForCategory(categoryId: Long): List<LibraryManga> {
-    return preparedToCategory(categoryId).asBlocking()
+  override fun findForCategory(categoryId: Long, sort: LibrarySort): List<LibraryManga> {
+    return preparedToCategory(categoryId, sort).asBlocking()
   }
 
   override fun findFavoriteSourceIds(): List<Long> {

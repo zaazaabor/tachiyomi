@@ -18,22 +18,28 @@ internal object CategoryTable : DbOpenCallback {
 
   const val COL_ID = "ca_id"
   const val COL_NAME = "ca_name"
-  const val COL_ORDER = "ca_sort"
+  const val COL_ORDER = "ca_order"
   const val COL_UPDATE_INTERVAL = "ca_update_interval"
+  const val COL_USE_OWN_FILTERS = "ca_use_own_filters"
+  const val COL_FILTERS = "col_filters"
+  const val COL_SORTING = "col_sorting"
 
   private val createTableQuery: String
     get() = """CREATE TABLE $TABLE(
       $COL_ID INTEGER NOT NULL PRIMARY KEY,
       $COL_NAME TEXT NOT NULL,
       $COL_ORDER INTEGER NOT NULL,
-      $COL_UPDATE_INTERVAL INTEGER NOT NULL
+      $COL_UPDATE_INTERVAL INTEGER NOT NULL,
+      $COL_USE_OWN_FILTERS INTEGER NOT NULL,
+      $COL_FILTERS TEXT,
+      $COL_SORTING TEXT
       )"""
 
   private val createAllCategoryQuery: String
-    get() = """INSERT INTO $TABLE VALUES (${Category.ALL_ID}, "", 0, 0)"""
+    get() = """INSERT INTO $TABLE VALUES (${Category.ALL_ID}, "", 0, 0, 0, "", "")"""
 
   private val createUncategorizedCategoryQuery: String
-    get() = """INSERT INTO $TABLE VALUES (${Category.UNCATEGORIZED_ID}, "", 0, 0)"""
+    get() = """INSERT INTO $TABLE VALUES (${Category.UNCATEGORIZED_ID}, "", 0, 0, 0, "", "")"""
 
   private val deleteCategoryTrigger: String
     get() = """CREATE TRIGGER system_categories_deletion_trigger

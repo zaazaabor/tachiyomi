@@ -36,6 +36,8 @@ fun LibrarySort.serialize(): String {
 }
 
 fun LibrarySort.Companion.deserialize(serialized: String): LibrarySort {
+  if (serialized.isEmpty()) return LibrarySort.Title(true)
+
   val values = serialized.split(";")
   val className = values[0]
   val ascending = values[1] == "a"

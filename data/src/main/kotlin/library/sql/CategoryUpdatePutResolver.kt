@@ -12,14 +12,19 @@ import android.content.ContentValues
 import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
+import tachiyomi.core.util.optBoolean
 import tachiyomi.core.util.optInt
 import tachiyomi.core.util.optString
+import tachiyomi.data.library.sql.CategoryTable.COL_FILTERS
 import tachiyomi.data.library.sql.CategoryTable.COL_ID
 import tachiyomi.data.library.sql.CategoryTable.COL_NAME
 import tachiyomi.data.library.sql.CategoryTable.COL_ORDER
+import tachiyomi.data.library.sql.CategoryTable.COL_SORTING
 import tachiyomi.data.library.sql.CategoryTable.COL_UPDATE_INTERVAL
+import tachiyomi.data.library.sql.CategoryTable.COL_USE_OWN_FILTERS
 import tachiyomi.data.library.sql.CategoryTable.TABLE
 import tachiyomi.domain.library.model.CategoryUpdate
+import tachiyomi.domain.library.model.serialize
 
 object CategoryUpdatePutResolver : DefaultPutResolver<CategoryUpdate>() {
 
@@ -36,11 +41,14 @@ object CategoryUpdatePutResolver : DefaultPutResolver<CategoryUpdate>() {
   }
 
   override fun mapToContentValues(update: CategoryUpdate): ContentValues {
-    return ContentValues(4).apply {
+    return ContentValues(7).apply {
       put(COL_ID, update.id)
       optString(COL_NAME, update.name)
       optInt(COL_ORDER, update.order)
       optInt(COL_UPDATE_INTERVAL, update.updateInterval)
+      optBoolean(COL_USE_OWN_FILTERS, update.useOwnFilters)
+      update.filters.get()?.let { put(COL_FILTERS, it.serialize()) }
+      update.sort.get()?.let { put(COL_SORTING, it.serialize()) }
     }
   }
 

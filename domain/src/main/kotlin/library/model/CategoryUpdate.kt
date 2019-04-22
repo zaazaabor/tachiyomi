@@ -14,5 +14,8 @@ data class CategoryUpdate(
   val id: Long,
   val name: Optional<String> = Optional.None,
   val order: Optional<Int> = Optional.None,
-  val updateInterval: Optional<Int> = Optional.None
+  val updateInterval: Optional<Int> = Optional.None,
+  val useOwnFilters: Optional<Boolean> = Optional.None,
+  val filters: Optional<List<LibraryFilter>> = Optional.None,
+  val sort: Optional<LibrarySort> = Optional.None
 )

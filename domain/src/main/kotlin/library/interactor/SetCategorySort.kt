@@ -8,43 +8,43 @@
 
 package tachiyomi.domain.library.interactor
 
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
+import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.CategoryRepository
-import tachiyomi.domain.library.updater.LibraryUpdateScheduler
-import tachiyomi.domain.library.updater.LibraryUpdater
+import timber.log.Timber
+import timber.log.warn
 import javax.inject.Inject
 
-class SetCategoryUpdateInterval @Inject constructor(
+class SetCategorySorting @Inject constructor(
   private val categoryRepository: CategoryRepository,
-  private val libraryScheduler: LibraryUpdateScheduler,
+  private val libraryPreferences: LibraryPreferences,
   private val dispatchers: CoroutineDispatchers
 ) {
 
-  suspend fun await(categoryId: Long, intervalInHours: Int): Result {
-    val update = CategoryUpdate(
-      id = categoryId,
-      updateInterval = Optional.of(intervalInHours)
-    )
-    return try {
-      withContext(dispatchers.io) { categoryRepository.savePartial(update) }
-
-      if (intervalInHours > 0) {
-        libraryScheduler.schedule(categoryId, LibraryUpdater.Target.Chapters, intervalInHours)
+  suspend fun await(category: Category, sorting: LibrarySort) = withContext(NonCancellable) {
+    try {
+      if (category.useOwnFilters) {
+        val update = CategoryUpdate(category.id, sort = Optional.of(sorting))
+        withContext(dispatchers.io) { categoryRepository.savePartial(update) }
       } else {
-        libraryScheduler.unschedule(categoryId, LibraryUpdater.Target.Chapters)
+        libraryPreferences.lastSorting().set(sorting)
       }
       Result.Success
     } catch (e: Exception) {
+      Timber.warn(e) { e.message.orEmpty() }
       Result.InternalError(e)
     }
   }
 
   sealed class Result {
     object Success : Result()
-    data class InternalError(val error: Throwable) : Result()
+    data class InternalError(val error: Exception) : Result()
   }
 
 }

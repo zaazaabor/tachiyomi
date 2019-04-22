@@ -22,11 +22,11 @@ import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.R
+import tachiyomi.ui.category.CategoryController
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
-import tachiyomi.ui.category.CategoryController
 import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.ui.widget.CustomViewTabLayout
@@ -95,9 +95,9 @@ class LibraryController : MvpController<LibraryPresenter>(),
 
   private fun render(state: ViewState, prevState: ViewState?) {
     if (state.categories !== prevState?.categories ||
-      state.selectedCategoryId != prevState.selectedCategoryId
+      state.selectedCategory != prevState.selectedCategory
     ) {
-      renderCategories(state.categories, state.selectedCategoryId)
+      renderCategories(state.categories, state.selectedCategory)
     }
     if (state.library !== prevState?.library || state.selectedManga !== prevState.selectedManga) {
       renderLibrary(state.library, state.selectedManga)
@@ -108,8 +108,8 @@ class LibraryController : MvpController<LibraryPresenter>(),
     renderUpdatingCategory(state.showUpdatingCategory) // Changes internally checked
   }
 
-  private fun renderCategories(categories: List<Category>, selectedCategoryId: Long?) {
-    library_tabs.setCategories(categories, selectedCategoryId)
+  private fun renderCategories(categories: List<Category>, selectedCategory: Category?) {
+    library_tabs.setCategories(categories, selectedCategory?.id)
   }
 
   private fun renderLibrary(library: List<LibraryManga>, selectedManga: Set<Long>) {

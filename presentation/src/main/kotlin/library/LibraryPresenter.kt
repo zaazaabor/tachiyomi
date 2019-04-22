@@ -21,11 +21,15 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.library.interactor.GetLibraryCategory
 import tachiyomi.domain.library.interactor.GetUserCategories
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
+import tachiyomi.domain.library.interactor.SetCategoryFilters
+import tachiyomi.domain.library.interactor.SetCategorySorting
+import tachiyomi.domain.library.interactor.SetCategoryUseOwnFilters
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.EmptySideEffect
 import tachiyomi.ui.presenter.FlowSwitchSideEffect
 import javax.inject.Inject
 
@@ -34,11 +38,13 @@ class LibraryPresenter @Inject constructor(
   private val getLibraryCategory: GetLibraryCategory,
   private val setCategoriesForMangas: SetCategoriesForMangas,
   private val libraryPreferences: LibraryPreferences,
+  private val setCategoryFilters: SetCategoryFilters,
+  private val setCategorySorting: SetCategorySorting,
+  private val setCategoryUseOwnFilters: SetCategoryUseOwnFilters,
   private val updateLibraryCategory: UpdateLibraryCategory
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
-
   private val lastSortPreference = libraryPreferences.lastSorting()
 
   private val filtersPreference = libraryPreferences.filters()
@@ -75,45 +81,38 @@ class LibraryPresenter @Inject constructor(
       if (action !is Action.Init) return@f null
 
       suspend {
-        var initialSet = false
         getUserCategories.subscribe(true).flatMapConcat { categories ->
-          if (initialSet) {
-            flowOf(Action.CategoriesUpdate(categories))
-          } else {
-            initialSet = true
+          val lastCategoryId = lastUsedCategoryPreference.get()
+          val category = categories.find { it.id == lastCategoryId } ?: categories.firstOrNull()
 
-            val lastCategoryId = lastUsedCategoryPreference.get()
-            val category = categories.find { it.id == lastCategoryId }
-              ?: categories.firstOrNull()
-
-            flowOf(Action.CategoriesUpdate(categories), Action.SetSelectedCategory(category))
-          }
+          flowOf(Action.CategoriesUpdate(categories), Action.SetSelectedCategory(category))
         }
       }
     }
 
-    var subscribedCategory: Long? = null
+    var subscribedCategory: Category? = null
     sideEffects += FlowSwitchSideEffect("Subscribe selected category") f@{ stateFn, action ->
       if (action !is Action.SetSelectedCategory) return@f null
-      val selectedId = stateFn().selectedCategoryId
-      if (subscribedCategory == selectedId) return@f null
-      subscribedCategory = selectedId
+      val category = stateFn().selectedCategory
+      if (subscribedCategory == category) return@f null
+      subscribedCategory = category
 
       suspend {
-        if (selectedId == null) {
+        if (category == null) {
           flowOf(Action.LibraryUpdate(emptyList()))
         } else {
-          lastUsedCategoryPreference.set(selectedId)
+          lastUsedCategoryPreference.set(category.id)
+          val sorting = if (category.useOwnFilters) category.sort else lastSortPreference.get()
+          val filters = if (category.useOwnFilters) category.filters else filtersPreference.get()
 
-          getLibraryCategory.subscribe(selectedId)
-            .map { Action.LibraryUpdate(it) }
+          getLibraryCategory.subscribe(category.id, sorting).map { Action.LibraryUpdate(it) }
         }
       }
     }
 
     sideEffects += FlowSwitchSideEffect("Update selected category") f@{ stateFn, action ->
       if (action !is Action.UpdateCategory) return@f null
-      val categoryId = stateFn().selectedCategoryId ?: return@f null
+      val categoryId = stateFn().selectedCategory?.id ?: return@f null
 
       suspend {
         GlobalScope.launch {
@@ -128,50 +127,23 @@ class LibraryPresenter @Inject constructor(
       }
     }
 
+    sideEffects += EmptySideEffect("Update filters and sorting") f@{ stateFn, action ->
+      when (action) {
+        is Action.SetFilters -> suspend {
+          stateFn().selectedCategory?.let { setCategoryFilters.await(it, action.filters) }
+        }
+        is Action.SetSorting -> suspend {
+          stateFn().selectedCategory?.let { setCategorySorting.await(it, action.sort) }
+        }
+        Action.ToggleGlobalFilters -> suspend {
+          stateFn().selectedCategory?.let { setCategoryUseOwnFilters.await(it, !it.useOwnFilters) }
+        }
+        else -> null
+      }
+    }
+
     return sideEffects
   }
-
-//  @Suppress("unused_parameter")
-//  private fun librarySideEffect(
-//    actions: Observable<Action>,
-//    stateFn: StateAccessor<ViewState>
-//  ): Observable<Action.LibraryUpdate> {
-//    val state = stateFn()
-//    //getLibrary.setFilters(state.filters)
-//    getLibrary.setSorting(state.sort)
-//
-//    return actions.ofType<Action.SetFilters>()
-//      .startWith(Action.SetFilters(state.filters)) // TODO check threading
-//      .switchMap { getLibrary.interact(it.filters).onBackpressureLatest().toObservable() }
-//      .subscribeOn(schedulers.io)
-//      .map(Action::LibraryUpdate)
-//  }
-
-//  @Suppress("unused_parameter")
-//  private fun setFiltersSideEffect(
-//    actions: Observable<Action>,
-//    stateFn: StateAccessor<ViewState>
-//  ): Observable<Action> {
-//    return actions.ofType<Action.SetFilters>()
-//      .flatMap { action ->
-//        filtersPreference.set(action.filters)
-//        //getLibrary.setFilters(action.filters)
-//        Observable.empty<Action>()
-//      }
-//  }
-//
-//  @Suppress("unused_parameter")
-//  private fun setSortSideEffect(
-//    actions: Observable<Action>,
-//    stateFn: StateAccessor<ViewState>
-//  ): Observable<Action> {
-//    return actions.ofType<Action.SetSorting>()
-//      .flatMap { action ->
-//        lastSortPreference.set(action.sort)
-//        //getLibrary.setSorting(action.sort)
-//        Observable.empty<Action>()
-//      }
-//  }
 
   fun setSelectedCategory(position: Int) {
     val category = state.value?.categories?.getOrNull(position) ?: return

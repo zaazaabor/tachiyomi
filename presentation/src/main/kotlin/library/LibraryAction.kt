@@ -27,6 +27,8 @@ sealed class Action {
       state.copy(sort = sort)
   }
 
+  object ToggleGlobalFilters : Action()
+
   data class LibraryUpdate(val library: List<LibraryManga>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(library = library)
@@ -34,22 +36,13 @@ sealed class Action {
 
   data class CategoriesUpdate(val categories: List<Category>) : Action() {
     override fun reduce(state: ViewState) =
-      state.copy(
-        categories = categories,
-        selectedCategoryId = state.selectedCategoryId?.let { selectedId ->
-          if (categories.any { it.id == selectedId }) {
-            selectedId
-          } else {
-            categories.firstOrNull()?.id
-          }
-        }
-      )
+      state.copy(categories = categories)
   }
 
   data class SetSelectedCategory(val category: Category?) : Action() {
     override fun reduce(state: ViewState): ViewState {
       val selectedCategory = state.categories.find { it.id == category?.id }
-      return state.copy(selectedCategoryId = selectedCategory?.id)
+      return state.copy(selectedCategory = selectedCategory)
     }
   }
 

@@ -15,7 +15,7 @@ import tachiyomi.domain.library.model.LibrarySort
 
 data class ViewState(
   val categories: List<Category> = emptyList(),
-  val selectedCategoryId: Long? = null,
+  val selectedCategory: Category? = null,
   val library: List<LibraryManga> = emptyList(),
   val filters: List<LibraryFilter> = emptyList(),
   val sort: LibrarySort = LibrarySort.Title(true),

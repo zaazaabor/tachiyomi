@@ -10,9 +10,12 @@ package tachiyomi.domain.manga.interactor
 
 import io.reactivex.Single
 import tachiyomi.core.db.Transaction
+import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.MangaBase
+import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.ChapterRepository
+import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.manga.util.ChapterRecognition
 import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.model.MangaInfo
@@ -21,6 +24,7 @@ import javax.inject.Provider
 
 class SyncChaptersFromSource @Inject constructor(
   private val chapterRepository: ChapterRepository,
+  private val mangaRepository: MangaRepository,
   private val sourceManager: SourceManager,
   private val transactions: Provider<Transaction>
 ) {
@@ -128,6 +132,10 @@ class SyncChaptersFromSource @Inject constructor(
         chapterRepository.delete(diff.deleted.map { it.id })
       }
       chapterRepository.saveNewOrder(sourceChapters)
+
+      // Set this manga as updated since chapters were changed
+      val mangaUpdate = MangaUpdate(manga.id, lastUpdate = Optional.of(System.currentTimeMillis()))
+      mangaRepository.savePartial(mangaUpdate)
     }
 
     Single.just(notifyDiff)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -21,29 +22,38 @@ class GetLibraryCategory @Inject constructor(
   private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun execute(categoryId: Long): List<LibraryManga> {
+  fun execute(
+    categoryId: Long,
+    sort: LibrarySort = LibrarySort.Title(true)
+  ): List<LibraryManga> {
     return when (categoryId) {
-      Category.ALL_ID -> libraryRepository.findAll()
-      Category.UNCATEGORIZED_ID -> libraryRepository.findUncategorized()
-      else -> libraryRepository.findForCategory(categoryId)
+      Category.ALL_ID -> libraryRepository.findAll(sort)
+      Category.UNCATEGORIZED_ID -> libraryRepository.findUncategorized(sort)
+      else -> libraryRepository.findForCategory(categoryId, sort)
     }
   }
 
-  suspend fun await(categoryId: Long): List<LibraryManga> {
+  suspend fun await(
+    categoryId: Long,
+    sort: LibrarySort = LibrarySort.Title(true)
+  ): List<LibraryManga> {
     return withContext(dispatchers.io) {
       when (categoryId) {
-        Category.ALL_ID -> libraryRepository.findAll()
-        Category.UNCATEGORIZED_ID -> libraryRepository.findUncategorized()
-        else -> libraryRepository.findForCategory(categoryId)
+        Category.ALL_ID -> libraryRepository.findAll(sort)
+        Category.UNCATEGORIZED_ID -> libraryRepository.findUncategorized(sort)
+        else -> libraryRepository.findForCategory(categoryId, sort)
       }
     }
   }
 
-  fun subscribe(categoryId: Long): Flow<List<LibraryManga>> {
+  fun subscribe(
+    categoryId: Long,
+    sort: LibrarySort = LibrarySort.Title(true)
+  ): Flow<List<LibraryManga>> {
     return when (categoryId) {
-      Category.ALL_ID -> libraryRepository.subscribeAll()
-      Category.UNCATEGORIZED_ID -> libraryRepository.subscribeUncategorized()
-      else -> libraryRepository.subscribeToCategory(categoryId)
+      Category.ALL_ID -> libraryRepository.subscribeAll(sort)
+      Category.UNCATEGORIZED_ID -> libraryRepository.subscribeUncategorized(sort)
+      else -> libraryRepository.subscribeToCategory(categoryId, sort)
     }
   }
 
