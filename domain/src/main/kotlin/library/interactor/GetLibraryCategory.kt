@@ -14,6 +14,7 @@ import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -24,7 +25,7 @@ class GetLibraryCategory @Inject constructor(
 
   fun execute(
     categoryId: Long,
-    sort: LibrarySort = LibrarySort.Title(true)
+    sort: LibrarySorting = LibrarySorting(LibrarySort.Title, true)
   ): List<LibraryManga> {
     return when (categoryId) {
       Category.ALL_ID -> libraryRepository.findAll(sort)
@@ -35,7 +36,7 @@ class GetLibraryCategory @Inject constructor(
 
   suspend fun await(
     categoryId: Long,
-    sort: LibrarySort = LibrarySort.Title(true)
+    sort: LibrarySorting = LibrarySorting(LibrarySort.Title, true)
   ): List<LibraryManga> {
     return withContext(dispatchers.io) {
       when (categoryId) {
@@ -48,7 +49,7 @@ class GetLibraryCategory @Inject constructor(
 
   fun subscribe(
     categoryId: Long,
-    sort: LibrarySort = LibrarySort.Title(true)
+    sort: LibrarySorting = LibrarySorting(LibrarySort.Title, true)
   ): Flow<List<LibraryManga>> {
     return when (categoryId) {
       Category.ALL_ID -> libraryRepository.subscribeAll(sort)

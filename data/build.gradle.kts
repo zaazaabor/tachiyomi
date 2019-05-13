@@ -27,7 +27,6 @@ dependencies {
   implementation(Deps.kotson)
   implementation(Deps.workManager.runtime)
   implementation(Deps.workManager.rx2)
-  implementation(Deps.androidX.concurrent)
 
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.smoothie)

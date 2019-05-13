@@ -12,10 +12,10 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import tachiyomi.core.db.asBlocking
-import tachiyomi.core.db.toOptional
-import tachiyomi.core.stdlib.Optional
+import tachiyomi.core.rx.asFlow
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.data.manga.sql.MangaUpdatePutResolver
 import tachiyomi.domain.manga.model.Manga
@@ -27,7 +27,7 @@ internal class MangaRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : MangaRepository {
 
-  override fun subscribe(mangaId: Long): Observable<Optional<Manga>> {
+  override fun subscribe(mangaId: Long): Flow<Manga?> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -38,11 +38,11 @@ internal class MangaRepositoryImpl @Inject constructor(
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
-      .map { it.toOptional() }
-      .toObservable()
+      .asFlow()
+      .map { it.orNull() }
   }
 
-  override fun subscribe(key: String, sourceId: Long): Observable<Optional<Manga>> {
+  override fun subscribe(key: String, sourceId: Long): Flow<Manga?> {
     return storio.get()
       .`object`(Manga::class.java)
       .withQuery(Query.builder()
@@ -53,8 +53,8 @@ internal class MangaRepositoryImpl @Inject constructor(
       .prepare()
       .asRxFlowable(BackpressureStrategy.LATEST)
       .distinctUntilChanged()
-      .map { it.toOptional() }
-      .toObservable()
+      .asFlow()
+      .map { it.orNull() }
   }
 
   override fun find(mangaId: Long): Manga? {

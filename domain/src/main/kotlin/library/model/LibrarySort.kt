@@ -8,46 +8,46 @@
 
 package tachiyomi.domain.library.model
 
-sealed class LibrarySort {
+enum class LibrarySort {
+  Title,
+  LastRead,
+  LastUpdated,
+  Unread,
+  TotalChapters,
+  Source;
+}
 
-  abstract val ascending: Boolean
-
-  data class Title(override val ascending: Boolean) : LibrarySort()
-  data class LastRead(override val ascending: Boolean) : LibrarySort()
-  data class LastUpdated(override val ascending: Boolean) : LibrarySort()
-  data class Unread(override val ascending: Boolean) : LibrarySort()
-  data class TotalChapters(override val ascending: Boolean) : LibrarySort()
-  data class Source(override val ascending: Boolean) : LibrarySort()
+data class LibrarySorting(val type: LibrarySort, val isAscending: Boolean) {
 
   companion object
 }
 
-fun LibrarySort.serialize(): String {
-  val className = when (this) {
-    is LibrarySort.Title -> "Title"
-    is LibrarySort.LastRead -> "LastRead"
-    is LibrarySort.LastUpdated -> "LastUpdated"
-    is LibrarySort.Unread -> "Unread"
-    is LibrarySort.TotalChapters -> "TotalChapters"
-    is LibrarySort.Source -> "Source"
+fun LibrarySorting.serialize(): String {
+  val className = when (type) {
+    LibrarySort.Title -> "Title"
+    LibrarySort.LastRead -> "LastRead"
+    LibrarySort.LastUpdated -> "LastUpdated"
+    LibrarySort.Unread -> "Unread"
+    LibrarySort.TotalChapters -> "TotalChapters"
+    LibrarySort.Source -> "Source"
   }
-  val order = if (ascending) "a" else "d"
+  val order = if (isAscending) "a" else "d"
   return "$className;$order"
 }
 
-fun LibrarySort.Companion.deserialize(serialized: String): LibrarySort {
-  if (serialized.isEmpty()) return LibrarySort.Title(true)
+fun LibrarySorting.Companion.deserialize(serialized: String): LibrarySorting {
+  if (serialized.isEmpty()) return LibrarySorting(LibrarySort.Title, true)
 
   val values = serialized.split(";")
   val className = values[0]
   val ascending = values[1] == "a"
 
   return when (className) {
-    "LastRead" -> LibrarySort.LastRead(ascending)
-    "LastUpdated" -> LibrarySort.LastUpdated(ascending)
-    "Unread" -> LibrarySort.Unread(ascending)
-    "TotalChapters" -> LibrarySort.TotalChapters(ascending)
-    "Source" -> LibrarySort.Source(ascending)
-    else -> LibrarySort.Title(ascending)
+    "LastRead" -> LibrarySorting(LibrarySort.LastRead, ascending)
+    "LastUpdated" -> LibrarySorting(LibrarySort.LastUpdated, ascending)
+    "Unread" -> LibrarySorting(LibrarySort.Unread, ascending)
+    "TotalChapters" -> LibrarySorting(LibrarySort.TotalChapters, ascending)
+    "Source" -> LibrarySorting(LibrarySort.Source, ascending)
+    else -> LibrarySorting(LibrarySort.Title, ascending)
   }
 }

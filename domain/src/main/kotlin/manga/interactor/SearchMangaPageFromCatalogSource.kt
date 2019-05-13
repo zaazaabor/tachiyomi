@@ -8,29 +8,25 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Flowable
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.FilterList
 import javax.inject.Inject
 
 class SearchMangaPageFromCatalogSource @Inject internal constructor(
-  private val getOrAddMangaFromSource: GetOrAddMangaFromSource
+  private val getOrAddMangaFromSource: GetOrAddMangaFromSource,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(
-    source: CatalogSource,
-    filters: FilterList,
-    page: Int
-  ): Single<MangasPage> {
-    return Single.defer {
+  suspend fun await(source: CatalogSource, filters: FilterList, page: Int): MangasPage {
+    return withContext(dispatchers.io) {
       val sourcePage = source.fetchMangaList(filters, page)
+      val localPage = sourcePage.mangas.map { getOrAddMangaFromSource.await(it, source.id) }
 
-      Flowable.fromIterable(sourcePage.mangas)
-        .concatMapSingle { getOrAddMangaFromSource.interact(it, source.id) }
-        .toList()
-        .map { MangasPage(page, it, sourcePage.hasNextPage) }
+      MangasPage(page, localPage, sourcePage.hasNextPage)
     }
   }
+
 }

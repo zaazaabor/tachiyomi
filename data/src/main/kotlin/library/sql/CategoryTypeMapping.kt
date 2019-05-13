@@ -28,7 +28,7 @@ import tachiyomi.data.library.sql.CategoryTable.COL_USE_OWN_FILTERS
 import tachiyomi.data.library.sql.CategoryTable.TABLE
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryFilter
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.model.deserialize
 import tachiyomi.domain.library.model.deserializeList
 import tachiyomi.domain.library.model.serialize
@@ -80,7 +80,7 @@ internal interface CategoryCursorMapper {
     val rawSorting = cursor.getString(cursor.getColumnIndex(COL_SORTING))
 
     val filters = LibraryFilter.deserializeList(rawFilters)
-    val sorting = LibrarySort.deserialize(rawSorting)
+    val sorting = LibrarySorting.deserialize(rawSorting)
 
     return Category(id, name, order, flags, useOwnFilters, filters, sorting)
   }

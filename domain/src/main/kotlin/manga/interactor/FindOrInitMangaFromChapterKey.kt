@@ -8,8 +8,8 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Maybe
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.model.MangaInfo
@@ -17,23 +17,22 @@ import javax.inject.Inject
 
 class FindOrInitMangaFromChapterKey @Inject constructor(
   private val getOrAddMangaFromSource: GetOrAddMangaFromSource,
-  private val mangaInitializer: MangaInitializer
+  private val mangaInitializer: MangaInitializer,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(chapterKey: String, source: DeepLinkSource): Single<Manga> {
-    return Single
-      .defer {
-        val mangaKey = source.findMangaKey(chapterKey)
-        if (mangaKey != null) {
-          val mangaInfo = MangaInfo(key = mangaKey, title = "")
-          getOrAddMangaFromSource.interact(mangaInfo, source.id)
-        } else {
-          Single.error(Exception("Manga key not found"))
-        }
+  suspend fun await(chapterKey: String, source: DeepLinkSource): Manga {
+    return withContext(dispatchers.io) {
+      val mangaKey = source.findMangaKey(chapterKey)
+      if (mangaKey != null) {
+        val mangaInfo = MangaInfo(key = mangaKey, title = "")
+        val manga = getOrAddMangaFromSource.await(mangaInfo, source.id)
+        mangaInitializer.await(source, manga)
+        manga
+      } else {
+        throw Exception("Manga key not found")
       }
-      .flatMap {
-        mangaInitializer.interact(source, it).switchIfEmpty(Maybe.just(it)).toSingle()
-      }
+    }
   }
 
 }

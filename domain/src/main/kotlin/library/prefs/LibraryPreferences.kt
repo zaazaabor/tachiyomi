@@ -10,16 +10,18 @@ package tachiyomi.domain.library.prefs
 
 import tachiyomi.core.prefs.Preference
 import tachiyomi.domain.library.model.LibraryFilter
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 
 interface LibraryPreferences {
 
-  fun lastSorting(): Preference<LibrarySort>
+  fun lastSorting(): Preference<LibrarySorting>
 
   fun filters(): Preference<List<LibraryFilter>>
 
   fun lastUsedCategory(): Preference<Long>
 
   fun defaultCategory(): Preference<Long>
+
+  fun quickCategories(): Preference<Boolean>
 
 }

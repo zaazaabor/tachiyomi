@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Maybe
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.manga.model.Manga
@@ -20,12 +20,8 @@ class GetManga @Inject constructor(
   private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(mangaId: Long): Maybe<Manga> {
-    return Maybe.fromCallable { mangaRepository.find(mangaId) }
-  }
-
-  fun interact(mangaKey: String, sourceId: Long): Maybe<Manga> {
-    return Maybe.fromCallable { mangaRepository.find(mangaKey, sourceId) }
+  fun subscribe(mangaId: Long): Flow<Manga?> {
+    return mangaRepository.subscribe(mangaId)
   }
 
   suspend fun await(mangaId: Long): Manga? {

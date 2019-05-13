@@ -8,7 +8,8 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Maybe
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
@@ -23,12 +24,13 @@ import javax.inject.Inject
 class MangaInitializer @Inject internal constructor(
   private val mangaRepository: MangaRepository,
   private val sourceManager: SourceManager,
-  private val libraryCovers: LibraryCovers
+  private val libraryCovers: LibraryCovers,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
   // TODO error handling
-  fun interact(source: Source, manga: Manga, force: Boolean = false) = Maybe.defer {
-    if (!force && lastInitBelowMinInterval(manga)) return@defer Maybe.empty<Manga>()
+  suspend fun await(source: Source, manga: Manga, force: Boolean = false): Manga? {
+    if (!force && lastInitBelowMinInterval(manga)) return null
 
     val now = System.currentTimeMillis()
 
@@ -42,7 +44,7 @@ class MangaInitializer @Inject internal constructor(
       status = manga.status,
       cover = manga.cover
     )
-    val newInfo = source.fetchMangaDetails(infoQuery)
+    val newInfo = withContext(dispatchers.io) { source.fetchMangaDetails(infoQuery) }
 
     val update = MangaUpdate(
       id = manga.id,
@@ -77,15 +79,17 @@ class MangaInitializer @Inject internal constructor(
       lastInit = now
     )
 
-    mangaRepository.savePartial(update)
+    withContext(dispatchers.io) {
+      mangaRepository.savePartial(update)
+      libraryCovers.find(manga.id).setLastModified(now)
+    }
 
-    Maybe.just(updatedManga)
-      .doOnSuccess { libraryCovers.find(manga.id).setLastModified(now) }
+    return updatedManga
   }
 
-  fun interact(manga: Manga, force: Boolean = false): Maybe<Manga> {
-    val source = sourceManager.get(manga.sourceId) ?: return Maybe.empty()
-    return interact(source, manga, force)
+  suspend fun await(manga: Manga, force: Boolean = false): Manga? {
+    val source = sourceManager.get(manga.sourceId) ?: return null
+    return await(source, manga, force)
   }
 
   private fun lastInitBelowMinInterval(manga: Manga): Boolean {

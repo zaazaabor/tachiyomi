@@ -9,14 +9,39 @@
 package tachiyomi.domain.manga.interactor
 
 import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.source.model.MangaInfo
 import javax.inject.Inject
 
 class GetOrAddMangaFromSource @Inject internal constructor(
-  private val mangaRepository: MangaRepository
+  private val mangaRepository: MangaRepository,
+  private val dispatchers: CoroutineDispatchers
 ) {
+
+  suspend fun await(manga: MangaInfo, sourceId: Long) = withContext(dispatchers.io) {
+    val dbManga = mangaRepository.find(manga.key, sourceId)
+    if (dbManga != null) {
+      dbManga
+    } else {
+      val newManga = Manga(
+        id = -1,
+        sourceId = sourceId,
+        key = manga.key,
+        title = manga.title,
+        artist = manga.artist,
+        author = manga.author,
+        description = manga.description,
+        genres = manga.genres,
+        status = manga.status,
+        cover = manga.cover
+      )
+      val id = mangaRepository.save(newManga)!!
+      newManga.copy(id = id)
+    }
+  }
 
   fun interact(manga: MangaInfo, sourceId: Long) = Single.fromCallable {
     val dbManga = mangaRepository.find(manga.key, sourceId)

@@ -21,7 +21,7 @@ import tachiyomi.data.library.sql.MangaCategoryTable
 import tachiyomi.data.manga.sql.ChapterTable
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -29,7 +29,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
   private val storio: StorIOSQLite
 ) : LibraryRepository {
 
-  private fun preparedAll(sort: LibrarySort): PreparedGetListOfObjects<LibraryManga> {
+  private fun preparedAll(sort: LibrarySorting): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -40,7 +40,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  private fun preparedUncategorized(sort: LibrarySort): PreparedGetListOfObjects<LibraryManga> {
+  private fun preparedUncategorized(sort: LibrarySorting): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
       .withQuery(RawQuery.builder()
@@ -53,7 +53,7 @@ internal class LibraryRepositoryImpl @Inject constructor(
 
   private fun preparedToCategory(
     categoryId: Long,
-    sort: LibrarySort
+    sort: LibrarySorting
   ): PreparedGetListOfObjects<LibraryManga> {
     return storio.get()
       .listOfObjects(LibraryManga::class.java)
@@ -66,27 +66,30 @@ internal class LibraryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeAll(sort: LibrarySort): Flow<List<LibraryManga>> {
+  override fun subscribeAll(sort: LibrarySorting): Flow<List<LibraryManga>> {
     return preparedAll(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeUncategorized(sort: LibrarySort): Flow<List<LibraryManga>> {
+  override fun subscribeUncategorized(sort: LibrarySorting): Flow<List<LibraryManga>> {
     return preparedUncategorized(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun subscribeToCategory(categoryId: Long, sort: LibrarySort): Flow<List<LibraryManga>> {
+  override fun subscribeToCategory(
+    categoryId: Long,
+    sort: LibrarySorting
+  ): Flow<List<LibraryManga>> {
     return preparedToCategory(categoryId, sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
   }
 
-  override fun findAll(sort: LibrarySort): List<LibraryManga> {
+  override fun findAll(sort: LibrarySorting): List<LibraryManga> {
     return preparedAll(sort).asBlocking()
   }
 
-  override fun findUncategorized(sort: LibrarySort): List<LibraryManga> {
+  override fun findUncategorized(sort: LibrarySorting): List<LibraryManga> {
     return preparedUncategorized(sort).asBlocking()
   }
 
-  override fun findForCategory(categoryId: Long, sort: LibrarySort): List<LibraryManga> {
+  override fun findForCategory(categoryId: Long, sort: LibrarySorting): List<LibraryManga> {
     return preparedToCategory(categoryId, sort).asBlocking()
   }
 

@@ -8,8 +8,9 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
 import tachiyomi.core.db.Transaction
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.MangaBase
@@ -26,7 +27,8 @@ class SyncChaptersFromSource @Inject constructor(
   private val chapterRepository: ChapterRepository,
   private val mangaRepository: MangaRepository,
   private val sourceManager: SourceManager,
-  private val transactions: Provider<Transaction>
+  private val transactions: Provider<Transaction>,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
   data class Diff(
@@ -35,17 +37,18 @@ class SyncChaptersFromSource @Inject constructor(
     val updated: List<Chapter> = emptyList()
   )
 
-  fun interact(manga: MangaBase): Single<Diff> = Single.defer {
+  suspend fun await(manga: MangaBase): Result {
     val mangaInfo = MangaInfo(manga.key, manga.title)
     val source = sourceManager.get(manga.sourceId)!!
-    val rawSourceChapters = source.fetchChapterList(mangaInfo)
 
+    // Chapters from source.
+    val rawSourceChapters = withContext(dispatchers.io) { source.fetchChapterList(mangaInfo) }
     if (rawSourceChapters.isEmpty()) {
-      return@defer Single.error<Diff>(Exception("No chapters found"))
+      return Result.NoChaptersFound
     }
 
     // Chapters from db.
-    val dbChapters = chapterRepository.findForManga(manga.id)
+    val dbChapters = withContext(dispatchers.io) { chapterRepository.findForManga(manga.id) }
 
     // Set the date fetch for new items in reverse order to allow another sorting method.
     // Sources MUST return the chapters from most to less recent, which is common.
@@ -108,7 +111,7 @@ class SyncChaptersFromSource @Inject constructor(
 
     // Return if there's nothing to add, delete or change, avoiding unnecessary db transactions.
     if (toAdd.isEmpty() && toDelete.isEmpty() && toUpdate.isEmpty()) {
-      return@defer Single.just(Diff())
+      return Result.Success(Diff())
     }
 
     val diff = Diff(toAdd, toDelete, toUpdate)
@@ -124,21 +127,24 @@ class SyncChaptersFromSource @Inject constructor(
 
     val chaptersToSave = diff.added + diff.updated
 
-    transactions.get().withAction {
-      if (chaptersToSave.isNotEmpty()) {
-        chapterRepository.save(chaptersToSave)
-      }
-      if (diff.deleted.isNotEmpty()) {
-        chapterRepository.delete(diff.deleted.map { it.id })
-      }
-      chapterRepository.saveNewOrder(sourceChapters)
+    withContext(dispatchers.io) {
+      transactions.get().withAction {
+        if (chaptersToSave.isNotEmpty()) {
+          chapterRepository.save(chaptersToSave)
+        }
+        if (diff.deleted.isNotEmpty()) {
+          chapterRepository.delete(diff.deleted.map { it.id })
+        }
+        chapterRepository.saveNewOrder(sourceChapters)
 
-      // Set this manga as updated since chapters were changed
-      val mangaUpdate = MangaUpdate(manga.id, lastUpdate = Optional.of(System.currentTimeMillis()))
-      mangaRepository.savePartial(mangaUpdate)
+        // Set this manga as updated since chapters were changed
+        val mangaUpdate =
+          MangaUpdate(manga.id, lastUpdate = Optional.of(System.currentTimeMillis()))
+        mangaRepository.savePartial(mangaUpdate)
+      }
     }
 
-    Single.just(notifyDiff)
+    return Result.Success(notifyDiff)
   }
 
   // Checks if the chapter in db needs update
@@ -147,6 +153,11 @@ class SyncChaptersFromSource @Inject constructor(
       dbChapter.name != sourceChapter.name ||
       dbChapter.dateUpload != sourceChapter.dateUpload ||
       dbChapter.number != sourceChapter.number
+  }
+
+  sealed class Result {
+    data class Success(val diff: Diff) : Result()
+    object NoChaptersFound : Result()
   }
 
 }

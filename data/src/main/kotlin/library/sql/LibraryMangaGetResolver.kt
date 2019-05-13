@@ -13,6 +13,7 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.data.manga.sql.ChapterTable as Chapter
 import tachiyomi.data.manga.sql.MangaTable as Manga
 
@@ -79,37 +80,37 @@ internal object LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>() {
       ON ${Manga.COL_ID} = ${Chapter.COL_MANGA_ID}
     GROUP BY ${Manga.COL_ID}"""
 
-  fun getAllQuery(sort: LibrarySort) = when (sort) {
-    is LibrarySort.Title -> "$allQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
-    is LibrarySort.LastRead -> allQuery // TODO implement history
-    is LibrarySort.LastUpdated -> "$allQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
-    is LibrarySort.Unread -> "$allQuery ORDER BY unread ${sort.dir}"
-    is LibrarySort.TotalChapters -> "$allQueryWithTotalChapters ORDER BY total ${sort.dir}"
-    is LibrarySort.Source -> "$allQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
+  fun getAllQuery(sort: LibrarySorting) = when (sort.type) {
+    LibrarySort.Title -> "$allQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
+    LibrarySort.LastRead -> allQuery // TODO implement history
+    LibrarySort.LastUpdated -> "$allQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
+    LibrarySort.Unread -> "$allQuery ORDER BY unread ${sort.dir}"
+    LibrarySort.TotalChapters -> "$allQueryWithTotalChapters ORDER BY total ${sort.dir}"
+    LibrarySort.Source -> "$allQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
       "${Manga.COL_TITLE} ${sort.dir}"
   }
 
-  fun getUncategorizedQuery(sort: LibrarySort) = when (sort) {
-    is LibrarySort.Title -> "$uncatQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
-    is LibrarySort.LastRead -> uncatQuery // TODO implement history
-    is LibrarySort.LastUpdated -> "$uncatQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
-    is LibrarySort.Unread -> "$uncatQuery ORDER BY unread ${sort.dir}"
-    is LibrarySort.TotalChapters -> "$uncatQueryWithTotalChapters ORDER BY total ${sort.dir}"
-    is LibrarySort.Source -> "$uncatQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
+  fun getUncategorizedQuery(sort: LibrarySorting) = when (sort.type) {
+    LibrarySort.Title -> "$uncatQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
+    LibrarySort.LastRead -> uncatQuery // TODO implement history
+    LibrarySort.LastUpdated -> "$uncatQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
+    LibrarySort.Unread -> "$uncatQuery ORDER BY unread ${sort.dir}"
+    LibrarySort.TotalChapters -> "$uncatQueryWithTotalChapters ORDER BY total ${sort.dir}"
+    LibrarySort.Source -> "$uncatQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
       "${Manga.COL_TITLE} ${sort.dir}"
   }
 
-  fun getCategoryQuery(sort: LibrarySort) = when (sort) {
-    is LibrarySort.Title -> "$categoryQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
-    is LibrarySort.LastRead -> categoryQuery // TODO implement history
-    is LibrarySort.LastUpdated -> "$categoryQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
-    is LibrarySort.Unread -> "$categoryQuery ORDER BY unread ${sort.dir}"
-    is LibrarySort.TotalChapters -> "$categoryQueryWithTotalChapters ORDER BY total ${sort.dir}"
-    is LibrarySort.Source -> "$categoryQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
+  fun getCategoryQuery(sort: LibrarySorting) = when (sort.type) {
+    LibrarySort.Title -> "$categoryQuery ORDER BY ${Manga.COL_TITLE} ${sort.dir}"
+    LibrarySort.LastRead -> categoryQuery // TODO implement history
+    LibrarySort.LastUpdated -> "$categoryQuery ORDER BY ${Manga.COL_LAST_UPDATE} ${sort.dir}"
+    LibrarySort.Unread -> "$categoryQuery ORDER BY unread ${sort.dir}"
+    LibrarySort.TotalChapters -> "$categoryQueryWithTotalChapters ORDER BY total ${sort.dir}"
+    LibrarySort.Source -> "$categoryQuery ORDER BY ${Manga.COL_SOURCE} ${sort.dir}, " +
       "${Manga.COL_TITLE} ${sort.dir}"
   }
 
-  private val LibrarySort.dir get() = if (ascending) "ASC" else "DESC"
+  private val LibrarySorting.dir get() = if (isAscending) "ASC" else "DESC"
 
   override fun mapFromCursor(storIOSQLite: StorIOSQLite, cursor: Cursor): LibraryManga {
     val id = cursor.getLong(cursor.getColumnIndex(Manga.COL_ID))

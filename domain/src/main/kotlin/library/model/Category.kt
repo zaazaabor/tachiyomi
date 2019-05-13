@@ -15,7 +15,7 @@ data class Category(
   val updateInterval: Int = 0,
   val useOwnFilters: Boolean = false,
   val filters: List<LibraryFilter> = emptyList(),
-  val sort: LibrarySort = LibrarySort.Title(true)
+  val sort: LibrarySorting = LibrarySorting(LibrarySort.Title, true)
 ) {
 
   val isUncategorized get() = id == UNCATEGORIZED_ID

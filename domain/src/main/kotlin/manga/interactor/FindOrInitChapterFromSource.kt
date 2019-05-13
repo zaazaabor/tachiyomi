@@ -8,25 +8,28 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Single
+import kotlinx.coroutines.withContext
+import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import javax.inject.Inject
 
 class FindOrInitChapterFromSource @Inject constructor(
   private val getChapter: GetChapter,
-  private val syncChaptersFromSource: SyncChaptersFromSource
+  private val syncChaptersFromSource: SyncChaptersFromSource,
+  private val dispatchers: CoroutineDispatchers
 ) {
 
-  fun interact(
-    chapterKey: String,
-    manga: Manga
-  ): Single<Chapter> {
-    return getChapter.interact(chapterKey, manga.id)
-      .switchIfEmpty(Single.defer {
-        syncChaptersFromSource.interact(manga)
-          .flatMap { getChapter.interact(chapterKey, manga.id).toSingle() }
-      })
+  suspend fun await(chapterKey: String, manga: Manga): Chapter? {
+    return withContext(dispatchers.io) {
+      val chapter = getChapter.await(chapterKey, manga.id)
+      if (chapter != null) {
+        chapter
+      } else {
+        syncChaptersFromSource.await(manga)
+        getChapter.await(chapterKey, manga.id)
+      }
+    }
   }
 
 }

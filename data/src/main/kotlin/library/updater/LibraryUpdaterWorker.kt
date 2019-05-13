@@ -9,12 +9,9 @@
 package tachiyomi.data.library.updater
 
 import android.content.Context
-import androidx.concurrent.futures.ResolvableFuture
-import androidx.work.ListenableWorker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
@@ -25,7 +22,7 @@ import javax.inject.Inject
 class LibraryUpdaterWorker(
   context: Context,
   params: WorkerParameters
-) : ListenableWorker(context, params) {
+) : CoroutineWorker(context, params) {
 
   @Inject
   lateinit var dispatchers: CoroutineDispatchers
@@ -39,19 +36,17 @@ class LibraryUpdaterWorker(
 
   private val categoryId = params.inputData.getLong(CATEGORY_KEY, -1)
 
-  override fun startWork(): ListenableFuture<Result> {
-    val future = ResolvableFuture.create<Result>()
+  override suspend fun doWork(): Result {
     Timber.debug { "Starting scheduled update for category $categoryId" }
     if (categoryId == -1L) {
-      future.set(Result.failure())
-      return future
+      return Result.failure()
     }
 
-    GlobalScope.launch(dispatchers.io) {
+    withContext(dispatchers.io) {
       updater.execute(categoryId).awaitWork()
-      future.set(Result.success())
     }
-    return future
+
+    return Result.success()
   }
 
   companion object {

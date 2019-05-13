@@ -33,7 +33,7 @@ class UpdateLibraryCategory @Inject constructor(
 ) {
 
   suspend fun execute(categoryId: Long): LibraryUpdater.QueueResult {
-    val operation: (Job) -> Any = { job ->
+    val operation: suspend (Job) -> Any = { job ->
       Timber.debug { "Updating category $categoryId ${Thread.currentThread()}" }
       notifier.start()
 
@@ -49,7 +49,7 @@ class UpdateLibraryCategory @Inject constructor(
         if (!job.isActive) break
 
         notifier.showProgress(manga, progress, total)
-        syncChaptersFromSource.interact(manga).ignoreElement().blockingAwait()
+        syncChaptersFromSource.await(manga)
       }
     }
 

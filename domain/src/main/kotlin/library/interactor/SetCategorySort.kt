@@ -14,7 +14,7 @@ import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.stdlib.Optional
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryUpdate
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.CategoryRepository
 import timber.log.Timber
@@ -27,7 +27,7 @@ class SetCategorySorting @Inject constructor(
   private val dispatchers: CoroutineDispatchers
 ) {
 
-  suspend fun await(category: Category, sorting: LibrarySort) = withContext(NonCancellable) {
+  suspend fun await(category: Category, sorting: LibrarySorting) = withContext(NonCancellable) {
     try {
       if (category.useOwnFilters) {
         val update = CategoryUpdate(category.id, sort = Optional.of(sorting))

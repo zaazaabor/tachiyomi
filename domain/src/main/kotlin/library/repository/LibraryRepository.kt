@@ -10,21 +10,21 @@ package tachiyomi.domain.library.repository
 
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 
 interface LibraryRepository {
 
-  fun subscribeAll(sort: LibrarySort): Flow<List<LibraryManga>>
+  fun subscribeAll(sort: LibrarySorting): Flow<List<LibraryManga>>
 
-  fun subscribeUncategorized(sort: LibrarySort): Flow<List<LibraryManga>>
+  fun subscribeUncategorized(sort: LibrarySorting): Flow<List<LibraryManga>>
 
-  fun subscribeToCategory(categoryId: Long, sort: LibrarySort): Flow<List<LibraryManga>>
+  fun subscribeToCategory(categoryId: Long, sort: LibrarySorting): Flow<List<LibraryManga>>
 
-  fun findAll(sort: LibrarySort): List<LibraryManga>
+  fun findAll(sort: LibrarySorting): List<LibraryManga>
 
-  fun findUncategorized(sort: LibrarySort): List<LibraryManga>
+  fun findUncategorized(sort: LibrarySorting): List<LibraryManga>
 
-  fun findForCategory(categoryId: Long, sort: LibrarySort): List<LibraryManga>
+  fun findForCategory(categoryId: Long, sort: LibrarySorting): List<LibraryManga>
 
   fun findFavoriteSourceIds(): List<Long>
 

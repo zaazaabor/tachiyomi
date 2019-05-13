@@ -13,6 +13,7 @@ import tachiyomi.core.prefs.PreferenceStore
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.model.deserialize
 import tachiyomi.domain.library.model.deserializeList
 import tachiyomi.domain.library.model.serialize
@@ -22,12 +23,12 @@ class LibraryPreferencesImpl internal constructor(
   private val preferenceStore: PreferenceStore
 ) : LibraryPreferences {
 
-  override fun lastSorting(): Preference<LibrarySort> {
-    return preferenceStore.getObject<LibrarySort>(
+  override fun lastSorting(): Preference<LibrarySorting> {
+    return preferenceStore.getObject(
       key = "last_sorting",
-      defaultValue = LibrarySort.Title(true),
+      defaultValue = LibrarySorting(LibrarySort.Title, true),
       serializer = { it.serialize() },
-      deserializer = { LibrarySort.deserialize(it) }
+      deserializer = { LibrarySorting.deserialize(it) }
     )
   }
 
@@ -46,6 +47,10 @@ class LibraryPreferencesImpl internal constructor(
 
   override fun defaultCategory(): Preference<Long> {
     return preferenceStore.getLong("default_category", Category.UNCATEGORIZED_ID)
+  }
+
+  override fun quickCategories(): Preference<Boolean> {
+    return preferenceStore.getBoolean("quick_categories", false)
   }
 
 }
