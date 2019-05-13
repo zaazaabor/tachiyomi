@@ -27,21 +27,21 @@ interface Source {
    *
    * @param manga the manga to update.
    */
-  fun fetchMangaDetails(manga: MangaInfo): MangaInfo
+  suspend fun fetchMangaDetails(manga: MangaInfo): MangaInfo
 
   /**
    * Returns an observable with all the available chapters for a manga.
    *
    * @param manga the manga to update.
    */
-  fun fetchChapterList(manga: MangaInfo): List<ChapterInfo>
+  suspend fun fetchChapterList(manga: MangaInfo): List<ChapterInfo>
 
   /**
    * Returns an observable with the list of pages a chapter has.
    *
    * @param chapter the chapter.
    */
-  fun fetchPageList(chapter: ChapterInfo): List<PageInfo>
+  suspend fun fetchPageList(chapter: ChapterInfo): List<PageInfo>
 
   /**
    * Returns a regex used to determine chapter information.

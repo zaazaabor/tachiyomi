@@ -1,5 +1,6 @@
 package tachiyomi.source
 
+import kotlinx.coroutines.delay
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.Filter
 import tachiyomi.source.model.FilterList
@@ -13,19 +14,19 @@ class TestSource : CatalogSource {
 
   override val name = "Test source"
   override val lang get() = "en"
-  override fun fetchMangaDetails(manga: MangaInfo): MangaInfo {
-    Thread.sleep(1000)
+  override suspend fun fetchMangaDetails(manga: MangaInfo): MangaInfo {
+    delay(1000)
     val noHipstersOffset = 10
     val picId = manga.title.split(" ")[1].toInt() + noHipstersOffset
     return manga.copy(cover = "https://picsum.photos/300/400/?image=$picId")
   }
 
-  override fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo {
-//    Thread.sleep(3000)
+  override suspend fun fetchMangaList(sort: Listing?, page: Int): MangasPageInfo {
+    delay(1000)
     return MangasPageInfo(getTestManga(page), true)
   }
 
-  override fun fetchMangaList(filters: FilterList, page: Int): MangasPageInfo {
+  override suspend fun fetchMangaList(filters: FilterList, page: Int): MangasPageInfo {
     var mangaList = getTestManga(page)
 
     filters.forEach { filter ->
@@ -37,13 +38,13 @@ class TestSource : CatalogSource {
     return MangasPageInfo(mangaList, true)
   }
 
-  override fun fetchChapterList(manga: MangaInfo): List<ChapterInfo> {
-    Thread.sleep(1000)
+  override suspend fun fetchChapterList(manga: MangaInfo): List<ChapterInfo> {
+    delay(1000)
     return getTestChapters()
   }
 
-  override fun fetchPageList(chapter: ChapterInfo): List<PageInfo> {
-    Thread.sleep(1000)
+  override suspend fun fetchPageList(chapter: ChapterInfo): List<PageInfo> {
+    delay(1000)
     return getTestPages()
   }
 
