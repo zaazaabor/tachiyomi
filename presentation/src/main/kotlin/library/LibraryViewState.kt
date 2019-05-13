@@ -12,13 +12,16 @@ import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 
 data class ViewState(
   val categories: List<Category> = emptyList(),
   val selectedCategory: Category? = null,
   val library: List<LibraryManga> = emptyList(),
   val filters: List<LibraryFilter> = emptyList(),
-  val sort: LibrarySort = LibrarySort.Title(true),
+  val sorting: LibrarySorting = LibrarySorting(LibrarySort.Title, true),
   val selectedManga: Set<Long> = emptySet(),
-  val showUpdatingCategory: Boolean = false
+  val showUpdatingCategory: Boolean = false,
+  val showQuickCategories: Boolean = false,
+  val sheetVisible: Boolean = false
 )

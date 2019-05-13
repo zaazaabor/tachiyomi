@@ -27,6 +27,8 @@ import tachiyomi.domain.library.interactor.SetCategoryUseOwnFilters
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.ui.presenter.BasePresenter
 import tachiyomi.ui.presenter.EmptySideEffect
@@ -45,11 +47,14 @@ class LibraryPresenter @Inject constructor(
 ) : BasePresenter() {
 
   val state = BehaviorRelay.create<ViewState>()
+
   private val lastSortPreference = libraryPreferences.lastSorting()
 
   private val filtersPreference = libraryPreferences.filters()
 
   private val lastUsedCategoryPreference = libraryPreferences.lastUsedCategory()
+
+  private val quickCategoriesPreference = libraryPreferences.quickCategories()
 
   private val store = scope.createStore(
     name = "Library presenter",
@@ -65,12 +70,12 @@ class LibraryPresenter @Inject constructor(
   }
 
   private fun getInitialViewState(): ViewState {
-    val lastSort = lastSortPreference.get()
     return ViewState(
       categories = emptyList(),
       library = emptyList(),
       filters = emptyList(),
-      sort = lastSort
+      sorting = lastSortPreference.get(),
+      showQuickCategories = quickCategoriesPreference.get()
     )
   }
 
@@ -91,18 +96,22 @@ class LibraryPresenter @Inject constructor(
     }
 
     var subscribedCategory: Category? = null
+    var subscribedSorting: LibrarySorting? = null
     sideEffects += FlowSwitchSideEffect("Subscribe selected category") f@{ stateFn, action ->
-      if (action !is Action.SetSelectedCategory) return@f null
-      val category = stateFn().selectedCategory
-      if (subscribedCategory == category) return@f null
+      if (action !is Action.SetSelectedCategory && action !is Action.SetSorting) return@f null
+      val state = stateFn()
+      val category = state.selectedCategory
+      val sorting = state.sorting
+      if (subscribedCategory == category && subscribedSorting == sorting) return@f null
       subscribedCategory = category
+      subscribedSorting = sorting
 
       suspend {
         if (category == null) {
           flowOf(Action.LibraryUpdate(emptyList()))
         } else {
           lastUsedCategoryPreference.set(category.id)
-          val sorting = if (category.useOwnFilters) category.sort else lastSortPreference.get()
+          //val sorting = if (category.useOwnFilters) category.sort else lastSortPreference.get()
           val filters = if (category.useOwnFilters) category.filters else filtersPreference.get()
 
           getLibraryCategory.subscribe(category.id, sorting).map { Action.LibraryUpdate(it) }
@@ -142,16 +151,32 @@ class LibraryPresenter @Inject constructor(
       }
     }
 
+    sideEffects += EmptySideEffect("Toggle quick categories") f@{ stateFn, action ->
+      if (action !is Action.ToggleQuickCategories) return@f null
+      suspend { quickCategoriesPreference.set(stateFn().showQuickCategories) }
+    }
+
     return sideEffects
   }
 
   fun setSelectedCategory(position: Int) {
     val category = state.value?.categories?.getOrNull(position) ?: return
+    setSelectedCategory(category)
+  }
+
+  fun setSelectedCategory(category: Category) {
     store.dispatch(Action.SetSelectedCategory(category))
   }
 
   fun updateSelectedCategory() {
     store.dispatch(Action.UpdateCategory)
+  }
+
+  fun setSelectedSort(sort: LibrarySort) {
+    val sorting = state.value?.sorting ?: return
+    if (sort == sorting.type) return
+
+    store.dispatch(Action.SetSorting(LibrarySorting(sort, sorting.isAscending)))
   }
 
   fun toggleMangaSelection(manga: LibraryManga) {
@@ -162,6 +187,14 @@ class LibraryPresenter @Inject constructor(
     store.dispatch(Action.UnselectMangas)
   }
 
+  fun showSheet() {
+    store.dispatch(Action.SetSheetVisibility(true))
+  }
+
+  fun hideSheet() {
+    store.dispatch(Action.SetSheetVisibility(false))
+  }
+
   fun setCategoriesForMangas(categoryIds: Collection<Long>, mangaIds: Collection<Long>) {
     scope.launch {
       val result = setCategoriesForMangas.await(categoryIds, mangaIds)
@@ -169,6 +202,10 @@ class LibraryPresenter @Inject constructor(
         unselectMangas()
       }
     }
+  }
+
+  fun toggleQuickCategories() {
+    store.dispatch(Action.ToggleQuickCategories)
   }
 
   fun getCategories(): List<Category> {

@@ -17,10 +17,14 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.jakewharton.rxbinding2.support.v7.widget.itemClicks
 import kotlinx.android.synthetic.main.library_controller.*
 import tachiyomi.core.rx.scanWithPrevious
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.ui.R
 import tachiyomi.ui.category.CategoryController
 import tachiyomi.ui.controller.MvpController
@@ -29,15 +33,21 @@ import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
+import tachiyomi.ui.util.visibleIf
 import tachiyomi.ui.widget.CustomViewTabLayout
 
 class LibraryController : MvpController<LibraryPresenter>(),
   HomeChildController,
+  HomeChildController.FAB,
   GlideController,
   LibraryAdapter.Listener,
+  LibrarySheetAdapter.Listener,
   LibraryChangeCategoriesDialog.Listener {
 
   private var adapter: LibraryCategoryAdapter? = null
+  private var sheetAdapter: LibrarySheetAdapter? = null
+
+  private var sheet: BottomSheetDialog? = null
 
   override val glideProvider = GlideProvider.from(this)
 
@@ -82,6 +92,15 @@ class LibraryController : MvpController<LibraryPresenter>(),
     })
     //library_tabs.setOnChipClickListener(::onChipClick)
 
+    library_toolbar.inflateMenu(R.menu.library_menu)
+    library_toolbar.itemClicks().subscribeWithView { item ->
+      when (item.itemId) {
+        R.id.quick_categories_item -> onQuickCategoriesClick()
+      }
+    }
+
+    sheetAdapter = LibrarySheetAdapter(this)
+
     presenter.state
       .scanWithPrevious()
       .subscribeWithView { (state, prevState) -> render(state, prevState) }
@@ -89,15 +108,33 @@ class LibraryController : MvpController<LibraryPresenter>(),
 
   override fun onDestroyView(view: View) {
     actionMode?.finish()
+    sheet?.dismiss()
+    sheet = null
     adapter = null
+    sheetAdapter = null
     super.onDestroyView(view)
   }
 
+  override fun createFAB(container: ViewGroup): FloatingActionButton {
+    val inflater = LayoutInflater.from(container.context)
+    val fab = inflater.inflate(R.layout.library_fab, container, false)
+    fab.setOnClickListener { onFabClick() }
+    return fab as FloatingActionButton
+  }
+
+  //===========================================================================
+  // ~ Render
+  //===========================================================================
+
   private fun render(state: ViewState, prevState: ViewState?) {
+    if (state.showQuickCategories != prevState?.showQuickCategories) {
+      renderQuickCategories(state.showQuickCategories)
+    }
     if (state.categories !== prevState?.categories ||
+      state.showQuickCategories != prevState.showQuickCategories ||
       state.selectedCategory != prevState.selectedCategory
     ) {
-      renderCategories(state.categories, state.selectedCategory)
+      renderCategories(state)
     }
     if (state.library !== prevState?.library || state.selectedManga !== prevState.selectedManga) {
       renderLibrary(state.library, state.selectedManga)
@@ -105,11 +142,29 @@ class LibraryController : MvpController<LibraryPresenter>(),
     if (state.selectedManga !== prevState?.selectedManga) {
       renderSelectedManga(state.selectedManga)
     }
+    if (state.sheetVisible != prevState?.sheetVisible) {
+      renderSheetVisibility(state.sheetVisible)
+    }
+    if (state.sheetVisible != prevState?.sheetVisible ||
+      state.categories !== prevState.categories ||
+      state.selectedCategory != prevState.selectedCategory ||
+      state.filters !== prevState.filters ||
+      state.sorting != prevState.sorting
+    ) {
+      renderSheetItems(state)
+    }
     renderUpdatingCategory(state.showUpdatingCategory) // Changes internally checked
   }
 
-  private fun renderCategories(categories: List<Category>, selectedCategory: Category?) {
-    library_tabs.setCategories(categories, selectedCategory?.id)
+  private fun renderQuickCategories(showQuickCategories: Boolean) {
+    library_toolbar.menu.findItem(R.id.quick_categories_item)?.isChecked = showQuickCategories
+    library_tabs.visibleIf { showQuickCategories }
+  }
+
+  private fun renderCategories(state: ViewState) {
+    if (state.showQuickCategories) {
+      library_tabs.setCategories(state.categories, state.selectedCategory?.id)
+    }
   }
 
   private fun renderLibrary(library: List<LibraryManga>, selectedManga: Set<Long>) {
@@ -131,8 +186,41 @@ class LibraryController : MvpController<LibraryPresenter>(),
     actionModeCallback?.render(selectedManga, actionMode)
   }
 
+  private fun renderSheetVisibility(isVisible: Boolean) {
+    if (isVisible) {
+      if (sheet == null) {
+        val activity = activity ?: return
+        val adapter = sheetAdapter ?: return
+        sheet = LibrarySheet.show(activity, adapter).apply {
+          setOnDismissListener {
+            if (!activity.isChangingConfigurations) {
+              presenter.hideSheet()
+            }
+          }
+        }
+      }
+    } else {
+      sheet?.dismiss()
+      sheet = null
+    }
+  }
+
+  private fun renderSheetItems(state: ViewState) {
+    if (state.sheetVisible) {
+      sheetAdapter?.render(state.categories, state.selectedCategory, state.filters, state.sorting)
+    }
+  }
+
   private fun renderUpdatingCategory(showUpdatingCategory: Boolean) {
     library_swipe_refresh.isRefreshing = showUpdatingCategory
+  }
+
+  //===========================================================================
+  // ~ User actions
+  //===========================================================================
+
+  private fun onFabClick() {
+    presenter.showSheet()
   }
 
   override fun onMangaClick(manga: LibraryManga) {
@@ -147,12 +235,25 @@ class LibraryController : MvpController<LibraryPresenter>(),
     presenter.toggleMangaSelection(manga)
   }
 
+  override fun onCategoryClick(category: Category) {
+    presenter.setSelectedCategory(category)
+  }
+
   private fun onSwipeRefresh() {
     presenter.updateSelectedCategory()
   }
 
-  private fun onCategorySettingsClick() {
+  override fun onCategorySettingsClick() {
+    presenter.hideSheet()
     router.pushController(CategoryController().withHorizontalTransition())
+  }
+
+  override fun onSortClick(sort: LibrarySort) {
+    presenter.setSelectedSort(sort)
+  }
+
+  private fun onQuickCategoriesClick() {
+    presenter.toggleQuickCategories()
   }
 
   private fun showSetCategoriesDialog(selectedManga: Set<Long>) {
@@ -173,7 +274,7 @@ class LibraryController : MvpController<LibraryPresenter>(),
     private var selectedManga: Set<Long> = emptySet()
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-      mode.menuInflater.inflate(R.menu.library_menu, menu)
+      mode.menuInflater.inflate(R.menu.library_selection_menu, menu)
       return true
     }
 

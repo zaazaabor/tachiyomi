@@ -8,75 +8,84 @@
 
 package tachiyomi.ui.manga
 
-import io.reactivex.Flowable
+import com.freeletics.coredux.SideEffect
+import com.freeletics.coredux.createStore
+import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
-import io.reactivex.processors.BehaviorProcessor
-import tachiyomi.core.rx.RxSchedulers
-import tachiyomi.core.rx.addTo
-import tachiyomi.core.rx.filterNotNull
-import tachiyomi.domain.manga.interactor.SyncChaptersFromSource
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.MangaInitializer
-import tachiyomi.domain.manga.interactor.SubscribeManga
+import tachiyomi.domain.manga.interactor.SyncChaptersFromSource
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.ui.presenter.BasePresenter
+import tachiyomi.ui.presenter.EmptySideEffect
 import javax.inject.Inject
 
 class MangaPresenter @Inject constructor(
   private val mangaId: Long?,
-  private val subscribeManga: SubscribeManga,
+  private val getManga: GetManga,
   private val mangaInitializer: MangaInitializer,
-  private val syncChaptersFromSource: SyncChaptersFromSource,
-  private val sourceManager: SourceManager,
-  private val schedulers: RxSchedulers
+  private val syncChaptersFromSource: SyncChaptersFromSource
 ) : BasePresenter() {
 
-  private val stateRelay = BehaviorProcessor.create<MangaViewState>()
+  private val stateRelay = BehaviorRelay.create<MangaViewState>()
 
-  val stateObserver: Flowable<MangaViewState> = stateRelay
+  val stateObserver: Observable<MangaViewState> = stateRelay
+
+  private val store = scope.createStore(
+    name = "Manga presenter",
+    initialState = getInitialViewState(),
+    sideEffects = getSideEffects(),
+    reducer = { state, action -> action.reduce(state) }
+  )
 
   init {
-    val initialState = MangaViewState()
+    store.subscribeToChangedStateUpdatesInMain { stateRelay.accept(it) }
+    loadManga()
+  }
 
-    val sharedManga = subscribeManga.interact(mangaId!!).share()
+  private fun getInitialViewState(): MangaViewState {
+    return MangaViewState()
+  }
 
-    val mangaIntent = sharedManga
-      .filterNotNull { it.get() }
-      .map(Change::MangaUpdate)
+  private fun getSideEffects(): List<SideEffect<MangaViewState, Action>> {
+    val sideEffects = mutableListOf<SideEffect<MangaViewState, Action>>()
 
-    val intents = listOf(mangaIntent)
+    sideEffects += EmptySideEffect("Update details") f@{ stateFn, action ->
+      if (action !is Action.UpdateDetails) return@f null
+      val manga = stateFn().header?.manga ?: return@f null
+      suspend { mangaInitializer.await(manga) }
+    }
 
-    Observable.merge(intents)
-      .scan(initialState, ::reduce)
-      .logOnNext()
-      .observeOn(schedulers.main)
-      .subscribe(stateRelay::onNext)
-      .addTo(disposables)
+    return sideEffects
+  }
 
-    // Initialize manga if needed
-    sharedManga.filterNotNull { it.get() }
-      .take(1)
-      .flatMapMaybe { mangaInitializer.interact(it) }
-      .ignoreElements()
-      .subscribe()
-
-    sharedManga.map { it.get() }
-      .flatMapSingle { manga ->
-        syncChaptersFromSource.interact(manga)
+  private fun loadManga() {
+    scope.launch {
+      var initialized = false
+      getManga.subscribe(mangaId!!).collect { manga ->
+        if (manga != null) {
+          store.dispatch(Action.MangaUpdate(manga))
+          if (!initialized) {
+            initialized = true
+            store.dispatch(Action.UpdateDetails)
+          }
+        }
       }
-      .subscribe()
+    }
   }
 
 }
 
-private sealed class Change {
-  data class MangaUpdate(val manga: Manga) : Change()
-}
-
-private fun reduce(state: MangaViewState, change: Change): MangaViewState {
-  return when (change) {
-    is Change.MangaUpdate -> state.copy(
-      header = state.header?.copy(manga = change.manga) ?: MangaHeader(manga = change.manga)
+private sealed class Action {
+  data class MangaUpdate(val manga: Manga) : Action() {
+    override fun reduce(state: MangaViewState) = state.copy(
+      header = state.header?.copy(manga = manga) ?: MangaHeader(manga = manga)
     )
   }
+
+  object UpdateDetails : Action()
+
+  open fun reduce(state: MangaViewState): MangaViewState = state
 }

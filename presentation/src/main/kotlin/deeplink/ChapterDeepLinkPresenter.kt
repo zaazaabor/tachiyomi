@@ -13,7 +13,6 @@ import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import tachiyomi.domain.manga.interactor.FindOrInitChapterFromSource
 import tachiyomi.domain.manga.interactor.FindOrInitMangaFromChapterKey
 import tachiyomi.domain.source.SourceManager
@@ -72,11 +71,11 @@ class ChapterDeepLinkPresenter @Inject constructor(
       }
 
       try {
-        val manga = findOrInitMangaFromChapterKey.interact(params.chapterKey, source).await()
+        val manga = findOrInitMangaFromChapterKey.await(params.chapterKey, source)
         store.dispatch(Action.MangaReady(manga))
 
-        val chapter = findOrInitChapterFromSource.interact(params.chapterKey, manga).await()
-        store.dispatch(Action.ChapterReady(chapter))
+        val chapter = findOrInitChapterFromSource.await(params.chapterKey, manga)
+        store.dispatch(Action.ChapterReady(chapter!!))
       } catch (e: Exception) {
         store.dispatch(Action.Error(e))
       }

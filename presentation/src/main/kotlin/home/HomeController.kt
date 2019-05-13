@@ -18,7 +18,7 @@ import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
-import kotlinx.android.synthetic.main.home_controller_bottomnav.*
+import kotlinx.android.synthetic.main.home_controller.*
 import tachiyomi.ui.R
 import tachiyomi.ui.catalog.CatalogController
 import tachiyomi.ui.controller.BaseController
@@ -36,7 +36,7 @@ class HomeController : BaseController() {
     container: ViewGroup,
     savedViewState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.home_controller_bottomnav, container, false)
+    return inflater.inflate(R.layout.home_controller, container, false)
   }
 
   override fun onViewCreated(view: View) {

@@ -11,7 +11,7 @@ package tachiyomi.ui.library
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.LibrarySorting
 
 sealed class Action {
 
@@ -22,9 +22,9 @@ sealed class Action {
       state.copy(filters = filters)
   }
 
-  data class SetSorting(val sort: LibrarySort) : Action() {
+  data class SetSorting(val sort: LibrarySorting) : Action() {
     override fun reduce(state: ViewState) =
-      state.copy(sort = sort)
+      state.copy(sorting = sort)
   }
 
   object ToggleGlobalFilters : Action()
@@ -55,6 +55,16 @@ sealed class Action {
       })
   }
 
+  object ToggleQuickCategories : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(showQuickCategories = !state.showQuickCategories)
+  }
+
+  data class SetSheetVisibility(val visible: Boolean) : Action() {
+    override fun reduce(state: ViewState) =
+      state.copy(sheetVisible = visible)
+  }
+
   object UnselectMangas : Action() {
     override fun reduce(state: ViewState) =
       state.copy(selectedManga = emptySet())
@@ -68,4 +78,6 @@ sealed class Action {
   }
 
   open fun reduce(state: ViewState) = state
+
 }
+

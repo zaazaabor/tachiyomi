@@ -510,5 +510,11 @@
 
   <string name="category_all_name">All</string>
   <string name="category_uncategorized_name">Uncategorized</string>
+  <string name="library_sort_title">Title</string>
+  <string name="library_sort_lastread">Last read</string>
+  <string name="library_sort_lastupdated">Last updated</string>
+  <string name="library_sort_unread">Unread</string>
+  <string name="library_sort_totalchapters">Total chapters</string>
+  <string name="library_sort_source">Source</string>
 
 </resources>

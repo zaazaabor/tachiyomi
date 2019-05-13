@@ -35,8 +35,7 @@ class CatalogAdapter(
   private var nowInstalling = emptyMap<String, InstallStep>()
 
   override fun getItemViewType(position: Int): Int {
-    val item = getItem(position)
-    return when (item) {
+    return when (val item = getItem(position)) {
       is Catalog -> VIEW_TYPE_CATALOG
       is LanguageChoices -> VIEW_TYPE_LANGUAGES
       is CatalogHeader -> VIEW_TYPE_HEADER

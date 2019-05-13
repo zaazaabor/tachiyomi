@@ -12,6 +12,8 @@ import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
+import kotlinx.coroutines.rx2.rxMaybe
+import kotlinx.coroutines.rx2.rxSingle
 import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.asFlow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
@@ -168,11 +170,16 @@ class CatalogBrowsePresenter @Inject constructor(
       suspend {
         val nextPage = state.currentPage + 1
 
+        // TODO no rx
         val mangasPageSingle = when (queryMode) {
           is QueryMode.Filter ->
-            searchMangaPageFromCatalogSource.interact(source, queryMode.filters, nextPage)
+            scope.rxSingle {
+              searchMangaPageFromCatalogSource.await(source, queryMode.filters, nextPage)
+            }
           is QueryMode.List ->
-            listMangaPageFromCatalogSource.interact(source, queryMode.listing, nextPage)
+            scope.rxSingle {
+              listMangaPageFromCatalogSource.await(source, queryMode.listing, nextPage)
+            }
         }
 
         // TODO coroutines approach
@@ -184,7 +191,7 @@ class CatalogBrowsePresenter @Inject constructor(
 
             val mangaInitializer = Observable.fromIterable(mangasPage.mangas)
               .subscribeOn(schedulers.io)
-              .concatMapMaybe { mangaInitializer.interact(source, it).onErrorComplete() }
+              .concatMapMaybe { scope.rxMaybe { mangaInitializer.await(source, it) } }
               .map(Action::MangaInitialized)
 
             Observable.merge(pageReceived, mangaInitializer)
