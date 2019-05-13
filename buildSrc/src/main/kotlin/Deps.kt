@@ -21,9 +21,6 @@ object Deps {
     const val preference = "androidx.preference:preference:1.0.0"
     const val card = "androidx.cardview:cardview:1.0.0"
     const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
-    const val workManager = "androidx.work:work-runtime:2.0.0-rc01"
-    const val concurrent = "androidx.concurrent:concurrent-futures:1.0.0-alpha03"
-
   }
 
   object lifecycle {
@@ -35,8 +32,8 @@ object Deps {
   const val androidKTX = "androidx.core:core-ktx:1.0.1"
 
   object workManager {
-    private const val version = "2.0.0"
-    const val runtime = "androidx.work:work-runtime:$version"
+    private const val version = "2.1.0-alpha01"
+    const val runtime = "androidx.work:work-runtime-ktx:$version"
     const val rx2 = "androidx.work:work-rxjava2:$version"
   }
 
@@ -75,8 +72,8 @@ object Deps {
     const val android = "com.jakewharton.timber:timber-android:$version"
   }
 
-  const val coRedux = "com.freeletics.coredux:core:1.0.0"
-  const val coReduxLog = "com.freeletics.coredux:log-common:1.0.1-SNAPSHOT"
+  const val coRedux = "com.freeletics.coredux:core:1.1.0"
+  const val coReduxLog = "com.freeletics.coredux:log-common:1.1.0"
   const val conductor = "com.bluelinelabs:conductor:2.1.5"
   const val conductorPreference = "com.github.inorichi:conductor-support-preference:78e2344"
   const val materialDimens = "com.dmitrymalkovich.android:material-design-dimens:1.4"
