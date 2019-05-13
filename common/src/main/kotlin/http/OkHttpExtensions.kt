@@ -63,14 +63,27 @@ suspend fun Call.await(): Response {
   }
 }
 
-suspend fun Call.awaitResponse(): Response {
+suspend fun Call.awaitBody(): String {
   return suspendCancellableCoroutine { continuation ->
     continuation.invokeOnCancellation {
       cancel()
     }
     enqueue(object : Callback {
       override fun onResponse(call: Call, response: Response) {
-        continuation.resume(response)
+        if (response.isSuccessful) {
+          val body = response.body()
+          if (body == null) {
+            continuation.resumeWithException(IllegalStateException("Response received null body"))
+          } else {
+            try {
+              continuation.resume(body.string())
+            } catch (e: Exception) {
+              continuation.resumeWithException(e)
+            }
+          }
+        } else {
+          continuation.resumeWithException(Exception("HTTP error ${response.code()}"))
+        }
       }
 
       override fun onFailure(call: Call, e: IOException) {
