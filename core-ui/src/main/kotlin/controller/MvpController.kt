@@ -34,6 +34,8 @@ abstract class MvpController<P : BasePresenter>(
   override fun onDestroy() {
     super.onDestroy()
     presenter.destroy()
+    // TODO we might have to join before closing this scope to allow current jobs to finish
+    // (they might need to inject a dependency if using a Provider)
     Toothpick.closeScope(this)
   }
 
