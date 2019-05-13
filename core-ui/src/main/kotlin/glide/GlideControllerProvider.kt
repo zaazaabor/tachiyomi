@@ -8,6 +8,7 @@
 
 package tachiyomi.ui.glide
 
+import android.os.Handler
 import android.view.View
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
@@ -28,8 +29,10 @@ class GlideControllerProvider(
   private var requestManager: GlideRequests? = null
   private var lifecycle: ControllerLifecycle? = null
 
-  private var hasDestroyedGlide = false
+  private var isBeingDestroyed = false
   private var hasExited = false
+
+  private val handler = Handler()
 
   init {
     controller.addLifecycleListener(object : Controller.LifecycleListener() {
@@ -46,8 +49,8 @@ class GlideControllerProvider(
       }
 
       override fun postDestroy(controller: Controller) {
-        if (hasExited && !hasDestroyedGlide) {
-          destroyGlide()
+        if (hasExited && !isBeingDestroyed) {
+          scheduleDestroyGlide()
         }
       }
 
@@ -60,8 +63,8 @@ class GlideControllerProvider(
         // late as possible because releasing Glide clears out all ImageViews and they
         // appear blank during a transition.
         hasExited = !changeType.isEnter
-        if (changeHandler.removesFromViewOnPush() && (hasExited && !hasDestroyedGlide)) {
-          destroyGlide()
+        if (changeHandler.removesFromViewOnPush() && (hasExited && !isBeingDestroyed)) {
+          scheduleDestroyGlide()
         }
       }
 
@@ -76,15 +79,21 @@ class GlideControllerProvider(
       val newLifecycle = ControllerLifecycle()
       lifecycle = newLifecycle
       requestManager = GlideRequests(Glide.get(context), newLifecycle, this, context)
-      hasDestroyedGlide = false
     }
+    isBeingDestroyed = false
   }
 
-  private fun destroyGlide() {
-    lifecycle?.onDestroy()
-    lifecycle = null
-    requestManager = null
-    hasDestroyedGlide = true
+  private fun scheduleDestroyGlide() {
+    handler.postDelayed({
+      // Ensure it's not being initialized again
+      if (isBeingDestroyed && requestManager != null) {
+        lifecycle?.onDestroy()
+        lifecycle = null
+        requestManager = null
+        isBeingDestroyed = false
+      }
+    }, 300)
+    isBeingDestroyed = true
   }
 
   override fun get(): GlideRequests {
