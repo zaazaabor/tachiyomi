@@ -9,11 +9,15 @@
 package tachiyomi.core.http
 
 import io.reactivex.Single
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.Response
 import java.io.IOException
 import kotlin.coroutines.resume
@@ -29,17 +33,20 @@ fun Call.asSingle(): Single<Response> {
   }
 }
 
-/**
- * Returns a single of the execution of a network request or an error if the response is
- * unsuccessful. It's the responsibility of the caller to move execution to a background thread.
- */
-fun Call.asSingleSuccess(): Single<Response> {
-  return asSingle().doOnSuccess { response ->
-    if (!response.isSuccessful) {
-      response.close()
-      throw Exception("HTTP error ${response.code()}")
-    }
-  }
+fun OkHttpClient.get(url: String, headers: Headers? = null): Call {
+  return newCall(Request.Builder()
+    .get()
+    .url(url)
+    .apply { if (headers != null) headers(headers) }
+    .build())
+}
+
+fun OkHttpClient.post(url: String, body: RequestBody, headers: Headers? = null): Call {
+  return newCall(Request.Builder()
+    .post(body)
+    .url(url)
+    .apply { if (headers != null) headers(headers) }
+    .build())
 }
 
 suspend fun Call.await(): Response {
@@ -90,6 +97,15 @@ suspend fun Call.awaitBody(): String {
         continuation.resumeWithException(e)
       }
     })
+  }
+}
+
+suspend fun Response.awaitBody(): String {
+  return withContext(Dispatchers.IO) {
+    use {
+      val body = body() ?: throw IllegalStateException("Response received null body")
+      body.string()
+    }
   }
 }
 
