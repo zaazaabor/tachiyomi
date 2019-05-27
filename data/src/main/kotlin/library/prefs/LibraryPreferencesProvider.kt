@@ -10,7 +10,7 @@ package tachiyomi.data.library.prefs
 
 import android.app.Application
 import android.content.Context
-import tachiyomi.core.prefs.SharedPreferencesStore
+import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
@@ -25,7 +25,7 @@ internal class LibraryPreferencesProvider @Inject constructor(
 
   override fun get(): LibraryPreferences {
     val sharedPreferences = context.getSharedPreferences("library", Context.MODE_PRIVATE)
-    val preferenceStore = SharedPreferencesStore(sharedPreferences)
+    val preferenceStore = AndroidPreferenceStore(sharedPreferences)
 
     return LibraryPreferencesImpl(preferenceStore)
   }

@@ -10,7 +10,7 @@ package tachiyomi.data.sync.prefs
 
 import android.app.Application
 import android.content.Context
-import tachiyomi.core.prefs.SharedPreferencesStore
+import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
@@ -25,7 +25,7 @@ internal class SyncPreferencesProvider @Inject constructor(
 
   override fun get(): SyncPreferences {
     val sharedPreferences = context.getSharedPreferences("sync", Context.MODE_PRIVATE)
-    val preferenceStore = SharedPreferencesStore(sharedPreferences)
+    val preferenceStore = AndroidPreferenceStore(sharedPreferences)
 
     return SyncPreferences(preferenceStore)
   }

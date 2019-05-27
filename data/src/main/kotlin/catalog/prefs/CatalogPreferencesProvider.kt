@@ -10,7 +10,7 @@ package tachiyomi.data.catalog.prefs
 
 import android.app.Application
 import android.content.Context
-import tachiyomi.core.prefs.SharedPreferencesStore
+import tachiyomi.core.prefs.AndroidPreferenceStore
 import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
 import javax.inject.Provider
@@ -24,7 +24,7 @@ internal class CatalogPreferencesProvider @Inject constructor(
 
   override fun get(): CatalogPreferences {
     val sharedPreferences = context.getSharedPreferences("catalog", Context.MODE_PRIVATE)
-    val preferenceStore = SharedPreferencesStore(sharedPreferences)
+    val preferenceStore = AndroidPreferenceStore(sharedPreferences)
 
     return CatalogPreferences(preferenceStore)
   }

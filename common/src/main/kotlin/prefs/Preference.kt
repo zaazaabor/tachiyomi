@@ -8,13 +8,18 @@
 
 package tachiyomi.core.prefs
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A wrapper around application preferences without knowing implementation details. Instances of
  * this interface must be provided through a [PreferenceStore].
  */
 interface Preference<T> {
+
+  /**
+   * Returns the key of this preference.
+   */
+  fun key(): String
 
   /**
    * Returns the current value of this preference.
@@ -42,9 +47,8 @@ interface Preference<T> {
   fun defaultValue(): T
 
   /**
-   * Returns an observer of the changes made to this preference. The current value of the preference
-   * must be returned when subscribed. Callers may decide to skip this initial value with the skip
-   * operator.
+   * Returns an observer of the changes made to this preference. The current value can be emitted
+   * on subscription through [emitOnSubscribe].
    */
-  fun asObservable(): Observable<T>
+  fun changes(emitOnSubscribe: Boolean = false): Flow<T>
 }

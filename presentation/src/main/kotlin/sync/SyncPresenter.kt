@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
-import tachiyomi.core.rx.asFlow
 import tachiyomi.domain.sync.interactor.Login
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import tachiyomi.ui.presenter.BasePresenter
@@ -70,7 +69,7 @@ class SyncPresenter @Inject constructor(
 
   private fun listenLoggedin() {
     scope.launch {
-      syncPreferences.token().asObservable().skip(1).asFlow().collect {
+      syncPreferences.token().changes().collect {
         store.dispatch(Action.Logged(it.isNotEmpty()))
       }
     }

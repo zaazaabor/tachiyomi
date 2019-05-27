@@ -17,7 +17,6 @@ dependencies {
   apiProject(Projects.common)
 
   implementation(Deps.duktape)
-  implementation(Deps.rxPreferences)
   implementation(Deps.rxAndroid)
   implementation(Deps.storio)
   implementation(Deps.androidX.core)

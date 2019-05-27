@@ -9,64 +9,66 @@
 package tachiyomi.core.prefs
 
 import android.content.SharedPreferences
-import com.f2prateek.rx.preferences2.RxSharedPreferences
+import kotlinx.coroutines.channels.BroadcastChannel
 
 /**
- * An implementation of a [PreferenceStore] backed by Android's [SharedPreferences] which is
- * instantiated lazily. All the preferences are read and written from the given [sharedPreferences]
- * instance.
+ * An implementation of a [PreferenceStore] backed by Android's [SharedPreferences]. All the
+ * preferences are read and written from the given [preferences] instance.
  *
  * Note: there should be only one instance of this class per shared preferences file.
  */
-class LazySharedPreferencesStore(
-  private val sharedPreferences: Lazy<SharedPreferences>
-) : PreferenceStore {
+class AndroidPreferenceStore(private val preferences: SharedPreferences) : PreferenceStore {
 
-  /**
-   * Instance of [RxSharedPreferences] that supports observing for changes on preferences.
-   */
-  private val rxSharedPreferences by lazy { RxSharedPreferences.create(sharedPreferences.value) }
+  private val keyChanges = BroadcastChannel<String>(1)
+
+  private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+    keyChanges.offer(key)
+  }
+
+  init {
+    preferences.registerOnSharedPreferenceChangeListener(listener)
+  }
 
   /**
    * Returns an [String] preference for this [key].
    */
   override fun getString(key: String, defaultValue: String): Preference<String> {
-    return SharedPreference(rxSharedPreferences.getString(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, StringAdapter, keyChanges)
   }
 
   /**
    * Returns a [Long] preference for this [key].
    */
   override fun getLong(key: String, defaultValue: Long): Preference<Long> {
-    return SharedPreference(rxSharedPreferences.getLong(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, LongAdapter, keyChanges)
   }
 
   /**
    * Returns an [Int] preference for this [key].
    */
   override fun getInt(key: String, defaultValue: Int): Preference<Int> {
-    return SharedPreference(rxSharedPreferences.getInteger(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, IntAdapter, keyChanges)
   }
 
   /**
    * Returns a [Float] preference for this [key].
    */
   override fun getFloat(key: String, defaultValue: Float): Preference<Float> {
-    return SharedPreference(rxSharedPreferences.getFloat(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, FloatAdapter, keyChanges)
   }
 
   /**
    * Returns a [Boolean] preference for this [key].
    */
   override fun getBoolean(key: String, defaultValue: Boolean): Preference<Boolean> {
-    return SharedPreference(rxSharedPreferences.getBoolean(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, BooleanAdapter, keyChanges)
   }
 
   /**
    * Returns a [Set<String>] preference for this [key].
    */
   override fun getStringSet(key: String, defaultValue: Set<String>): Preference<Set<String>> {
-    return SharedPreference(rxSharedPreferences.getStringSet(key, defaultValue))
+    return AndroidPreference(preferences, key, defaultValue, StringSetAdapter, keyChanges)
   }
 
   /**
@@ -79,17 +81,8 @@ class LazySharedPreferencesStore(
     serializer: (T) -> String,
     deserializer: (String) -> T
   ): Preference<T> {
-    return SharedPreference(rxSharedPreferences.getObject(key, defaultValue,
-      object : com.f2prateek.rx.preferences2.Preference.Converter<T> {
-        override fun deserialize(serialized: String): T {
-          return deserializer(serialized)
-        }
-
-        override fun serialize(value: T): String {
-          return serializer(value)
-        }
-      }
-    ))
+    val adapter = ObjectAdapter(serializer, deserializer)
+    return AndroidPreference(preferences, key, defaultValue, adapter, keyChanges)
   }
 
 }

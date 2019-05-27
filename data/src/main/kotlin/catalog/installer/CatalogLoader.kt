@@ -16,7 +16,8 @@ import dalvik.system.PathClassLoader
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.http.Http
-import tachiyomi.core.prefs.LazySharedPreferencesStore
+import tachiyomi.core.prefs.AndroidPreferenceStore
+import tachiyomi.core.prefs.LazyPreferenceStore
 import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.source.Dependencies
@@ -117,8 +118,8 @@ internal class CatalogLoader @Inject constructor(
 
     val dependencies = Dependencies(
       http,
-      LazySharedPreferencesStore(lazy {
-        context.getSharedPreferences(pkgName, Context.MODE_PRIVATE)
+      LazyPreferenceStore(lazy {
+        AndroidPreferenceStore(context.getSharedPreferences(pkgName, Context.MODE_PRIVATE))
       })
     )
 
