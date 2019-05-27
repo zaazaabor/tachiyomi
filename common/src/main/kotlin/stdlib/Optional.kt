@@ -28,6 +28,12 @@ sealed class Optional<out T> {
    */
   fun get() = (this as? Some)?.value
 
+  fun ifPresent(block: (T) -> Unit) {
+    if (this is Some) {
+      block(value)
+    }
+  }
+
   companion object {
     /**
      * Returns a [Some] if the given [value] is not null, otherwise [None].
