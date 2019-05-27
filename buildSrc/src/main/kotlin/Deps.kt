@@ -72,8 +72,8 @@ object Deps {
     const val android = "com.jakewharton.timber:timber-android:$version"
   }
 
-  const val coRedux = "com.freeletics.coredux:core:1.1.0"
-  const val coReduxLog = "com.freeletics.coredux:log-common:1.1.0"
+  const val coRedux = "com.freeletics.coredux:core:1.1.1"
+  const val coReduxLog = "com.freeletics.coredux:log-common:1.1.1"
   const val conductor = "com.bluelinelabs:conductor:2.1.5"
   const val conductorPreference = "com.github.inorichi:conductor-support-preference:78e2344"
   const val materialDimens = "com.dmitrymalkovich.android:material-design-dimens:1.4"
