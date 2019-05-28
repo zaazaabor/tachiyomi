@@ -8,7 +8,6 @@
 
 package tachiyomi.core.http
 
-import io.reactivex.Single
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -22,16 +21,6 @@ import okhttp3.Response
 import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-
-/**
- * Returns a single of the execution of a network request or an error if the server is unreachable.
- * It's the responsibility of the caller to move execution to a background thread.
- */
-fun Call.asSingle(): Single<Response> {
-  return Single.fromCallable {
-    clone().execute()
-  }
-}
 
 fun OkHttpClient.get(url: String, headers: Headers? = null): Call {
   return newCall(Request.Builder()
@@ -61,6 +50,23 @@ suspend fun Call.await(): Response {
         } else {
           continuation.resumeWithException(Exception("HTTP error ${response.code()}"))
         }
+      }
+
+      override fun onFailure(call: Call, e: IOException) {
+        continuation.resumeWithException(e)
+      }
+    })
+  }
+}
+
+suspend fun Call.awaitResponse(): Response {
+  return suspendCancellableCoroutine { continuation ->
+    continuation.invokeOnCancellation {
+      cancel()
+    }
+    enqueue(object : Callback {
+      override fun onResponse(call: Call, response: Response) {
+        continuation.resume(response)
       }
 
       override fun onFailure(call: Call, e: IOException) {
