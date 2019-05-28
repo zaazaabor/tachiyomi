@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.sync.api
 
-import io.reactivex.Single
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.json
@@ -17,7 +16,8 @@ import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.RequestBody
 import tachiyomi.core.http.Http
-import tachiyomi.core.http.asSingle
+import tachiyomi.core.http.awaitBody
+import tachiyomi.core.http.awaitResponse
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import javax.inject.Inject
 
@@ -36,7 +36,7 @@ class SyncAPI @Inject constructor(
   val address get() = addressPref.get()
   val token get() = tokenPref.get()
 
-  fun login(address: String, username: String, password: String): Single<LoginResult> {
+  suspend fun login(address: String, username: String, password: String): LoginResult {
     @Serializable
     data class Response(val secret: String)
 
@@ -54,19 +54,18 @@ class SyncAPI @Inject constructor(
       .addHeader("Authorization", credentials)
       .build()
 
-    return client.newCall(request).asSingle()
-      .map { response ->
-        response.use {
-          if (response.code() == 200) {
-            val body = response.body()?.string() ?: throw Exception("Failed to read body")
-            val responseBody = Json.parse(Response.serializer(), body)
-            LoginResult.Token(responseBody.secret)
-          } else {
-            LoginResult.InvalidCredentials
-          }
-        }
+    return try {
+      val response = client.newCall(request).awaitResponse()
+      if (response.code() != 200) {
+        response.close()
+        return LoginResult.InvalidCredentials
       }
-      .onErrorReturn(LoginResult::NetworkError)
+      val body = response.awaitBody()
+      val responseBody = Json.parse(Response.serializer(), body)
+      LoginResult.Token(responseBody.secret)
+    } catch (e: Exception) {
+      LoginResult.Error(e)
+    }
   }
 
 }

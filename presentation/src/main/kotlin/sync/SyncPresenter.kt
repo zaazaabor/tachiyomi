@@ -14,7 +14,6 @@ import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import tachiyomi.domain.sync.interactor.Login
 import tachiyomi.domain.sync.prefs.SyncPreferences
 import tachiyomi.ui.presenter.BasePresenter
@@ -58,7 +57,7 @@ class SyncPresenter @Inject constructor(
       suspend {
         flow {
           emit(Action.Loading(true))
-          val result = login.interact(action.address, action.username, action.password).await()
+          val result = login.await(action.address, action.username, action.password)
           emit(Action.Loading(false))
         }
       }

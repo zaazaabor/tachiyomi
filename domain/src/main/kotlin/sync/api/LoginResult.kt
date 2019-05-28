@@ -11,5 +11,5 @@ package tachiyomi.domain.sync.api
 sealed class LoginResult {
   data class Token(val token: String) : LoginResult()
   object InvalidCredentials : LoginResult()
-  data class NetworkError(val error: Throwable) : LoginResult()
+  data class Error(val error: Throwable) : LoginResult()
 }

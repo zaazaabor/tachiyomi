@@ -8,10 +8,8 @@
 
 package tachiyomi.domain.manga.interactor
 
-import io.reactivex.Maybe
 import kotlinx.coroutines.withContext
 import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.repository.ChapterRepository
 import javax.inject.Inject
 
@@ -26,10 +24,6 @@ class GetChapter @Inject constructor(
 
   suspend fun await(key: String, mangaId: Long) = withContext(dispatchers.io) {
     repository.find(key, mangaId)
-  }
-
-  fun interact(key: String, mangaId: Long): Maybe<Chapter> {
-    return Maybe.fromCallable { repository.find(key, mangaId) }
   }
 
 }

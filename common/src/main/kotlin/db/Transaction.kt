@@ -8,8 +8,6 @@
 
 package tachiyomi.core.db
 
-import io.reactivex.Completable
-
 interface Transaction {
 
   fun begin()
@@ -17,10 +15,6 @@ interface Transaction {
   fun commit()
 
   fun end()
-
-  fun withCompletable(source: () -> Completable): Completable {
-    return Completable.using(::begin, { source().doOnComplete(::commit) }, { end() })
-  }
 
   fun withAction(action: () -> Any?) {
     begin()

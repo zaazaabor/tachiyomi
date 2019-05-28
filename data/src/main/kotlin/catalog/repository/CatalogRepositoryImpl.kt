@@ -19,11 +19,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.withContext
 import tachiyomi.core.db.inTransaction
 import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.core.rx.asFlow
 import tachiyomi.data.BuildConfig
 import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver
@@ -128,21 +126,20 @@ internal class CatalogRepositoryImpl @Inject constructor(
   }
 
   private fun initRemoteCatalogs() {
-    storio.get()
-      .listOfObjects(CatalogRemote::class.java)
-      .withQuery(Query.builder()
-        .table(CatalogTable.TABLE)
-        .orderBy("${CatalogTable.COL_LANG}, ${CatalogTable.COL_NAME}")
-        .build())
-      .prepare()
-      .asRxSingle()
-      .doOnSuccess {
-        remoteCatalogs = it
-        GlobalScope.launch(dispatchers.io) { refreshRemoteCatalogs(false) }
-      }
-      .ignoreElement()
-      .onErrorComplete()
-      .subscribe()
+    GlobalScope.launch(dispatchers.io) {
+      val catalogs = storio.get()
+        .listOfObjects(CatalogRemote::class.java)
+        .withQuery(Query.builder()
+          .table(CatalogTable.TABLE)
+          .orderBy("${CatalogTable.COL_LANG}, ${CatalogTable.COL_NAME}")
+          .build())
+        .prepare()
+        .executeAsBlocking()
+        .orEmpty()
+
+      remoteCatalogs = catalogs
+      refreshRemoteCatalogs(false)
+    }
   }
 
   override suspend fun refreshRemoteCatalogs(forceRefresh: Boolean) {
@@ -196,11 +193,11 @@ internal class CatalogRepositoryImpl @Inject constructor(
   }
 
   override fun installCatalog(catalog: CatalogRemote): Flow<InstallStep> {
-    return installer.downloadAndInstall(catalog).asFlow()
+    return installer.downloadAndInstall(catalog)
   }
 
   override suspend fun uninstallCatalog(catalog: CatalogInstalled) {
-    return installer.uninstallApk(catalog.pkgName).await()
+    installer.uninstallApk(catalog.pkgName)
   }
 
   /**

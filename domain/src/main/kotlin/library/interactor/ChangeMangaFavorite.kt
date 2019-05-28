@@ -8,7 +8,6 @@
 
 package tachiyomi.domain.library.interactor
 
-import io.reactivex.Single
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import tachiyomi.core.db.Transaction
@@ -78,45 +77,6 @@ class ChangeMangaFavorite @Inject constructor(
 
     Result.Success
   }
-
-  fun interact(manga: Manga) = Single.fromCallable {
-    val now = System.currentTimeMillis()
-    val nowFavorite = !manga.favorite
-    val update = if (nowFavorite) {
-      MangaUpdate(
-        id = manga.id,
-        favorite = Optional.of(true),
-        dateAdded = Optional.of(now)
-      )
-    } else {
-      MangaUpdate(id = manga.id, favorite = Optional.of(false))
-    }
-
-    val mangaIds = listOf(manga.id)
-
-    val setCategoryOperation = if (nowFavorite) {
-      val defaultCategory = libraryPreferences.defaultCategory().get()
-      Runnable {
-        val result = setCategoriesForMangas.execute(listOf(defaultCategory), mangaIds)
-        if (result is SetCategoriesForMangas.Result.InternalError) {
-          throw result.error
-        }
-      }
-    } else {
-      Runnable { mangaCategoryRepository.deleteForMangas(mangaIds) }
-    }
-
-    transactions.get().withAction {
-      mangaRepository.savePartial(update)
-      setCategoryOperation.run()
-    }
-
-    if (!nowFavorite) {
-      libraryCovers.delete(manga.id)
-    }
-
-    Result.Success as Result
-  }.onErrorReturn(Result::InternalError)
 
   sealed class Result {
     object Success : Result()

@@ -13,7 +13,6 @@ import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import tachiyomi.domain.manga.interactor.GetOrAddMangaFromSource
 import tachiyomi.source.model.MangaInfo
 import tachiyomi.ui.presenter.BasePresenter
@@ -64,7 +63,7 @@ class MangaDeepLinkPresenter @Inject constructor(
       val mangaInfo = MangaInfo(key = params.mangaKey, title = "")
 
       try {
-        val manga = getOrAddMangaFromSource.interact(mangaInfo, params.sourceId).await()
+        val manga = getOrAddMangaFromSource.await(mangaInfo, params.sourceId)
         store.dispatch(Action.MangaReady(manga.id))
       } catch (e: Exception) {
         store.dispatch(Action.Error(e))

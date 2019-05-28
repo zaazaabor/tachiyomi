@@ -47,7 +47,6 @@ internal class CatalogLoader @Inject constructor(
 
     // Load each extension concurrently and wait for completion
     return runBlocking {
-      // TODO check deadlocks with underlying rx schedulers
       val deferred = extPkgs.map { pkgInfo ->
         async(dispatchers.computation) {
           loadExtension(pkgInfo.packageName, pkgInfo)

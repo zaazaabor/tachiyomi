@@ -15,7 +15,8 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
-import com.jakewharton.rxrelay2.BehaviorRelay
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
 import timber.log.Timber
 import timber.log.debug
 import javax.inject.Inject
@@ -27,18 +28,20 @@ class AndroidAppState @Inject constructor(
   override var hasNetwork = false
     private set(value) {
       field = value
-      networkRelay.accept(value)
+      networkChannel.offer(value)
     }
 
   override var isInForeground = false
     private set(value) {
       field = value
-      foregroundRelay.accept(value)
+      foregroundChannel.offer(value)
     }
 
-  override val foregroundRelay = BehaviorRelay.create<Boolean>()
+  private val foregroundChannel = ConflatedBroadcastChannel<Boolean>()
+  override val foregroundRelay = foregroundChannel.asFlow()
 
-  override val networkRelay = BehaviorRelay.create<Boolean>()
+  private val networkChannel = ConflatedBroadcastChannel<Boolean>()
+  override val networkRelay = networkChannel.asFlow()
 
   init {
     ProcessLifecycleOwner.get().lifecycle.addObserver(this)

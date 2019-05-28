@@ -8,16 +8,15 @@
 
 package tachiyomi.domain.manga.repository
 
-import io.reactivex.Observable
-import tachiyomi.core.stdlib.Optional
+import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.ChapterUpdate
 
 interface ChapterRepository {
 
-  fun subscribeForManga(mangaId: Long): Observable<List<Chapter>>
+  fun subscribeForManga(mangaId: Long): Flow<List<Chapter>>
 
-  fun subscribe(chapterId: Long): Observable<Optional<Chapter>>
+  fun subscribe(chapterId: Long): Flow<Chapter?>
 
   fun findForManga(mangaId: Long): List<Chapter>
 

@@ -8,13 +8,10 @@
 
 package tachiyomi.domain.sync.interactor
 
-import io.reactivex.Single
 import okhttp3.HttpUrl
 import tachiyomi.domain.sync.api.LoginResult
 import tachiyomi.domain.sync.api.SyncAPI
 import tachiyomi.domain.sync.prefs.SyncPreferences
-import timber.log.Timber
-import timber.log.warn
 import javax.inject.Inject
 
 class Login @Inject constructor(
@@ -22,7 +19,7 @@ class Login @Inject constructor(
   private val syncPreferences: SyncPreferences
 ) {
 
-  fun interact(unsafeAddress: String, username: String, password: String) = Single.defer {
+  suspend fun await(unsafeAddress: String, username: String, password: String): Result {
     val address = try {
       val parsed = HttpUrl.parse(unsafeAddress)
       if (parsed != null) {
@@ -41,30 +38,25 @@ class Login @Inject constructor(
           .toString()
       }
     } catch (e: Exception) {
-      return@defer Single.just(Result.InvalidAddress)
+      return Result.InvalidAddress
     }
 
-    syncAPI.login(address, username, password)
-      .map { result ->
-        when (result) {
-          is LoginResult.Token -> {
-            syncPreferences.address().set(address)
-            syncPreferences.token().set(result.token)
-            Result.Success
-          }
-          LoginResult.InvalidCredentials -> Result.InvalidCredentials
-          is LoginResult.NetworkError -> Result.NetworkError(result.error)
-        }
+    return when (val result = syncAPI.login(address, username, password)) {
+      is LoginResult.Token -> {
+        syncPreferences.address().set(address)
+        syncPreferences.token().set(result.token)
+        Result.Success
       }
-      .doOnSubscribe { Timber.warn { "Subscribed" } }
-      .doFinally { Timber.warn { "Disposed" } }
+      LoginResult.InvalidCredentials -> Result.InvalidCredentials
+      is LoginResult.Error -> Result.Error(result.error)
+    }
   }
 
   sealed class Result {
     object Success : Result()
     object InvalidAddress : Result()
     object InvalidCredentials : Result()
-    data class NetworkError(val error: Throwable) : Result()
+    data class Error(val error: Throwable) : Result()
   }
 
 }

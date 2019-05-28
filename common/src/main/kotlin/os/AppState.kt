@@ -8,7 +8,7 @@
 
 package tachiyomi.core.os
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 interface AppState {
 
@@ -16,8 +16,8 @@ interface AppState {
 
   val isInForeground: Boolean
 
-  val networkRelay: Observable<Boolean>
+  val networkRelay: Flow<Boolean>
 
-  val foregroundRelay: Observable<Boolean>
+  val foregroundRelay: Flow<Boolean>
 
 }

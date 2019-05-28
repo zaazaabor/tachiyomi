@@ -16,10 +16,9 @@ import kotlinx.serialization.json.content
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.long
 import kotlinx.serialization.parse
-import okhttp3.Response
-import tachiyomi.core.http.GET
 import tachiyomi.core.http.Http
-import tachiyomi.core.http.await
+import tachiyomi.core.http.awaitBody
+import tachiyomi.core.http.get
 import tachiyomi.domain.catalog.model.CatalogRemote
 import javax.inject.Inject
 
@@ -30,15 +29,8 @@ internal class CatalogGithubApi @Inject constructor(private val http: Http) {
   private val repoUrl = "https://tachiyomi.kanade.eu/repo"
 
   suspend fun findCatalogs(): List<CatalogRemote> {
-    val call = GET("$repoUrl/index.min.json")
-    val response = http.defaultClient.newCall(call).await()
-    return parseResponse(response)
-  }
-
-  private fun parseResponse(response: Response): List<CatalogRemote> {
-    val text = response.body()?.use { it.string() } ?: return emptyList()
-
-    val json = Json.parse<JsonArray>(text)
+    val body = http.defaultClient.get("$repoUrl/index.min.json").awaitBody()
+    val json = Json.parse<JsonArray>(body)
 
     return json.map { element ->
       element as JsonObject
