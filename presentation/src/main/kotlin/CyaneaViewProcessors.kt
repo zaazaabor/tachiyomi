@@ -17,7 +17,6 @@ import androidx.core.graphics.ColorUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.inflator.CyaneaViewProcessor
-import tachiyomi.ui.R
 import tachiyomi.ui.util.getResourceId
 
 fun Activity.getCyaneaViewProcessors(): Array<CyaneaViewProcessor<*>> {

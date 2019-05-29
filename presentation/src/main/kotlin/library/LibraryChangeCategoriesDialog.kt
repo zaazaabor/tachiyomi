@@ -15,8 +15,8 @@ import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.bluelinelabs.conductor.Controller
 import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.R
-import tachiyomi.ui.controller.DialogController
 import tachiyomi.ui.category.getVisibleName
+import tachiyomi.ui.controller.DialogController
 
 class LibraryChangeCategoriesDialog<T>(
   bundle: Bundle? = null

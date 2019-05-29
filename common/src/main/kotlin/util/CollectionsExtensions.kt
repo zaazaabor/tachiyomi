@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.stdlib
+package tachiyomi.core.util
 
 /**
  * Returns a new list that replaces the item at the given [position] with [newItem].

@@ -13,7 +13,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.withContext
 import tachiyomi.core.di.AppScope
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import timber.log.Timber
 import timber.log.debug

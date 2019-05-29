@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.rx
+package tachiyomi.core.util
 
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -16,6 +16,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 class CoroutineDispatchers(
   val io: CoroutineDispatcher,
   val computation: CoroutineDispatcher,
-  val single: CoroutineDispatcher,
+  val single: CoroutineDispatcher, // TODO not sure this will be used
   val main: CoroutineDispatcher
 )

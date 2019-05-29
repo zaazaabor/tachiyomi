@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.manga.model
 
-import tachiyomi.core.stdlib.Optional
+import tachiyomi.core.util.Optional
 
 data class ChapterUpdate(
   val id: Long,

@@ -21,8 +21,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
-import tachiyomi.core.rx.CoroutineDispatchers
 import tachiyomi.core.ui.BuildConfig
+import tachiyomi.core.util.CoroutineDispatchers
 import timber.log.Timber
 import timber.log.debug
 import timber.log.info

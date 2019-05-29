@@ -15,7 +15,7 @@ import android.content.IntentFilter
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.data.catalog.installer.CatalogLoader.Result
 import tachiyomi.domain.catalog.model.CatalogInstalled
 

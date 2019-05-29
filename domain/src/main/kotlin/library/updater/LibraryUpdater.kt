@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import timber.log.Timber
 import timber.log.warn
 import toothpick.ProvidesSingletonInScope

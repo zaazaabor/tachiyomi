@@ -12,7 +12,7 @@ import android.content.ContentValues
 import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.core.stdlib.Optional
+import tachiyomi.core.util.Optional
 import tachiyomi.core.util.optBoolean
 import tachiyomi.core.util.optInt
 import tachiyomi.core.util.optLong

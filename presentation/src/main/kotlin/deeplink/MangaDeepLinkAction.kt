@@ -8,8 +8,8 @@
 
 package tachiyomi.ui.deeplink
 
-import tachiyomi.ui.deeplink.MangaDeepLinkViewState as ViewState
 import tachiyomi.ui.deeplink.MangaDeepLinkAction as Action
+import tachiyomi.ui.deeplink.MangaDeepLinkViewState as ViewState
 
 sealed class MangaDeepLinkAction {
 

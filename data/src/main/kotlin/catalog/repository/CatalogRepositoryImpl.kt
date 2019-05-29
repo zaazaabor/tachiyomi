@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tachiyomi.core.db.inTransaction
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.data.BuildConfig
 import tachiyomi.data.catalog.api.CatalogGithubApi
 import tachiyomi.data.catalog.installer.CatalogInstallReceiver

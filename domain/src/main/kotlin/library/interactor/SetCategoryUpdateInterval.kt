@@ -9,8 +9,8 @@
 package tachiyomi.domain.library.interactor
 
 import kotlinx.coroutines.withContext
-import tachiyomi.core.rx.CoroutineDispatchers
-import tachiyomi.core.stdlib.Optional
+import tachiyomi.core.util.Optional
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.library.updater.LibraryUpdateScheduler

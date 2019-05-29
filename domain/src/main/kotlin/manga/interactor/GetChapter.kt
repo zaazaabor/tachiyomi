@@ -9,7 +9,7 @@
 package tachiyomi.domain.manga.interactor
 
 import kotlinx.coroutines.withContext
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.manga.repository.ChapterRepository
 import javax.inject.Inject
 

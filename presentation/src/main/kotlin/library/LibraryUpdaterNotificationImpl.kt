@@ -18,20 +18,25 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
-import tachiyomi.core.rx.RxSchedulers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.updater.LibraryUpdater
 import tachiyomi.domain.library.updater.LibraryUpdaterNotification
 import tachiyomi.ui.R
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class LibraryUpdaterNotificationImpl @Inject constructor(
   private val context: Application,
   private val notificationManager: NotificationManager,
-  schedulers: RxSchedulers
+  dispatchers: CoroutineDispatchers
 ) : LibraryUpdaterNotification {
 
   private val channel = "library" // TODO inject value or retrieve from constants
@@ -53,19 +58,21 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
 
   val currentNotification: Notification get() = _currentNotification ?: notificationBuilder.build()
 
-  private val serviceRelay = PublishSubject.create<Boolean>()
+  private val serviceChannel = BroadcastChannel<Boolean>(1)
 
   init {
-    serviceRelay.debounce(250, TimeUnit.MILLISECONDS, schedulers.main)
-      .distinctUntilChanged()
-      .doOnNext { start ->
-        if (start) {
-          ContextCompat.startForegroundService(context, getIntent(context))
-        } else {
-          context.stopService(getIntent(context))
+    GlobalScope.launch(dispatchers.main) {
+      serviceChannel.asFlow()
+        .debounce(250)
+        .distinctUntilChanged()
+        .collect { start ->
+          if (start) {
+            ContextCompat.startForegroundService(context, getIntent(context))
+          } else {
+            context.stopService(getIntent(context))
+          }
         }
-      }
-      .subscribe()
+    }
   }
 
   override fun showProgress(manga: LibraryManga, current: Int, total: Int) {
@@ -82,11 +89,11 @@ class LibraryUpdaterNotificationImpl @Inject constructor(
   }
 
   override fun start() {
-    serviceRelay.onNext(true)
+    serviceChannel.offer(true)
   }
 
   override fun end() {
-    serviceRelay.onNext(false)
+    serviceChannel.offer(false)
     notificationManager.cancel(ongoingId)
     _currentNotification = null
   }

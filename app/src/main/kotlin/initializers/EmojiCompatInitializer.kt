@@ -13,7 +13,7 @@ import androidx.emoji.bundled.BundledEmojiCompatConfig
 import androidx.emoji.text.EmojiCompat
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import javax.inject.Inject
 
 class EmojiCompatInitializer @Inject constructor(

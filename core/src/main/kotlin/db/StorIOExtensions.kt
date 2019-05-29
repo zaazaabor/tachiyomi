@@ -9,7 +9,6 @@
 package tachiyomi.core.db
 
 import android.os.Looper
-import com.pushtorefresh.storio3.Optional
 import com.pushtorefresh.storio3.Queries
 import com.pushtorefresh.storio3.operations.PreparedOperation
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
@@ -63,10 +62,6 @@ fun PreparedDelete.Builder.withIds(
     .whereArgs(*ids.toTypedArray())
     .build()
   )
-}
-
-fun <T> Optional<T>.toOptional(): tachiyomi.core.stdlib.Optional<T> {
-  return tachiyomi.core.stdlib.Optional.of(orNull())
 }
 
 fun <R, WR, D> PreparedOperation<R, WR, D>.asBlocking(): R? {

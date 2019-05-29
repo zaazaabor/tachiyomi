@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.stdlib
+package tachiyomi.core.util
 
 /**
  * A wrapper around a nullable object because in RxJava2 emitting null is forbidden.

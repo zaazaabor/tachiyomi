@@ -12,7 +12,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.library.updater.LibraryUpdateScheduler
 import tachiyomi.domain.library.updater.LibraryUpdater

@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 import tachiyomi.core.http.Http
 import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.core.prefs.LazyPreferenceStore
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.source.Dependencies
 import tachiyomi.source.Source

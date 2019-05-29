@@ -19,12 +19,12 @@ import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.ui.R
+import tachiyomi.ui.catalogbrowse.CatalogBrowseController
+import tachiyomi.ui.catalogdetail.CatalogDetailsController
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
-import tachiyomi.ui.catalogbrowse.CatalogBrowseController
-import tachiyomi.ui.catalogdetail.CatalogDetailsController
 import tachiyomi.ui.home.HomeChildController
 
 class CatalogController : MvpController<CatalogsPresenter>(),

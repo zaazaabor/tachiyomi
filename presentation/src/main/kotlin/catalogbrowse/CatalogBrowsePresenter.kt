@@ -12,9 +12,9 @@ import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.rx2.rxMaybe
 import kotlinx.coroutines.rx2.rxSingle
-import tachiyomi.core.rx.RxSchedulers
 import tachiyomi.core.rx.asFlow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.domain.library.interactor.ChangeMangaFavorite
@@ -56,8 +56,7 @@ class CatalogBrowsePresenter @Inject constructor(
   private val mangaInitializer: MangaInitializer,
   private val getManga: GetManga,
   private val changeMangaFavorite: ChangeMangaFavorite,
-  private val catalogPreferences: CatalogPreferences,
-  private val schedulers: RxSchedulers
+  private val catalogPreferences: CatalogPreferences
 ) : BasePresenter() {
 
   /**
@@ -184,13 +183,13 @@ class CatalogBrowsePresenter @Inject constructor(
 
         // TODO coroutines approach
         mangasPageSingle
-          .subscribeOn(schedulers.io)
+          .subscribeOn(Schedulers.io())
           .toObservable()
           .flatMap { mangasPage ->
             val pageReceived = Observable.just(Action.PageReceived(mangasPage))
 
             val mangaInitializer = Observable.fromIterable(mangasPage.mangas)
-              .subscribeOn(schedulers.io)
+              .subscribeOn(Schedulers.io())
               .concatMapMaybe { scope.rxMaybe { mangaInitializer.await(source, it) } }
               .map(Action::MangaInitialized)
 

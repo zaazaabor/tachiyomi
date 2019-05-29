@@ -12,9 +12,9 @@ import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
 import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import tachiyomi.core.stdlib.debounce
 import tachiyomi.domain.catalog.interactor.GetCatalogs
 import tachiyomi.domain.catalog.interactor.InstallCatalog
 import tachiyomi.domain.catalog.interactor.RefreshRemoteCatalogs

@@ -10,7 +10,7 @@ package tachiyomi.domain.library.interactor
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.prefs.LibraryPreferences
 import tachiyomi.domain.library.repository.CategoryRepository
 import tachiyomi.domain.library.updater.LibraryUpdateScheduler

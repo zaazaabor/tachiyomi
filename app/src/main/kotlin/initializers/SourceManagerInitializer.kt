@@ -11,7 +11,7 @@ package tachiyomi.app.initializers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.source.SourceManager
 import javax.inject.Inject
 

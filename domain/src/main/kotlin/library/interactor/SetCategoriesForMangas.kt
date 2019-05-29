@@ -10,7 +10,7 @@ package tachiyomi.domain.library.interactor
 
 import kotlinx.coroutines.withContext
 import tachiyomi.core.db.Transaction
-import tachiyomi.core.rx.CoroutineDispatchers
+import tachiyomi.core.util.CoroutineDispatchers
 import tachiyomi.domain.library.model.MangaCategory
 import tachiyomi.domain.library.repository.MangaCategoryRepository
 import javax.inject.Inject

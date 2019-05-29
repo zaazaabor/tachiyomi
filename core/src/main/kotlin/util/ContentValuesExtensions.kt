@@ -9,7 +9,6 @@
 package tachiyomi.core.util
 
 import android.content.ContentValues
-import tachiyomi.core.stdlib.Optional
 
 fun ContentValues.optString(key: String, optional: Optional<String?>) {
   if (optional is Optional.Some) put(key, optional.value)

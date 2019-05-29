@@ -8,7 +8,7 @@
 
 package tachiyomi.ui.catalogbrowse
 
-import tachiyomi.core.stdlib.replaceFirst
+import tachiyomi.core.util.replaceFirst
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangasPage
 import tachiyomi.ui.catalogbrowse.Action.ErrorDelivered

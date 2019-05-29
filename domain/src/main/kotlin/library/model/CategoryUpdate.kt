@@ -8,7 +8,7 @@
 
 package tachiyomi.domain.library.model
 
-import tachiyomi.core.stdlib.Optional
+import tachiyomi.core.util.Optional
 
 data class CategoryUpdate(
   val id: Long,
