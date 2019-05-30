@@ -8,7 +8,7 @@
 
 package tachiyomi.data.library.sql
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
 import tachiyomi.data.manga.sql.MangaTable
 
@@ -32,7 +32,7 @@ internal object MangaCategoryTable : DbOpenCallback {
   private val createCategoryIndex: String
     get() = "CREATE INDEX ${COL_CATEGORY_ID}_index ON $TABLE($COL_CATEGORY_ID)"
 
-  override fun onCreate(db: SQLiteDatabase) {
+  override fun onCreate(db: SupportSQLiteDatabase) {
     db.execSQL(createTableQuery)
     db.execSQL(createCategoryIndex)
   }

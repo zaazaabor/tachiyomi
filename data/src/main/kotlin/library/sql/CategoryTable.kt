@@ -8,7 +8,7 @@
 
 package tachiyomi.data.library.sql
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
 import tachiyomi.domain.library.model.Category
 
@@ -52,7 +52,7 @@ internal object CategoryTable : DbOpenCallback {
       END;
       END;"""
 
-  override fun onCreate(db: SQLiteDatabase) {
+  override fun onCreate(db: SupportSQLiteDatabase) {
     db.execSQL(createTableQuery)
     db.execSQL(deleteCategoryTrigger)
     db.execSQL(createAllCategoryQuery)

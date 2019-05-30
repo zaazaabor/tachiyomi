@@ -12,13 +12,11 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject
 import com.pushtorefresh.storio3.sqlite.queries.Query
-import io.reactivex.BackpressureStrategy
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.core.rx.asFlow
 import tachiyomi.data.manga.sql.ChapterSourceOrderPutResolver
 import tachiyomi.data.manga.sql.ChapterTable
 import tachiyomi.data.manga.sql.ChapterUpdatePutResolver
@@ -55,16 +53,14 @@ class ChapterRepositoryImpl @Inject constructor(
 
   override fun subscribeForManga(mangaId: Long): Flow<List<Chapter>> {
     return preparedChapters(mangaId)
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .distinctUntilChanged() // TODO do we want to run a distinct?
       .asFlow()
+      .distinctUntilChanged() // TODO do we want to run a distinct?
   }
 
   override fun subscribe(chapterId: Long): Flow<Chapter?> {
-    return preparedChapter(chapterId).asRxFlowable(BackpressureStrategy.LATEST)
-      .distinctUntilChanged()
+    return preparedChapter(chapterId)
       .asFlow()
-      .map { it.orNull() }
+      .distinctUntilChanged()
   }
 
   override fun findForManga(mangaId: Long): List<Chapter> {

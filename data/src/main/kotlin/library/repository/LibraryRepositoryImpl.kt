@@ -11,10 +11,8 @@ package tachiyomi.data.library.repository
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
-import io.reactivex.BackpressureStrategy
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.core.db.asBlocking
-import tachiyomi.core.rx.asFlow
 import tachiyomi.data.library.sql.FavoriteSourceIdsGetResolver
 import tachiyomi.data.library.sql.LibraryMangaGetResolver
 import tachiyomi.data.library.sql.MangaCategoryTable
@@ -67,18 +65,18 @@ internal class LibraryRepositoryImpl @Inject constructor(
   }
 
   override fun subscribeAll(sort: LibrarySorting): Flow<List<LibraryManga>> {
-    return preparedAll(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+    return preparedAll(sort).asFlow()
   }
 
   override fun subscribeUncategorized(sort: LibrarySorting): Flow<List<LibraryManga>> {
-    return preparedUncategorized(sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+    return preparedUncategorized(sort).asFlow()
   }
 
   override fun subscribeToCategory(
     categoryId: Long,
     sort: LibrarySorting
   ): Flow<List<LibraryManga>> {
-    return preparedToCategory(categoryId, sort).asRxFlowable(BackpressureStrategy.LATEST).asFlow()
+    return preparedToCategory(categoryId, sort).asFlow()
   }
 
   override fun findAll(sort: LibrarySorting): List<LibraryManga> {

@@ -12,12 +12,10 @@ import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio3.sqlite.queries.Query
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery
-import io.reactivex.BackpressureStrategy
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.core.db.asBlocking
 import tachiyomi.core.db.withId
 import tachiyomi.core.db.withIds
-import tachiyomi.core.rx.asFlow
 import tachiyomi.data.library.sql.CategoryTable
 import tachiyomi.data.library.sql.CategoryUpdatePutResolver
 import tachiyomi.data.library.sql.CategoryWithCountGetResolver
@@ -34,12 +32,13 @@ internal class CategoryRepositoryImpl @Inject constructor(
 
   private lateinit var cachedCategories: List<Category>
 
-  private val categories = preparedCategories()
-    .asRxFlowable(BackpressureStrategy.LATEST)
-    .toObservable()
-    .doOnNext { cachedCategories = it }
-    .replay(1)
-    .autoConnect()
+  // TODO autoconnect with flows
+//  private val categories = preparedCategories()
+//    .asRxFlowable(BackpressureStrategy.LATEST)
+//    .toObservable()
+//    .doOnNext { cachedCategories = it }
+//    .replay(1)
+//    .autoConnect()
 
   private fun preparedCategories(): PreparedGetListOfObjects<Category> {
     return storio.get()
@@ -51,8 +50,8 @@ internal class CategoryRepositoryImpl @Inject constructor(
       .prepare()
   }
 
-  override fun subscribeAll(): Flow<MutableList<Category>> {
-    return categories.asFlow()
+  override fun subscribeAll(): Flow<List<Category>> {
+    return preparedCategories().asFlow()
   }
 
   override fun subscribeWithCount(): Flow<List<CategoryWithCount>> {
@@ -64,7 +63,6 @@ internal class CategoryRepositoryImpl @Inject constructor(
         .build())
       .withGetResolver(CategoryWithCountGetResolver)
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
       .asFlow()
   }
 
@@ -80,7 +78,6 @@ internal class CategoryRepositoryImpl @Inject constructor(
         .args(mangaId)
         .build())
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
       .asFlow()
   }
 

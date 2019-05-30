@@ -64,7 +64,7 @@ fun PreparedDelete.Builder.withIds(
   )
 }
 
-fun <R, WR, D> PreparedOperation<R, WR, D>.asBlocking(): R? {
+fun <R, D> PreparedOperation<R, D>.asBlocking(): R? {
   assertNotMainThread()
   return executeAsBlocking()
 }

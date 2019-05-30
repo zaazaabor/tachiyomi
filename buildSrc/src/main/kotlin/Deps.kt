@@ -21,6 +21,7 @@ object Deps {
     const val preference = "androidx.preference:preference:1.0.0"
     const val card = "androidx.cardview:cardview:1.0.0"
     const val emoji = "androidx.emoji:emoji-bundled:1.0.0"
+    const val sqlite = "androidx.sqlite:sqlite:2.0.1"
   }
 
   object lifecycle {
@@ -37,7 +38,8 @@ object Deps {
     const val rx2 = "androidx.work:work-rxjava2:$version"
   }
 
-  const val storio = "com.pushtorefresh.storio3:sqlite:3.0.0"
+  const val storio = "com.github.inorichi:storio:48237be"
+  const val sqlite = "io.requery:sqlite-android:3.28.0"
 
   const val rxJava = "io.reactivex.rxjava2:rxjava:2.2.7"
   const val rxAndroid = "io.reactivex.rxjava2:rxandroid:2.1.1"

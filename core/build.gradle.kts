@@ -20,6 +20,7 @@ dependencies {
   implementation(Deps.rxAndroid)
   implementation(Deps.storio)
   implementation(Deps.androidX.core)
+  implementation(Deps.androidX.sqlite)
   implementation(Deps.coroutines.core)
   implementation(Deps.coroutines.android)
   implementation(Deps.coroutines.rx2)

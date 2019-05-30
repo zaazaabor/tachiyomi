@@ -9,9 +9,11 @@
 package tachiyomi.data.di
 
 import android.app.Application
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteOpenHelper
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite
-import tachiyomi.core.db.DbOpenHelper
+import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import tachiyomi.data.catalog.sql.CatalogTable
 import tachiyomi.data.catalog.sql.CatalogTypeMapping
 import tachiyomi.data.library.sql.CategoryTable
@@ -49,7 +51,7 @@ internal class StorIOProvider @Inject constructor(
       .build()
   }
 
-  private fun getDbOpenHelper(): DbOpenHelper {
+  private fun getDbOpenHelper(): SupportSQLiteOpenHelper {
     val name = "tachiyomi.db"
     val version = 1
     val callbacks = listOf(
@@ -60,7 +62,26 @@ internal class StorIOProvider @Inject constructor(
       CatalogTable
     )
 
-    return DbOpenHelper(context, name, version, callbacks)
+    val callback = object : SupportSQLiteOpenHelper.Callback(version) {
+      override fun onCreate(db: SupportSQLiteDatabase) {
+        callbacks.forEach { it.onCreate(db) }
+      }
+
+      override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        callbacks.forEach { it.onUpgrade(db, oldVersion, newVersion) }
+      }
+
+      override fun onConfigure(db: SupportSQLiteDatabase) {
+        db.setForeignKeyConstraintsEnabled(true)
+      }
+    }
+
+    val config = SupportSQLiteOpenHelper.Configuration.builder(context)
+      .name(name)
+      .callback(callback)
+      .build()
+
+    return RequerySQLiteOpenHelperFactory().create(config)
   }
 
 }

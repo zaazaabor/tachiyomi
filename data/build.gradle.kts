@@ -19,6 +19,7 @@ dependencies {
   implementationProject(Projects.sourceApi)
 
   implementation(Deps.storio)
+  implementation(Deps.sqlite)
   implementation(Deps.rxJava)
   implementation(Deps.rxAndroid)
   implementation(Deps.rxRelay)

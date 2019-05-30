@@ -8,7 +8,7 @@
 
 package tachiyomi.data.manga.sql
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
 
 internal object MangaTable : DbOpenCallback {
@@ -63,7 +63,7 @@ internal object MangaTable : DbOpenCallback {
   val createFavoriteViewQuery
     get() = "CREATE VIEW $LIBRARY AS SELECT * FROM $TABLE WHERE $COL_FAVORITE = 1"
 
-  override fun onCreate(db: SQLiteDatabase) {
+  override fun onCreate(db: SupportSQLiteDatabase) {
     db.execSQL(createTableQuery)
     db.execSQL(createFavoriteViewQuery)
     db.execSQL(createFavoriteIndexQuery)

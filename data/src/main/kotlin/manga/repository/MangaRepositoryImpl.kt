@@ -11,11 +11,9 @@ package tachiyomi.data.manga.repository
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.Query
-import io.reactivex.BackpressureStrategy
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import tachiyomi.core.db.asBlocking
-import tachiyomi.core.rx.asFlow
 import tachiyomi.data.manga.sql.MangaTable
 import tachiyomi.data.manga.sql.MangaUpdatePutResolver
 import tachiyomi.domain.manga.model.Manga
@@ -36,10 +34,8 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(mangaId)
         .build())
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .distinctUntilChanged()
       .asFlow()
-      .map { it.orNull() }
+      .distinctUntilChanged()
   }
 
   override fun subscribe(key: String, sourceId: Long): Flow<Manga?> {
@@ -51,10 +47,8 @@ internal class MangaRepositoryImpl @Inject constructor(
         .whereArgs(key, sourceId)
         .build())
       .prepare()
-      .asRxFlowable(BackpressureStrategy.LATEST)
-      .distinctUntilChanged()
       .asFlow()
-      .map { it.orNull() }
+      .distinctUntilChanged()
   }
 
   override fun find(mangaId: Long): Manga? {

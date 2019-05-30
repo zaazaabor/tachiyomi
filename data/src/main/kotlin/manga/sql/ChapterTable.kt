@@ -8,7 +8,7 @@
 
 package tachiyomi.data.manga.sql
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
 
 internal object ChapterTable : DbOpenCallback {
@@ -53,7 +53,7 @@ internal object ChapterTable : DbOpenCallback {
     get() = "CREATE INDEX ${TABLE}_unread_index ON $TABLE($COL_MANGA_ID, $COL_READ) WHERE " +
       "$COL_READ = 0"
 
-  override fun onCreate(db: SQLiteDatabase) {
+  override fun onCreate(db: SupportSQLiteDatabase) {
     db.execSQL(createTableQuery)
     db.execSQL(createMangaIdIndex)
     db.execSQL(createUnreadIndex)

@@ -8,7 +8,7 @@
 
 package tachiyomi.data.catalog.sql
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tachiyomi.core.db.DbOpenCallback
 
 internal object CatalogTable : DbOpenCallback {
@@ -40,7 +40,7 @@ internal object CatalogTable : DbOpenCallback {
       $COL_NSFW INTEGER
     )"""
 
-  override fun onCreate(db: SQLiteDatabase) {
+  override fun onCreate(db: SupportSQLiteDatabase) {
     db.execSQL(createTableQuery)
   }
 
