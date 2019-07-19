@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.json
 import okhttp3.Credentials
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody
 import tachiyomi.core.http.Http
@@ -28,7 +28,7 @@ class SyncAPI @Inject constructor(
 ) {
 
   private val client = http.defaultClient
-  private val jsonMediaType by lazy { MediaType.parse("application/json; charset=utf-8") }
+  private val jsonMediaType by lazy { "application/json; charset=utf-8".toMediaType() }
 
   private val addressPref = store.address()
   private val tokenPref = store.token()
@@ -56,7 +56,7 @@ class SyncAPI @Inject constructor(
 
     return try {
       val response = client.newCall(request).awaitResponse()
-      if (response.code() != 200) {
+      if (response.code != 200) {
         response.close()
         return LoginResult.InvalidCredentials
       }

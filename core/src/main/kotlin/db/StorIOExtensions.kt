@@ -71,7 +71,7 @@ fun <R, D> PreparedOperation<R, D>.asBlocking(): R? {
 
 fun <T> PreparedGetListOfObjects<T>.asBlocking(): List<T> {
   assertNotMainThread()
-  return executeAsBlocking()!!
+  return executeAsBlocking()
 }
 
 private fun assertNotMainThread() {

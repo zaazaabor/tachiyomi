@@ -11,6 +11,7 @@ package tachiyomi.core.http
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /**
  * A cookie manager for saving cookies from network responses, allowing to send them in succesive
@@ -29,7 +30,7 @@ class CookieManager(private val store: CookieStore) : CookieJar {
       try {
         // A valid scheme is required to create an url. It doesn't matter if the cookie is secure
         // or not as the scheme part is ignored while creating the cookie.
-        val url = HttpUrl.parse("http://$domain") ?: continue
+        val url = "http://$domain".toHttpUrlOrNull() ?: continue
 
         val nonExpiredCookies = cookies.mapNotNull { Cookie.parse(url, it) }
           .filter { !it.hasExpired() }
@@ -46,13 +47,13 @@ class CookieManager(private val store: CookieStore) : CookieJar {
    */
   @Synchronized
   override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-    val domain = url.host()
+    val domain = url.host
 
     // Append or replace the cookies for this domain.
     val cookiesForDomain = cache[domain].orEmpty().toMutableList()
     for (cookie in cookies) {
       // Find a cookie with the same name. Replace it if found, otherwise add a new one.
-      val pos = cookiesForDomain.indexOfFirst { it.name() == cookie.name() }
+      val pos = cookiesForDomain.indexOfFirst { it.name == cookie.name }
       if (pos == -1) {
         cookiesForDomain.add(cookie)
       } else {
@@ -63,7 +64,7 @@ class CookieManager(private val store: CookieStore) : CookieJar {
 
     // Get cookies to be stored
     val newValues = cookiesForDomain.asSequence()
-      .filter { it.persistent() && !it.hasExpired() }
+      .filter { it.persistent && !it.hasExpired() }
       .map(Cookie::toString)
       .toSet()
 
@@ -74,11 +75,11 @@ class CookieManager(private val store: CookieStore) : CookieJar {
    * Returns the list of cookies to append for a request to [url].
    */
   override fun loadForRequest(url: HttpUrl): List<Cookie> {
-    val cookies = cache[url.host()].orEmpty().filter { !it.hasExpired() }
+    val cookies = cache[url.host].orEmpty().filter { !it.hasExpired() }
     return if (url.isHttps) {
       cookies
     } else {
-      cookies.filter { !it.secure() }
+      cookies.filter { !it.secure }
     }
   }
 
@@ -94,5 +95,5 @@ class CookieManager(private val store: CookieStore) : CookieJar {
   /**
    * Returns true if this cookie has expired.
    */
-  private fun Cookie.hasExpired() = System.currentTimeMillis() >= expiresAt()
+  private fun Cookie.hasExpired() = System.currentTimeMillis() >= expiresAt
 }

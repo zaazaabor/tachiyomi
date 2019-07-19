@@ -46,7 +46,7 @@ internal class MangaCoverUrlFetcher(
 
   override fun onResponse(call: Call, response: Response) {
     val callback = callback ?: return
-    responseBody = response.body()
+    responseBody = response.body
     val responseBody = responseBody ?: return
     if (response.isSuccessful) {
       try {
@@ -67,7 +67,7 @@ internal class MangaCoverUrlFetcher(
       }
       callback.onDataReady(stream)
     } else {
-      callback.onLoadFailed(HttpException(response.message(), response.code()))
+      callback.onLoadFailed(HttpException(response.message, response.code))
     }
   }
 
@@ -77,7 +77,7 @@ internal class MangaCoverUrlFetcher(
    */
   private fun shouldCopyToFile(response: Response, contentLength: Long): Boolean {
     return (destFile != null && (!destFile.exists()
-      || response.networkResponse()?.code() != HttpURLConnection.HTTP_NOT_MODIFIED))
+      || response.networkResponse?.code != HttpURLConnection.HTTP_NOT_MODIFIED))
       && (contentLength == -1L || destFile.length() != contentLength)
   }
 

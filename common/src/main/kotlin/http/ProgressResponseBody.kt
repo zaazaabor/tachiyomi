@@ -15,6 +15,7 @@ import okio.BufferedSource
 import okio.ForwardingSource
 import okio.Okio
 import okio.Source
+import okio.buffer
 import java.io.IOException
 
 /**
@@ -27,7 +28,7 @@ class ProgressResponseBody(
 ) : ResponseBody() {
 
   private val bufferedSource: BufferedSource by lazy {
-    Okio.buffer(source(responseBody.source()))
+    source(responseBody.source()).buffer()
   }
 
   override fun contentType(): MediaType {
@@ -44,7 +45,7 @@ class ProgressResponseBody(
 
   private fun source(source: Source): Source {
     return object : ForwardingSource(source) {
-      internal var totalBytesRead = 0L
+      var totalBytesRead = 0L
 
       @Throws(IOException::class)
       override fun read(sink: Buffer, byteCount: Long): Long {

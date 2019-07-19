@@ -32,11 +32,11 @@ object Deps {
   const val androidKTX = "androidx.core:core-ktx:1.0.1"
 
   object workManager {
-    private const val version = "2.1.0-alpha01"
+    private const val version = "2.2.0-beta01"
     const val runtime = "androidx.work:work-runtime-ktx:$version"
   }
 
-  const val storio = "com.github.inorichi:storio:48237be"
+  const val storio = "com.github.inorichi:storio:1901d12"
   const val sqlite = "io.requery:sqlite-android:3.28.0"
 
   object toothpick {
@@ -47,10 +47,12 @@ object Deps {
     const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing-junit5:$version"
   }
 
-  const val okhttp = "com.squareup.okhttp3:okhttp:3.14.0"
+  const val okhttp = "com.squareup.okhttp3:okhttp:4.0.1"
   const val duktape = "com.squareup.duktape:duktape-android:1.3.0"
   const val kotson = "com.github.salomonbrys.kotson:kotson:2.5.0"
-  const val jsoup = "org.jsoup:jsoup:1.11.3"
+  const val jsoup = "org.jsoup:jsoup:1.12.1"
+
+  const val flomo = "io.github.erikhuizinga:flomo:0.0.0-coroutines-1.3.0-M2"
 
   object timber {
     private const val version = "5.0.0-SNAPSHOT"
@@ -67,7 +69,7 @@ object Deps {
   const val cyanea = "com.github.jaredrummler:Cyanea:a1c14cad4b"
 
   object materialDialog {
-    private const val version = "2.5.0"
+    private const val version = "3.1.0"
     const val core = "com.afollestad.material-dialogs:core:$version"
     const val input = "com.afollestad.material-dialogs:input:$version"
   }

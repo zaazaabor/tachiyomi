@@ -11,8 +11,10 @@ package tachiyomi.core.http
 import okhttp3.CacheControl
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 /**
  * An OkHttp interceptor for bypassing the Cloudflare challenge. It receives a [jsFactory] to
@@ -39,7 +41,7 @@ class CloudflareInterceptor(
     val response = chain.proceed(chain.request())
 
     // Check if Cloudflare anti-bot is on
-    if (response.code() == 503 && response.header("Server") in serverCheck) {
+    if (response.code == 503 && response.header("Server") in serverCheck) {
       return chain.proceed(resolveChallenge(response))
     }
 
@@ -52,10 +54,10 @@ class CloudflareInterceptor(
    */
   private fun resolveChallenge(response: Response): Request {
     jsFactory.create().use { jsClient ->
-      val originalRequest = response.request()
-      val url = originalRequest.url()
-      val domain = url.host()
-      val content = response.body()!!.string()
+      val originalRequest = response.request
+      val url = originalRequest.url
+      val domain = url.host
+      val content = response.body!!.string()
 
       // CloudFlare requires waiting 4 seconds before resolving the challenge
       Thread.sleep(4000)
@@ -80,14 +82,14 @@ class CloudflareInterceptor(
         throw CloudflareException("Failed to resolve script with challenge", e)
       }
 
-      val cloudflareUrl = HttpUrl.parse("${url.scheme()}://$domain/cdn-cgi/l/chk_jschl")!!
+      val cloudflareUrl = "${url.scheme}://$domain/cdn-cgi/l/chk_jschl".toHttpUrl()
         .newBuilder()
         .addQueryParameter("jschl_vc", challenge)
         .addQueryParameter("pass", pass)
         .addQueryParameter("jschl_answer", "$result")
         .toString()
 
-      val cloudflareHeaders = originalRequest.headers()
+      val cloudflareHeaders = originalRequest.headers
         .newBuilder()
         .add("Referer", url.toString())
         .add("Accept", "text/html,application/xhtml+xml,application/xml")

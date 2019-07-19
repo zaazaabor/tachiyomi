@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Headers
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -48,7 +49,7 @@ suspend fun Call.await(): Response {
         if (response.isSuccessful) {
           continuation.resume(response)
         } else {
-          continuation.resumeWithException(Exception("HTTP error ${response.code()}"))
+          continuation.resumeWithException(Exception("HTTP error ${response.code}"))
         }
       }
 
@@ -84,7 +85,7 @@ suspend fun Call.awaitBody(): String {
     enqueue(object : Callback {
       override fun onResponse(call: Call, response: Response) {
         if (response.isSuccessful) {
-          val body = response.body()
+          val body = response.body
           if (body == null) {
             continuation.resumeWithException(IllegalStateException("Response received null body"))
           } else {
@@ -95,7 +96,7 @@ suspend fun Call.awaitBody(): String {
             }
           }
         } else {
-          continuation.resumeWithException(Exception("HTTP error ${response.code()}"))
+          continuation.resumeWithException(Exception("HTTP error ${response.code}"))
         }
       }
 
@@ -109,7 +110,7 @@ suspend fun Call.awaitBody(): String {
 suspend fun Response.awaitBody(): String {
   return withContext(Dispatchers.IO) {
     use {
-      val body = body() ?: throw IllegalStateException("Response received null body")
+      val body = body ?: throw IllegalStateException("Response received null body")
       body.string()
     }
   }
@@ -122,12 +123,14 @@ suspend fun Response.awaitBody(): String {
 fun OkHttpClient.newCallWithProgress(request: Request, listener: ProgressListener): Call {
   val progressClient = newBuilder()
     .cache(null)
-    .addNetworkInterceptor { chain ->
-      val originalResponse = chain.proceed(chain.request())
-      originalResponse.newBuilder()
-        .body(ProgressResponseBody(originalResponse.body()!!, listener))
-        .build()
-    }
+    .addNetworkInterceptor(object : Interceptor {
+      override fun intercept(chain: Interceptor.Chain): Response {
+        val originalResponse = chain.proceed(chain.request())
+        return originalResponse.newBuilder()
+          .body(ProgressResponseBody(originalResponse.body!!, listener))
+          .build()
+      }
+    })
     .build()
 
   return progressClient.newCall(request)

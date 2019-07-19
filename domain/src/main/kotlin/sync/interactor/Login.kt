@@ -9,6 +9,7 @@
 package tachiyomi.domain.sync.interactor
 
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import tachiyomi.domain.sync.api.LoginResult
 import tachiyomi.domain.sync.api.SyncAPI
 import tachiyomi.domain.sync.prefs.SyncPreferences
@@ -21,12 +22,12 @@ class Login @Inject constructor(
 
   suspend fun await(unsafeAddress: String, username: String, password: String): Result {
     val address = try {
-      val parsed = HttpUrl.parse(unsafeAddress)
+      val parsed = unsafeAddress.toHttpUrlOrNull()
       if (parsed != null) {
         HttpUrl.Builder()
-          .scheme(parsed.scheme())
-          .host(parsed.host())
-          .port(parsed.port())
+          .scheme(parsed.scheme)
+          .host(parsed.host)
+          .port(parsed.port)
           .toString()
       } else {
         val host = unsafeAddress.substringBefore(":")
