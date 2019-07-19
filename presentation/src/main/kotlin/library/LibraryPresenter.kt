@@ -10,8 +10,8 @@ package tachiyomi.ui.library
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
@@ -23,7 +23,6 @@ import tachiyomi.domain.library.interactor.GetUserCategories
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.SetCategoryFilters
 import tachiyomi.domain.library.interactor.SetCategorySorting
-import tachiyomi.domain.library.interactor.SetCategoryUseOwnFilters
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
@@ -42,11 +41,8 @@ class LibraryPresenter @Inject constructor(
   private val libraryPreferences: LibraryPreferences,
   private val setCategoryFilters: SetCategoryFilters,
   private val setCategorySorting: SetCategorySorting,
-  private val setCategoryUseOwnFilters: SetCategoryUseOwnFilters,
   private val updateLibraryCategory: UpdateLibraryCategory
 ) : BasePresenter() {
-
-  val state = BehaviorRelay.create<ViewState>()
 
   private val lastSortPreference = libraryPreferences.lastSorting()
 
@@ -56,16 +52,20 @@ class LibraryPresenter @Inject constructor(
 
   private val quickCategoriesPreference = libraryPreferences.quickCategories()
 
+  private val initialViewState = getInitialViewState()
+
+  val state = ConflatedBroadcastChannel(initialViewState)
+
   private val store = scope.createStore(
     name = "Library presenter",
-    initialState = getInitialViewState(),
+    initialState = initialViewState,
     sideEffects = getSideEffects(),
     logSinks = getLogSinks(),
     reducer = { state, action -> action.reduce(state) }
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     store.dispatch(Action.Init)
   }
 
@@ -112,7 +112,7 @@ class LibraryPresenter @Inject constructor(
         } else {
           lastUsedCategoryPreference.set(category.id)
           //val sorting = if (category.useOwnFilters) category.sort else lastSortPreference.get()
-          val filters = if (category.useOwnFilters) category.filters else filtersPreference.get()
+          val filters = state.filters
 
           getLibraryCategory.subscribe(category.id, sorting).map { Action.LibraryUpdate(it) }
         }
@@ -139,13 +139,10 @@ class LibraryPresenter @Inject constructor(
     sideEffects += EmptySideEffect("Update filters and sorting") f@{ stateFn, action ->
       when (action) {
         is Action.SetFilters -> suspend {
-          stateFn().selectedCategory?.let { setCategoryFilters.await(it, action.filters) }
+          stateFn().selectedCategory?.let { setCategoryFilters.await(action.filters) }
         }
         is Action.SetSorting -> suspend {
-          stateFn().selectedCategory?.let { setCategorySorting.await(it, action.sort) }
-        }
-        Action.ToggleGlobalFilters -> suspend {
-          stateFn().selectedCategory?.let { setCategoryUseOwnFilters.await(it, !it.useOwnFilters) }
+          stateFn().selectedCategory?.let { setCategorySorting.await(action.sort) }
         }
         else -> null
       }
@@ -160,7 +157,7 @@ class LibraryPresenter @Inject constructor(
   }
 
   fun setSelectedCategory(position: Int) {
-    val category = state.value?.categories?.getOrNull(position) ?: return
+    val category = state.value.categories.getOrNull(position) ?: return
     setSelectedCategory(category)
   }
 
@@ -173,7 +170,7 @@ class LibraryPresenter @Inject constructor(
   }
 
   fun setSelectedSort(sort: LibrarySort) {
-    val sorting = state.value?.sorting ?: return
+    val sorting = state.value.sorting
     if (sort == sorting.type) return
 
     store.dispatch(Action.SetSorting(LibrarySorting(sort, sorting.isAscending)))
@@ -209,7 +206,7 @@ class LibraryPresenter @Inject constructor(
   }
 
   fun getCategories(): List<Category> {
-    return state.value?.categories.orEmpty()
+    return state.value.categories
   }
 
 }

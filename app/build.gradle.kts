@@ -45,7 +45,6 @@ dependencies {
   kapt(Deps.toothpick.compiler)
 
   implementation(Deps.timber.android)
-  implementation(Deps.rxAndroid)
   implementation(Deps.cyanea)
   implementation(Deps.androidX.emoji)
 }

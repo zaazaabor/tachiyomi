@@ -22,10 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.catalogbrowse_controller.*
 import kotlinx.android.synthetic.main.catalogbrowse_filters_sheet.view.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Listing
@@ -37,6 +36,8 @@ import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
 import tachiyomi.ui.util.inflate
+import tachiyomi.ui.util.itemClicks
+import tachiyomi.ui.util.scanWithPrevious
 import tachiyomi.ui.util.visibleIf
 import tachiyomi.ui.widget.EndlessRecyclerViewScrollListener
 
@@ -129,8 +130,8 @@ class CatalogBrowseController(
 
     // Initialize toolbar menu
     catalogbrowse_toolbar.inflateMenu(R.menu.catalogbrowse_menu)
-    RxToolbar.itemClicks(catalogbrowse_toolbar)
-      .subscribeWithView { item ->
+    catalogbrowse_toolbar.itemClicks()
+      .collectWithView { item ->
         if (item.groupId == GROUP_LISTING && item.isVisible) {
           // A listing element was clicked. Visibility is also checked because there's an extra,
           // hidden element for advanced search mode. It's required in order to unselect all the
@@ -145,9 +146,9 @@ class CatalogBrowseController(
     // Initialize filters adapter
     filtersAdapter = FiltersAdapter()
 
-    presenter.stateObserver
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
+      .collectWithView { (state, prevState) -> dispatch(state, prevState) }
   }
 
   override fun createFAB(container: ViewGroup): FloatingActionButton {

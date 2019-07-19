@@ -11,9 +11,9 @@ package tachiyomi.ui.home
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
 import tachiyomi.ui.controller.BaseController
 import tachiyomi.ui.util.getDrawableAttr
+import tachiyomi.ui.util.navigationClicks
 
 interface HomeChildController {
 
@@ -27,7 +27,7 @@ interface HomeChildController {
 
     if (homeRouter.backstackSize > 1) {
       toolbar.navigationIcon = toolbar.context.getDrawableAttr(android.R.attr.homeAsUpIndicator)
-      toolbar.navigationClicks().subscribeWithView { router.handleBack() }
+      toolbar.navigationClicks().collectWithView { router.handleBack() }
     }
   }
 

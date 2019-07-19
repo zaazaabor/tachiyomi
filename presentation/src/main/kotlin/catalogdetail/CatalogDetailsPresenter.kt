@@ -10,8 +10,7 @@ package tachiyomi.ui.catalogdetail
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.domain.catalog.interactor.GetInstalledCatalog
@@ -26,25 +25,22 @@ class CatalogDetailsPresenter @Inject constructor(
   private val uninstallCatalog: UninstallCatalog
 ) : BasePresenter() {
 
+  private val initialState = getInitialViewState()
+
   /**
    * Behavior subject containing the last emitted view state.
    */
-  private val state = BehaviorRelay.create<ViewState>()
-
-  /**
-   * State subject as a consumer-only observable.
-   */
-  val stateObserver: Observable<ViewState> = state
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Catalog details",
-    initialState = getInitialViewState(),
+    initialState = initialState,
     sideEffects = getSideEffects(),
     reducer = { state, action -> action.reduce(state) }
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     loadCatalog()
   }
 

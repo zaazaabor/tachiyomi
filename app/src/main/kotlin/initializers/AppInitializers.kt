@@ -22,7 +22,6 @@ import javax.inject.Inject
 @Suppress("UNUSED_PARAMETER")
 class AppInitializers @Inject constructor(
   timberInitializer: TimberInitializer,
-  rxJavaInitializer: RxJavaInitializer,
   sourceManagerInitializer: SourceManagerInitializer,
   cyaneaInitializer: CyaneaInitializer,
   channelsInitializer: NotificationChannelsInitializer,

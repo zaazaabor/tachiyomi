@@ -12,15 +12,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.catalogdetail_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.glide.GlideApp
 import tachiyomi.ui.home.HomeChildController
+import tachiyomi.ui.util.clicks
 import tachiyomi.ui.util.inflate
+import tachiyomi.ui.util.scanWithPrevious
 import java.util.Locale
 
 class CatalogDetailsController(
@@ -70,11 +71,11 @@ class CatalogDetailsController(
     setupToolbarNavWithHomeController(catalogdetail_toolbar)
 
     catalogdetail_uninstall_button.clicks()
-      .subscribeWithView { uninstallCatalog() }
+      .collectWithView { uninstallCatalog() }
 
-    presenter.stateObserver
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   private fun render(state: ViewState, prevState: ViewState?) {

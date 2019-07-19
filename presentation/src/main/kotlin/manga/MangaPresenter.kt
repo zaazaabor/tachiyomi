@@ -10,8 +10,7 @@ package tachiyomi.ui.manga
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.domain.manga.interactor.GetManga
@@ -29,9 +28,9 @@ class MangaPresenter @Inject constructor(
   private val syncChaptersFromSource: SyncChaptersFromSource
 ) : BasePresenter() {
 
-  private val stateRelay = BehaviorRelay.create<MangaViewState>()
+  private val initialState = getInitialViewState()
 
-  val stateObserver: Observable<MangaViewState> = stateRelay
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Manga presenter",
@@ -41,7 +40,7 @@ class MangaPresenter @Inject constructor(
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { stateRelay.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     loadManga()
   }
 

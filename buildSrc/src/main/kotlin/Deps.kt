@@ -1,16 +1,15 @@
 object Deps {
 
   object kotlin {
-    const val version = "1.3.30"
+    const val version = "1.3.41"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val serialization = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0"
   }
 
   object coroutines {
-    private const val version = "1.2.1"
+    private const val version = "1.3.0-M2"
     const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
     const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version"
-    const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$version"
   }
 
   object androidX {
@@ -35,31 +34,17 @@ object Deps {
   object workManager {
     private const val version = "2.1.0-alpha01"
     const val runtime = "androidx.work:work-runtime-ktx:$version"
-    const val rx2 = "androidx.work:work-rxjava2:$version"
   }
 
   const val storio = "com.github.inorichi:storio:48237be"
   const val sqlite = "io.requery:sqlite-android:3.28.0"
-
-  const val rxJava = "io.reactivex.rxjava2:rxjava:2.2.7"
-  const val rxAndroid = "io.reactivex.rxjava2:rxandroid:2.1.1"
-  const val rxKotlin = "io.reactivex.rxjava2:rxkotlin:2.3.0"
-  const val rxRelay = "com.jakewharton.rxrelay2:rxrelay:2.1.0"
-  const val rxConnectivity = "com.github.pwittchen:reactivenetwork-rx2:3.0.2"
-
-  object rxBinding {
-    private const val version = "2.2.0"
-    const val platform = "com.jakewharton.rxbinding2:rxbinding-kotlin:$version"
-    const val support = "com.jakewharton.rxbinding2:rxbinding-support-v4-kotlin:$version"
-    const val appcompat = "com.jakewharton.rxbinding2:rxbinding-appcompat-v7-kotlin:$version"
-  }
 
   object toothpick {
     private const val version = "2.1.0"
     const val runtime = "com.github.stephanenicolas.toothpick:toothpick-runtime:$version"
     const val smoothie = "com.github.stephanenicolas.toothpick:smoothie:$version"
     const val compiler = "com.github.stephanenicolas.toothpick:toothpick-compiler:$version"
-    const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing:$version"
+    const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing-junit5:$version"
   }
 
   const val okhttp = "com.squareup.okhttp3:okhttp:3.14.0"

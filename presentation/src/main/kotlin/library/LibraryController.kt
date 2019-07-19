@@ -19,9 +19,8 @@ import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.jakewharton.rxbinding2.support.v7.widget.itemClicks
 import kotlinx.android.synthetic.main.library_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
@@ -33,6 +32,8 @@ import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.home.HomeChildController
 import tachiyomi.ui.manga.MangaController
+import tachiyomi.ui.util.itemClicks
+import tachiyomi.ui.util.scanWithPrevious
 import tachiyomi.ui.util.visibleIf
 import tachiyomi.ui.widget.CustomViewTabLayout
 
@@ -93,7 +94,7 @@ class LibraryController : MvpController<LibraryPresenter>(),
     //library_tabs.setOnChipClickListener(::onChipClick)
 
     library_toolbar.inflateMenu(R.menu.library_menu)
-    library_toolbar.itemClicks().subscribeWithView { item ->
+    library_toolbar.itemClicks().collectWithView { item ->
       when (item.itemId) {
         R.id.quick_categories_item -> onQuickCategoriesClick()
       }
@@ -101,9 +102,9 @@ class LibraryController : MvpController<LibraryPresenter>(),
 
     sheetAdapter = LibrarySheetAdapter(this)
 
-    presenter.state
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {

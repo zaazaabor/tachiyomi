@@ -34,14 +34,6 @@ dependencies {
   implementation(Deps.conductor)
   implementation(Deps.conductorPreference)
 
-  implementation(Deps.rxJava)
-  implementation(Deps.rxKotlin)
-  implementation(Deps.rxRelay)
-  implementation(Deps.coroutines.rx2)
-  implementation(Deps.rxBinding.platform)
-  implementation(Deps.rxBinding.support)
-  implementation(Deps.rxBinding.appcompat)
-
   implementation(Deps.toothpick.runtime)
   kapt(Deps.toothpick.compiler)
 

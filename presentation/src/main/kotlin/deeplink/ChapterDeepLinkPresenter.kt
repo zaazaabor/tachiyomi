@@ -10,8 +10,7 @@ package tachiyomi.ui.deeplink
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.launch
 import tachiyomi.domain.manga.interactor.FindOrInitChapterFromSource
 import tachiyomi.domain.manga.interactor.FindOrInitMangaFromChapterKey
@@ -29,9 +28,9 @@ class ChapterDeepLinkPresenter @Inject constructor(
   private val findOrInitChapterFromSource: FindOrInitChapterFromSource
 ) : BasePresenter() {
 
-  private val state = BehaviorRelay.create<ViewState>()
+  private val initialState = getInitialViewState()
 
-  val stateObserver: Observable<ViewState> = state
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Chapter deeplink presenter",
@@ -42,7 +41,7 @@ class ChapterDeepLinkPresenter @Inject constructor(
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     loadChapter()
   }
 
@@ -52,6 +51,7 @@ class ChapterDeepLinkPresenter @Inject constructor(
 
   private fun getSideEffects(): List<SideEffect<ViewState, Action>> {
     val sideEffects = mutableListOf<SideEffect<ViewState, Action>>()
+    // TODO
     return sideEffects
   }
 

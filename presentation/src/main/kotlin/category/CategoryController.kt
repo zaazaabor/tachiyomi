@@ -18,11 +18,12 @@ import android.view.ViewGroup
 import com.afollestad.materialdialogs.MaterialDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.category_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.domain.library.model.Category
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.home.HomeChildController
+import tachiyomi.ui.util.scanWithPrevious
 
 class CategoryController : MvpController<CategoryPresenter>(),
   HomeChildController,
@@ -54,9 +55,9 @@ class CategoryController : MvpController<CategoryPresenter>(),
     adapter = CategoryAdapter(this)
     category_recycler.adapter = adapter
 
-    presenter.stateObserver
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {

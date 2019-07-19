@@ -14,8 +14,6 @@ import com.freeletics.coredux.StateReceiver
 import com.freeletics.coredux.Store
 import com.freeletics.coredux.log.common.LoggerLogSink
 import com.freeletics.coredux.subscribeToChangedStateUpdates
-import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
@@ -36,16 +34,9 @@ abstract class BasePresenter {
 
   protected val scope = CoroutineScope(job + dispatchers.computation)
 
-  val disposables = CompositeDisposable()
-
   @CallSuper
   open fun destroy() {
-    disposables.dispose()
     job.cancel()
-  }
-
-  fun <T> Observable<T>.logOnNext(): Observable<T> {
-    return doOnNext { Timber.debug { it.toString() } }
   }
 
   fun <S : Any, A : Any> Store<S, A>.subscribeToChangedStateUpdatesInMain(

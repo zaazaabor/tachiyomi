@@ -27,8 +27,6 @@ sealed class Action {
       state.copy(sorting = sort)
   }
 
-  object ToggleGlobalFilters : Action()
-
   data class LibraryUpdate(val library: List<LibraryManga>) : Action() {
     override fun reduce(state: ViewState) =
       state.copy(library = library)

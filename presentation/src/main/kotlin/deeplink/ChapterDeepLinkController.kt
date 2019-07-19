@@ -14,9 +14,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.deeplink_chapter_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
+import tachiyomi.ui.util.scanWithPrevious
 
 class ChapterDeepLinkController(
   bundle: Bundle?
@@ -40,9 +41,9 @@ class ChapterDeepLinkController(
 
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
-    presenter.stateObserver
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   @SuppressLint("SetTextI18n")

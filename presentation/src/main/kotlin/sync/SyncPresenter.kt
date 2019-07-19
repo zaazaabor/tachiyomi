@@ -10,7 +10,7 @@ package tachiyomi.ui.sync
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -25,18 +25,20 @@ class SyncPresenter @Inject constructor(
   private val syncPreferences: SyncPreferences
 ) : BasePresenter() {
 
-  val state = BehaviorRelay.create<ViewState>()
+  private val initialState = getInitialViewState()
+
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Sync presenter",
-    initialState = getInitialViewState(),
+    initialState = initialState,
     sideEffects = getSideEffects(),
     logSinks = getLogSinks(),
     reducer = { state, action -> action.reduce(state) }
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     listenLoggedin()
   }
 

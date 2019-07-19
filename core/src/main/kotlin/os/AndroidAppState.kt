@@ -9,14 +9,16 @@
 package tachiyomi.core.os
 
 import android.app.Application
-import android.net.NetworkInfo
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
+import io.github.erikhuizinga.flomo.isNetworkConnectedFlow
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import timber.log.debug
 import javax.inject.Inject
@@ -46,11 +48,9 @@ class AndroidAppState @Inject constructor(
   init {
     ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
-    @Suppress("CheckResult")
-    ReactiveNetwork.observeNetworkConnectivity(context)
-      .map { it.state() == NetworkInfo.State.CONNECTED }
-      .distinctUntilChanged()
-      .subscribe { hasNetwork = it }
+    GlobalScope.launch {
+      context.isNetworkConnectedFlow.collect { hasNetwork = it }
+    }
   }
 
   @OnLifecycleEvent(Lifecycle.Event.ON_START)

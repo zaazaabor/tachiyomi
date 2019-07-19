@@ -20,12 +20,17 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RestoreViewOnCreateController
 import com.bluelinelabs.conductor.Router
-import io.reactivex.Flowable
-import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import tachiyomi.core.ui.BuildConfig
 import timber.log.Timber
 import timber.log.debug
@@ -37,13 +42,14 @@ abstract class BaseController(
   @Suppress("LeakingThis")
   private val lifecycleRegistry = LifecycleRegistry(this)
 
-  private var viewDisposables = CompositeDisposable()
-
   override val containerView: View?
     get() = view
 
   private var viewLifecycleRegistry: LifecycleRegistry? = null
   private var viewLifecycleOwner: LifecycleOwner? = null
+
+  private var viewContext = Dispatchers.Main // TODO inject main?
+  private var viewScope = CoroutineScope(viewContext + SupervisorJob())
 
   init {
     addLifecycleListener(object : LifecycleListener() {
@@ -108,15 +114,15 @@ abstract class BaseController(
 
   @CallSuper
   open fun onViewCreated(view: View) {
-    if (viewDisposables.isDisposed) {
-      viewDisposables = CompositeDisposable()
+    if (!viewScope.isActive) {
+      viewScope = CoroutineScope(viewContext + SupervisorJob())
     }
   }
 
   @CallSuper
   override fun onDestroyView(view: View) {
     super.onDestroyView(view)
-    viewDisposables.dispose()
+    viewScope.cancel()
     clearFindViewByIdCache()
   }
 
@@ -129,12 +135,8 @@ abstract class BaseController(
       "Can't access the Controller View's Lifecycle when getView() is null i.e., " +
         "before onCreateView() or after onDestroyView()")
 
-  fun <T> Observable<T>.subscribeWithView(onNext: (T) -> Unit): Disposable {
-    return subscribe(onNext).also { viewDisposables.add(it) }
-  }
-
-  fun <T> Flowable<T>.subscribeWithView(onNext: (T) -> Unit): Disposable {
-    return subscribe(onNext).also { viewDisposables.add(it) }
+  fun <T> Flow<T>.collectWithView(onValue: (T) -> Unit): Job {
+    return viewScope.launch { collect { onValue(it) } }
   }
 
   fun findRootRouter(): Router {

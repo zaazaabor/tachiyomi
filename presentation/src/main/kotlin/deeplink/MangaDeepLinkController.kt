@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
 import tachiyomi.ui.controller.withFadeTransition
@@ -39,8 +40,8 @@ class MangaDeepLinkController(
 
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
-    presenter.stateObserver
-      .subscribeWithView(::render)
+    presenter.state.asFlow()
+      .collectWithView(::render)
   }
 
   // TODO

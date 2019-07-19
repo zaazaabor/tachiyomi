@@ -17,11 +17,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
-import com.jakewharton.rxbinding2.support.v7.widget.RxToolbar
 import kotlinx.android.synthetic.main.manga_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
+import tachiyomi.ui.util.navigationClicks
+import tachiyomi.ui.util.scanWithPrevious
 
 class MangaController(
   bundle: Bundle? = null
@@ -70,16 +71,16 @@ class MangaController(
   override fun onViewCreated(view: View) {
     super.onViewCreated(view)
 
-    RxToolbar.navigationClicks(manga_toolbar)
-      .subscribeWithView { router.handleBack() }
+    manga_toolbar.navigationClicks()
+      .collectWithView { router.handleBack() }
 
     adapter = MangaAdapter(this)
     manga_recycler.adapter = adapter
     manga_recycler.layoutManager = LinearLayoutManager(view.context)
 
-    presenter.stateObserver
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> dispatch(state, prevState) }
+      .collectWithView { (state, prevState) -> dispatch(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {

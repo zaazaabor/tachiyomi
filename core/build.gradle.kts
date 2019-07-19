@@ -17,15 +17,12 @@ dependencies {
   apiProject(Projects.common)
 
   implementation(Deps.duktape)
-  implementation(Deps.rxAndroid)
   implementation(Deps.storio)
   implementation(Deps.androidX.core)
   implementation(Deps.androidX.sqlite)
   implementation(Deps.coroutines.core)
   implementation(Deps.coroutines.android)
-  implementation(Deps.coroutines.rx2)
-  implementation(Deps.rxRelay)
-  implementation(Deps.rxConnectivity)
+  implementation(Deps.flomo)
   implementation(Deps.lifecycle.extensions)
 
   implementation(Deps.toothpick.runtime)

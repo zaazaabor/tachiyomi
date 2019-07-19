@@ -10,8 +10,7 @@ package tachiyomi.ui.category
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.interactor.CreateCategoryWithName
@@ -33,15 +32,12 @@ class CategoryPresenter @Inject constructor(
   private val reorderCategory: ReorderCategory
 ) : BasePresenter() {
 
+  private val initialState = getInitialViewState()
+
   /**
    * Behavior subject containing the last emitted view state.
    */
-  private val state = BehaviorRelay.create<ViewState>()
-
-  /**
-   * State subject as a consumer-only observable.
-   */
-  val stateObserver: Observable<ViewState> = state
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Category presenter",
@@ -51,7 +47,7 @@ class CategoryPresenter @Inject constructor(
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     loadCategories()
   }
 

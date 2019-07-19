@@ -10,8 +10,8 @@ package tachiyomi.ui.catalog
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -35,18 +35,20 @@ class CatalogsPresenter @Inject constructor(
   private val refreshRemoteCatalogs: RefreshRemoteCatalogs
 ) : BasePresenter() {
 
-  val state = BehaviorRelay.create<ViewState>()
+  private val initialState = getInitialViewState()
+
+  val state = ConflatedBroadcastChannel(initialState)
 
   private val store = scope.createStore(
     name = "Catalog presenter",
-    initialState = getInitialViewState(),
+    initialState = initialState,
     sideEffects = getSideEffects(),
     logSinks = getLogSinks(),
     reducer = { state, action -> action.reduce(state) }
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     store.dispatch(Action.Init)
   }
 

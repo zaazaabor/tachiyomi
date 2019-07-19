@@ -26,7 +26,6 @@ dependencies {
   implementation(Deps.androidKTX)
   implementation(Deps.coRedux)
   implementation(Deps.coReduxLog)
-  implementation(Deps.rxBinding.appcompat)
   implementation(Deps.conductor)
   implementation(Deps.conductorPreference)
   implementation(Deps.cyanea)

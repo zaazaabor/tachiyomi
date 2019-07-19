@@ -12,12 +12,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.jakewharton.rxbinding2.support.v7.widget.navigationClicks
-import com.jakewharton.rxbinding2.view.clicks
 import kotlinx.android.synthetic.main.settings_sync_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.ui.R
 import tachiyomi.ui.controller.MvpController
+import tachiyomi.ui.util.clicks
+import tachiyomi.ui.util.navigationClicks
+import tachiyomi.ui.util.scanWithPrevious
 import tachiyomi.ui.util.visibleIf
 
 class SyncController : MvpController<SyncPresenter>() {
@@ -36,14 +37,14 @@ class SyncController : MvpController<SyncPresenter>() {
     super.onViewCreated(view)
 
     sync_toolbar.navigationClicks()
-      .subscribeWithView { router.handleBack() }
+      .collectWithView { router.handleBack() }
 
     sync_login.clicks()
-      .subscribeWithView { handleLogin() }
+      .collectWithView { handleLogin() }
 
-    presenter.state
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   private fun render(state: ViewState, prevState: ViewState?) {

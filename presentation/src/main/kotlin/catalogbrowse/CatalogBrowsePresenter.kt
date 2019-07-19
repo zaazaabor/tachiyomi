@@ -10,12 +10,8 @@ package tachiyomi.ui.catalogbrowse
 
 import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.rx2.rxMaybe
-import kotlinx.coroutines.rx2.rxSingle
-import tachiyomi.core.rx.asFlow
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.flow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
 import tachiyomi.domain.library.interactor.ChangeMangaFavorite
 import tachiyomi.domain.manga.interactor.GetManga
@@ -60,16 +56,6 @@ class CatalogBrowsePresenter @Inject constructor(
 ) : BasePresenter() {
 
   /**
-   * Behavior subject containing the last emitted view state.
-   */
-  private val state = BehaviorRelay.create<ViewState>()
-
-  /**
-   * State subject as a consumer-only observable.
-   */
-  val stateObserver: Observable<ViewState> = state
-
-  /**
    * Last used listing preference.
    */
   private val lastListingPreference = catalogPreferences.lastListingUsed(params.sourceId)
@@ -79,16 +65,23 @@ class CatalogBrowsePresenter @Inject constructor(
    */
   private val gridPreference = catalogPreferences.gridMode()
 
+  private val initialState = getInitialViewState()
+
+  /**
+   * Behavior subject containing the last emitted view state.
+   */
+  val state = ConflatedBroadcastChannel(initialState)
+
   private val store = scope.createStore(
     name = "Catalog browse presenter",
-    initialState = getInitialViewState(),
+    initialState = initialState,
     sideEffects = getSideEffects(),
     logSinks = getLogSinks(),
     reducer = { state, action -> action.reduce(state) }
   )
 
   init {
-    store.subscribeToChangedStateUpdatesInMain { state.accept(it) }
+    store.subscribeToChangedStateUpdatesInMain { state.offer(it) }
     store.dispatch(Action.LoadMore) // Always load the initial page
   }
 
@@ -169,35 +162,27 @@ class CatalogBrowsePresenter @Inject constructor(
       suspend {
         val nextPage = state.currentPage + 1
 
-        // TODO no rx
-        val mangasPageSingle = when (queryMode) {
-          is QueryMode.Filter ->
-            scope.rxSingle {
-              searchMangaPageFromCatalogSource.await(source, queryMode.filters, nextPage)
+        flow {
+          emit(Action.Loading(true, state.currentPage))
+
+          try {
+            val mangasPage = when (queryMode) {
+              is QueryMode.Filter ->
+                searchMangaPageFromCatalogSource.await(source, queryMode.filters, nextPage)
+              is QueryMode.List ->
+                listMangaPageFromCatalogSource.await(source, queryMode.listing, nextPage)
             }
-          is QueryMode.List ->
-            scope.rxSingle {
-              listMangaPageFromCatalogSource.await(source, queryMode.listing, nextPage)
+
+            emit(Action.PageReceived(mangasPage))
+
+            for (manga in mangasPage.mangas) {
+              val initializedManga = mangaInitializer.await(source, manga) ?: continue
+              emit(Action.MangaInitialized(initializedManga))
             }
-        }
-
-        // TODO coroutines approach
-        mangasPageSingle
-          .subscribeOn(Schedulers.io())
-          .toObservable()
-          .flatMap { mangasPage ->
-            val pageReceived = Observable.just(Action.PageReceived(mangasPage))
-
-            val mangaInitializer = Observable.fromIterable(mangasPage.mangas)
-              .subscribeOn(Schedulers.io())
-              .concatMapMaybe { scope.rxMaybe { mangaInitializer.await(source, it) } }
-              .map(Action::MangaInitialized)
-
-            Observable.merge(pageReceived, mangaInitializer)
+          } catch (e: Exception) {
+            emit(Action.LoadingError(e))
           }
-          .startWith(Action.Loading(true, state.currentPage))
-          .onErrorReturn(Action::LoadingError)
-          .asFlow()
+        }
       }
     }
 

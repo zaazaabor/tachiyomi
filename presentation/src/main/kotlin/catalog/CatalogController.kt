@@ -13,7 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.catalogs_controller.*
-import tachiyomi.core.rx.scanWithPrevious
+import kotlinx.coroutines.flow.asFlow
 import tachiyomi.domain.catalog.model.Catalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
@@ -26,6 +26,7 @@ import tachiyomi.ui.controller.withHorizontalTransition
 import tachiyomi.ui.glide.GlideController
 import tachiyomi.ui.glide.GlideProvider
 import tachiyomi.ui.home.HomeChildController
+import tachiyomi.ui.util.scanWithPrevious
 
 class CatalogController : MvpController<CatalogsPresenter>(),
   CatalogAdapter.Listener,
@@ -58,9 +59,9 @@ class CatalogController : MvpController<CatalogsPresenter>(),
 
     catalogs_swipe_refresh.setOnRefreshListener { onSwipeRefresh() }
 
-    presenter.state
+    presenter.state.asFlow()
       .scanWithPrevious()
-      .subscribeWithView { (state, prevState) -> render(state, prevState) }
+      .collectWithView { (state, prevState) -> render(state, prevState) }
   }
 
   override fun onDestroyView(view: View) {
