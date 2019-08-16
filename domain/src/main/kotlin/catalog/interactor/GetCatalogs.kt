@@ -9,7 +9,7 @@
 package tachiyomi.domain.catalog.interactor
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combineLatest
+import kotlinx.coroutines.flow.combine
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
@@ -28,7 +28,7 @@ class GetCatalogs @Inject constructor(
   ): Flow<Pair<List<CatalogLocal>, List<CatalogRemote>>> {
     val localFlow = localCatalogs.subscribe(sort)
     val remoteFlow = remoteCatalogs.subscribe(withNsfw = withNsfw)
-    return localFlow.combineLatest(remoteFlow) { local, remote ->
+    return localFlow.combine(remoteFlow) { local, remote ->
       if (excludeRemoteInstalled) {
         val installedPkgs = local
           .asSequence()

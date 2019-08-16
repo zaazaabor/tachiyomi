@@ -11,18 +11,14 @@ package tachiyomi.core.http
 import android.app.Application
 import android.content.Context
 import okhttp3.Cache
-import toothpick.ProvidesSingletonInScope
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Provider
-import javax.inject.Singleton
 
 /**
  * Provider to instantiate an [Http] class. The required dependencies to create the instance are
  * also provided through constructor injection.
  */
-@Singleton
-@ProvidesSingletonInScope
 internal class HttpProvider @Inject constructor(
   private val context: Application,
   private val jsFactory: JSFactory

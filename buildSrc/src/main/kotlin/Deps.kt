@@ -40,10 +40,11 @@ object Deps {
   const val sqlite = "io.requery:sqlite-android:3.29.0"
 
   object toothpick {
-    private const val version = "2.1.0"
+    private const val version = "3.0.0"
     const val runtime = "com.github.stephanenicolas.toothpick:toothpick-runtime:$version"
     const val smoothie = "com.github.stephanenicolas.toothpick:smoothie:$version"
     const val compiler = "com.github.stephanenicolas.toothpick:toothpick-compiler:$version"
+    const val ktp = "com.github.stephanenicolas.toothpick:ktp:$version"
     const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing-junit5:$version"
   }
 

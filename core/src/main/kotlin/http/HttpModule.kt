@@ -8,15 +8,17 @@
 
 package tachiyomi.core.http
 
-import toothpick.config.Module
+import toothpick.ktp.binding.bind
+import toothpick.ktp.binding.module
+import toothpick.ktp.binding.toClass
+import toothpick.ktp.binding.toProvider
 
 /**
  * A [toothpick.Toothpick] module to register the HTTP dependencies available to the application.
  */
-object HttpModule : Module() {
+val HttpModule = module {
 
-  init {
-    bind(Http::class.java).toProvider(HttpProvider::class.java)
-    bind(JSFactory::class.java).to(DuktapeJSFactory::class.java).singletonInScope()
-  }
+  bind<Http>().toProvider(HttpProvider::class).providesSingleton()
+  bind<JSFactory>().toClass<DuktapeJSFactory>().singleton()
+
 }

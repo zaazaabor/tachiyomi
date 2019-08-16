@@ -9,7 +9,7 @@
 package tachiyomi.domain.catalog.interactor
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combineLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogSort
@@ -26,7 +26,7 @@ class GetLocalCatalogs @Inject constructor(
     val internalFlow = catalogRepository.getInternalCatalogsFlow()
     val installedFlow = catalogRepository.getInstalledCatalogsFlow()
 
-    val combinedFlow = internalFlow.combineLatest(installedFlow) { internal, installed ->
+    val combinedFlow = internalFlow.combine(installedFlow) { internal, installed ->
       internal + installed
     }
 

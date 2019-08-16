@@ -35,6 +35,7 @@ dependencies {
   implementation(Deps.conductorPreference)
 
   implementation(Deps.toothpick.runtime)
+  implementation(Deps.toothpick.ktp)
   kapt(Deps.toothpick.compiler)
 
   implementation(Deps.coRedux)

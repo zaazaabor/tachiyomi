@@ -30,10 +30,10 @@ import tachiyomi.data.catalog.installer.CatalogLoader
 import tachiyomi.data.catalog.sql.CatalogTable
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 import tachiyomi.domain.catalog.repository.CatalogRepository
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.TestSource
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -71,38 +71,30 @@ internal class CatalogRepositoryImpl @Inject constructor(
       setUpdateFieldOfInstalledCatalogs(value)
     }
 
+  private val catalogsBySource = mutableMapOf<Long, CatalogLocal>()
+
   private val remoteCatalogsChannel = ConflatedBroadcastChannel(remoteCatalogs)
 
   private var lastTimeApiChecked: Long? = null
 
   private var minTimeApiCheck = TimeUnit.MINUTES.toMillis(5)
 
-  /**
-   * The source manager where the sources of the catalogs are added.
-   */
-  private lateinit var sourceManager: SourceManager
-
   init {
     initRemoteCatalogs()
-  }
-
-  /**
-   * Loads and registers the installed catalogues.
-   */
-  fun init(sourceManager: SourceManager) {
-    if (this::sourceManager.isInitialized) return
-
-    this.sourceManager = sourceManager
 
     internalCatalogs = initInternalCatalogs()
-      .onEach { sourceManager.registerSource(it.source) }
+      .onEach { catalogsBySource[it.source.id] = it }
 
     installedCatalogs = loader.loadExtensions()
       .filterIsInstance<CatalogLoader.Result.Success>()
       .map { it.catalog }
-      .onEach { sourceManager.registerSource(it.source) }
+      .onEach { catalogsBySource[it.source.id] = it }
 
     CatalogInstallReceiver(InstallationListener(), loader, dispatchers).register(context)
+  }
+
+  override fun get(sourceId: Long): CatalogLocal? {
+    return catalogsBySource[sourceId]
   }
 
   override fun getInternalCatalogsFlow(): Flow<List<CatalogInternal>> {
@@ -135,7 +127,6 @@ internal class CatalogRepositoryImpl @Inject constructor(
           .build())
         .prepare()
         .executeAsBlocking()
-        .orEmpty()
 
       remoteCatalogs = catalogs
       refreshRemoteCatalogs(false)
@@ -208,7 +199,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
     @Synchronized
     override fun onCatalogInstalled(catalog: CatalogInstalled) {
       installedCatalogs = installedCatalogs + catalog.withUpdateCheck()
-      sourceManager.registerSource(catalog.source)
+      catalogsBySource[catalog.source.id] = catalog
     }
 
     @Synchronized
@@ -217,11 +208,11 @@ internal class CatalogRepositoryImpl @Inject constructor(
       val oldCatalog = mutInstalledCatalogs.find { it.pkgName == catalog.pkgName }
       if (oldCatalog != null) {
         mutInstalledCatalogs -= oldCatalog
-        sourceManager.unregisterSource(catalog.source)
+        catalogsBySource.remove(catalog.source.id)
       }
       mutInstalledCatalogs += catalog.withUpdateCheck()
       installedCatalogs = mutInstalledCatalogs
-      sourceManager.registerSource(catalog.source)
+      catalogsBySource[catalog.source.id] = catalog
     }
 
     @Synchronized
@@ -229,7 +220,7 @@ internal class CatalogRepositoryImpl @Inject constructor(
       val installedCatalog = installedCatalogs.find { it.pkgName == pkgName }
       if (installedCatalog != null) {
         installedCatalogs = installedCatalogs - installedCatalog
-        sourceManager.unregisterSource(installedCatalog.source)
+        catalogsBySource.remove(installedCatalog.source.id)
       }
     }
 

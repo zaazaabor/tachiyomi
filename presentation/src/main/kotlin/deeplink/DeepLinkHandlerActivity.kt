@@ -13,7 +13,6 @@ import android.content.Intent
 import android.os.Bundle
 import tachiyomi.core.di.AppScope
 import tachiyomi.domain.catalog.repository.CatalogRepository
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.DeepLink
 import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Source
@@ -23,11 +22,6 @@ import timber.log.warn
 import javax.inject.Inject
 
 class DeepLinkHandlerActivity : Activity() {
-
-  // This is unused but still required to initialize the extensions
-  @Suppress("unused")
-  @Inject
-  internal lateinit var sourceManager: SourceManager
 
   @Inject
   internal lateinit var catalogRepository: CatalogRepository

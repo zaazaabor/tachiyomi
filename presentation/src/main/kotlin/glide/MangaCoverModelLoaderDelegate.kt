@@ -14,15 +14,15 @@ import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.repository.LibraryCovers
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.HttpSource
 import java.io.File
 import java.io.InputStream
 
 internal class MangaCoverModelLoaderDelegate(
   private val libraryCovers: LibraryCovers,
-  private val sourceManager: SourceManager,
+  private val catalogRepository: CatalogRepository,
   private val defaultClient: OkHttpClient,
   private val coversCache: Cache
 ) {
@@ -76,7 +76,8 @@ internal class MangaCoverModelLoaderDelegate(
 
   private fun getCallFn(manga: MangaCover): () -> Call {
     return {
-      val source = sourceManager.get(manga.sourceId) as? HttpSource
+      val catalog = catalogRepository.get(manga.sourceId)
+      val source = catalog?.source as? HttpSource
       val client = source?.client ?: defaultClient
 
       val newClient = client.newBuilder()

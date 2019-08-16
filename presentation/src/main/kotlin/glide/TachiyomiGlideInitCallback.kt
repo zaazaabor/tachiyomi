@@ -21,17 +21,17 @@ import tachiyomi.core.http.Http
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.SourceManager
 import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
 
 class TachiyomiGlideInitCallback @Inject constructor(
   private val http: Http,
-  private val sourceManager: SourceManager,
+  private val catalogRepository: CatalogRepository,
   private val libraryCovers: LibraryCovers
 ) : GlideInitCallback {
 
@@ -46,7 +46,7 @@ class TachiyomiGlideInitCallback @Inject constructor(
     }
 
     val mangaLoaderDelegate = MangaCoverModelLoaderDelegate(
-      libraryCovers, sourceManager, http.defaultClient, coversCache)
+      libraryCovers, catalogRepository, http.defaultClient, coversCache)
 
     val networkFactory = OkHttpUrlLoader.Factory(http.defaultClient)
     val mangaCoverFactory = MangaCoverModelLoader.Factory(mangaLoaderDelegate)

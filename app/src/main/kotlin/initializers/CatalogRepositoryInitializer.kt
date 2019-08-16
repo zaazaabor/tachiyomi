@@ -12,19 +12,19 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import tachiyomi.core.di.AppScope
 import tachiyomi.core.util.CoroutineDispatchers
-import tachiyomi.domain.source.SourceManager
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import javax.inject.Inject
 
-class SourceManagerInitializer @Inject constructor(
+class CatalogRepositoryInitializer @Inject constructor(
   dispatchers: CoroutineDispatchers
 ) {
 
   init {
-    // Create the SourceManager (with the extensions) in an IO thread, because the expensive
-    // initializations are the extensions which are already created in computation threads and we
-    // don't want to waste one of them waiting for the extensions.
+    // Create the catalog repository in an IO thread, because the expensive initializations are
+    // the extensions which are already created in computation threads and we don't want to waste
+    // one of them waiting for the extensions.
     GlobalScope.launch(dispatchers.io) {
-      AppScope.getInstance<SourceManager>()
+      AppScope.getInstance<CatalogRepository>()
     }
   }
 

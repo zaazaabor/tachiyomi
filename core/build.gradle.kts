@@ -26,5 +26,6 @@ dependencies {
   implementation(Deps.lifecycle.extensions)
 
   implementation(Deps.toothpick.runtime)
+  implementation(Deps.toothpick.ktp)
   kapt(Deps.toothpick.compiler)
 }

@@ -12,13 +12,9 @@ import android.app.Application
 import android.content.Context
 import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.domain.library.prefs.LibraryPreferences
-import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
 import javax.inject.Provider
-import javax.inject.Singleton
 
-@Singleton
-@ProvidesSingletonInScope
 internal class LibraryPreferencesProvider @Inject constructor(
   private val context: Application
 ) : Provider<LibraryPreferences> {

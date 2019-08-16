@@ -9,13 +9,13 @@
 package tachiyomi.domain.manga.interactor
 
 import kotlinx.coroutines.withContext
-import tachiyomi.core.util.Optional
 import tachiyomi.core.util.CoroutineDispatchers
+import tachiyomi.core.util.Optional
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.Source
 import tachiyomi.source.model.MangaInfo
 import java.util.concurrent.TimeUnit
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 class MangaInitializer @Inject internal constructor(
   private val mangaRepository: MangaRepository,
-  private val sourceManager: SourceManager,
+  private val catalogRepository: CatalogRepository,
   private val libraryCovers: LibraryCovers,
   private val dispatchers: CoroutineDispatchers
 ) {
@@ -88,7 +88,7 @@ class MangaInitializer @Inject internal constructor(
   }
 
   suspend fun await(manga: Manga, force: Boolean = false): Manga? {
-    val source = sourceManager.get(manga.sourceId) ?: return null
+    val source = catalogRepository.get(manga.sourceId)?.source ?: return null
     return await(source, manga, force)
   }
 

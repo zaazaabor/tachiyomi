@@ -12,9 +12,9 @@ import com.freeletics.coredux.SideEffect
 import com.freeletics.coredux.createStore
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.launch
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.manga.interactor.FindOrInitChapterFromSource
 import tachiyomi.domain.manga.interactor.FindOrInitMangaFromChapterKey
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.DeepLinkSource
 import tachiyomi.ui.presenter.BasePresenter
 import javax.inject.Inject
@@ -23,7 +23,7 @@ import tachiyomi.ui.deeplink.ChapterDeepLinkViewState as ViewState
 
 class ChapterDeepLinkPresenter @Inject constructor(
   private val params: ChapterDeepLinkParams,
-  private val sourceManager: SourceManager,
+  private val catalogRepository: CatalogRepository,
   private val findOrInitMangaFromChapterKey: FindOrInitMangaFromChapterKey,
   private val findOrInitChapterFromSource: FindOrInitChapterFromSource
 ) : BasePresenter() {
@@ -64,7 +64,8 @@ class ChapterDeepLinkPresenter @Inject constructor(
         return@launch
       }
 
-      val source = sourceManager.get(params.sourceId) as? DeepLinkSource
+      val catalog = catalogRepository.get(params.sourceId)
+      val source = catalog?.source as? DeepLinkSource
       if (source == null) {
         store.dispatch(Action.Error(Exception("Not a valid DeepLinkSource")))
         return@launch

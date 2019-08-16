@@ -13,9 +13,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 /**
  * Coroutines dispatchers available to the app.
  */
-class CoroutineDispatchers(
-  val io: CoroutineDispatcher,
-  val computation: CoroutineDispatcher,
-  val single: CoroutineDispatcher, // TODO not sure this will be used
+interface CoroutineDispatchers {
+
+  val io: CoroutineDispatcher
+
+  val computation: CoroutineDispatcher
+
+  val single: CoroutineDispatcher // TODO not sure this will be used
+
   val main: CoroutineDispatcher
-)
+
+}

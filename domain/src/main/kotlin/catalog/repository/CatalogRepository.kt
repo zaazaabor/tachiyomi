@@ -11,12 +11,15 @@ package tachiyomi.domain.catalog.repository
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
+import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.model.InstallStep
 
 interface CatalogRepository {
 
   val installedCatalogs: List<CatalogInstalled>
+
+  fun get(sourceId: Long): CatalogLocal?
 
   fun getInternalCatalogsFlow(): Flow<List<CatalogInternal>>
 

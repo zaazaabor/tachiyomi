@@ -11,13 +11,9 @@ package tachiyomi.data.catalog.prefs
 import android.app.Application
 import android.content.Context
 import tachiyomi.core.prefs.AndroidPreferenceStore
-import toothpick.ProvidesSingletonInScope
 import javax.inject.Inject
 import javax.inject.Provider
-import javax.inject.Singleton
 
-@Singleton
-@ProvidesSingletonInScope
 internal class CatalogPreferencesProvider @Inject constructor(
   private val context: Application
 ) : Provider<CatalogPreferences> {

@@ -13,13 +13,13 @@ import com.freeletics.coredux.createStore
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.flow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
+import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.interactor.ChangeMangaFavorite
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.ListMangaPageFromCatalogSource
 import tachiyomi.domain.manga.interactor.MangaInitializer
 import tachiyomi.domain.manga.interactor.SearchMangaPageFromCatalogSource
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.SourceManager
 import tachiyomi.source.CatalogSource
 import tachiyomi.source.model.Filter
 import tachiyomi.ui.presenter.BasePresenter
@@ -36,7 +36,6 @@ import javax.inject.Inject
  * [Action], that may also generate one or more [Change] and a new view state.
  *
  * [params] contains the required parameters of this presenter.
- * [sourceManager] contains the manager used to retrieve catalogs.
  * [listMangaPageFromCatalogSource] is an use case that retrieves a list of manga from a catalog
  * given a listing.
  * [searchMangaPageFromCatalogSource] is an use case that retrieves a list of manga from a catalog
@@ -46,7 +45,7 @@ import javax.inject.Inject
  */
 class CatalogBrowsePresenter @Inject constructor(
   private val params: CatalogBrowseParams,
-  private val sourceManager: SourceManager, // TODO new use case to retrieve a catalogue?
+  private val catalogRepository: CatalogRepository,
   private val listMangaPageFromCatalogSource: ListMangaPageFromCatalogSource,
   private val searchMangaPageFromCatalogSource: SearchMangaPageFromCatalogSource,
   private val mangaInitializer: MangaInitializer,
@@ -87,7 +86,8 @@ class CatalogBrowsePresenter @Inject constructor(
 
   private fun getInitialViewState(): ViewState {
     // Find the requested source or early return an initial state with a not found error.
-    val source = sourceManager.get(params.sourceId) as? CatalogSource
+    val catalog = catalogRepository.get(params.sourceId)
+    val source = catalog?.source as? CatalogSource
       ?: return ViewState(error = Exception("Source not found"))
 
     // Get the listings of the source and the initial listing and query mode to set.
