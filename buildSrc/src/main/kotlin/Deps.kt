@@ -7,7 +7,7 @@ object Deps {
   }
 
   object coroutines {
-    private const val version = "1.3.0-M2"
+    private const val version = "1.3.0-RC2"
     const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
     const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version"
   }
@@ -37,7 +37,7 @@ object Deps {
   }
 
   const val storio = "com.github.inorichi:storio:1901d12"
-  const val sqlite = "io.requery:sqlite-android:3.28.0"
+  const val sqlite = "io.requery:sqlite-android:3.29.0"
 
   object toothpick {
     private const val version = "2.1.0"
@@ -47,7 +47,7 @@ object Deps {
     const val testing = "com.github.stephanenicolas.toothpick:toothpick-testing-junit5:$version"
   }
 
-  const val okhttp = "com.squareup.okhttp3:okhttp:4.0.1"
+  const val okhttp = "com.squareup.okhttp3:okhttp:4.1.0"
   const val duktape = "com.squareup.duktape:duktape-android:1.3.0"
   const val kotson = "com.github.salomonbrys.kotson:kotson:2.5.0"
   const val jsoup = "org.jsoup:jsoup:1.12.1"

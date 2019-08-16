@@ -4,14 +4,14 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:3.5.0-rc01")
+    classpath("com.android.tools.build:gradle:3.5.0-rc03")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Deps.kotlin.version}")
     classpath("org.jetbrains.kotlin:kotlin-serialization:${Deps.kotlin.version}")
   }
 }
 
 plugins {
-  id("com.github.ben-manes.versions") version "0.21.0"
+  id("com.github.ben-manes.versions") version "0.22.0"
 }
 
 allprojects {
