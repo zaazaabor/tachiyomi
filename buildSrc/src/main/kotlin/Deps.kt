@@ -84,9 +84,8 @@ object Deps {
 
   const val flexbox = "com.google.android:flexbox:1.1.0"
 
-  const val junit = "junit:junit:4.12"
-
-  const val mockito = "org.mockito:mockito-core:2.16.0"
-  const val mockitokt = "com.nhaarman:mockito-kotlin:1.5.0"
+  const val junit = "org.junit.jupiter:junit-jupiter-api:5.5.0"
+  const val mockk = "io.mockk:mockk:1.9.3"
+  const val kotlintest = "io.kotlintest:kotlintest-runner-junit5:3.3.2"
 
 }

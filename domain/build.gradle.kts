@@ -5,6 +5,10 @@ plugins {
   id("kotlinx-serialization")
 }
 
+val test by tasks.getting(Test::class) {
+  useJUnitPlatform { }
+}
+
 dependencies {
   implementationProject(Projects.common)
   implementationProject(Projects.sourceApi)
@@ -13,8 +17,8 @@ dependencies {
   kapt(Deps.toothpick.compiler)
 
   testImplementation(Deps.junit)
-  testImplementation(Deps.mockito)
-  testImplementation(Deps.mockitokt)
+  testImplementation(Deps.mockk)
   testImplementation(Deps.toothpick.testing)
+  testImplementation(Deps.kotlintest)
   kaptTest(Deps.toothpick.compiler)
 }

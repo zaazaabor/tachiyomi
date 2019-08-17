@@ -6,16 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.core.rx
+package tachiyomi.domain.track.prefs
 
-import io.reactivex.Scheduler
+import tachiyomi.core.prefs.PreferenceStore
 
-/**
- * RxJava schedulers available to the app.
- */
-class RxSchedulers(
-  val io: Scheduler,
-  val computation: Scheduler,
-  val single: Scheduler,
-  val main: Scheduler
-)
+class TrackPreferences(private val store: PreferenceStore) {
+
+
+}
