@@ -12,10 +12,7 @@ data class Category(
   val id: Long = -1,
   val name: String = "",
   val order: Int = 0,
-  val updateInterval: Int = 0,
-  val useOwnFilters: Boolean = false,
-  val filters: List<LibraryFilter> = emptyList(),
-  val sort: LibrarySorting = LibrarySorting(LibrarySort.Title, true)
+  val updateInterval: Int = 0
 ) {
 
   val isUncategorized get() = id == UNCATEGORIZED_ID

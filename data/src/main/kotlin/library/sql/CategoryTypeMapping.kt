@@ -18,20 +18,12 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery
-import tachiyomi.data.library.sql.CategoryTable.COL_FILTERS
 import tachiyomi.data.library.sql.CategoryTable.COL_ID
 import tachiyomi.data.library.sql.CategoryTable.COL_NAME
 import tachiyomi.data.library.sql.CategoryTable.COL_ORDER
-import tachiyomi.data.library.sql.CategoryTable.COL_SORTING
 import tachiyomi.data.library.sql.CategoryTable.COL_UPDATE_INTERVAL
-import tachiyomi.data.library.sql.CategoryTable.COL_USE_OWN_FILTERS
 import tachiyomi.data.library.sql.CategoryTable.TABLE
 import tachiyomi.domain.library.model.Category
-import tachiyomi.domain.library.model.LibraryFilter
-import tachiyomi.domain.library.model.LibrarySorting
-import tachiyomi.domain.library.model.deserialize
-import tachiyomi.domain.library.model.deserializeList
-import tachiyomi.domain.library.model.serialize
 
 internal class CategoryTypeMapping : SQLiteTypeMapping<Category>(
   CategoryPutResolver(),
@@ -61,9 +53,6 @@ internal class CategoryPutResolver : DefaultPutResolver<Category>() {
       put(COL_NAME, obj.name)
       put(COL_ORDER, obj.order)
       put(COL_UPDATE_INTERVAL, obj.updateInterval)
-      put(COL_USE_OWN_FILTERS, if (obj.useOwnFilters) 1 else 0)
-      put(COL_FILTERS, obj.filters.serialize())
-      put(COL_SORTING, obj.sort.serialize())
     }
   }
 }
@@ -75,14 +64,8 @@ internal interface CategoryCursorMapper {
     val name = cursor.getString(cursor.getColumnIndex(COL_NAME))
     val order = cursor.getInt(cursor.getColumnIndex(COL_ORDER))
     val flags = cursor.getInt(cursor.getColumnIndex(COL_UPDATE_INTERVAL))
-    val useOwnFilters = cursor.getInt(cursor.getColumnIndex(COL_USE_OWN_FILTERS)) == 1
-    val rawFilters = cursor.getString(cursor.getColumnIndex(COL_FILTERS))
-    val rawSorting = cursor.getString(cursor.getColumnIndex(COL_SORTING))
 
-    val filters = LibraryFilter.deserializeList(rawFilters)
-    val sorting = LibrarySorting.deserialize(rawSorting)
-
-    return Category(id, name, order, flags, useOwnFilters, filters, sorting)
+    return Category(id, name, order, flags)
   }
 
 }

@@ -10,32 +10,20 @@ package tachiyomi.domain.library.interactor
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import tachiyomi.core.util.Optional
-import tachiyomi.core.util.CoroutineDispatchers
-import tachiyomi.domain.library.model.Category
-import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.prefs.LibraryPreferences
-import tachiyomi.domain.library.repository.CategoryRepository
 import timber.log.Timber
 import timber.log.warn
 import javax.inject.Inject
 
 class SetCategoryFilters @Inject constructor(
-  private val categoryRepository: CategoryRepository,
-  private val libraryPreferences: LibraryPreferences,
-  private val dispatchers: CoroutineDispatchers
+  private val libraryPreferences: LibraryPreferences
 ) {
 
-  suspend fun await(category: Category, filters: List<LibraryFilter>): Result {
+  suspend fun await(filters: List<LibraryFilter>): Result {
     return withContext(NonCancellable) {
       try {
-        if (category.useOwnFilters) {
-          val update = CategoryUpdate(category.id, filters = Optional.of(filters))
-          withContext(dispatchers.io) { categoryRepository.savePartial(update) }
-        } else {
-          libraryPreferences.filters().set(filters)
-        }
+        libraryPreferences.filters().set(filters)
         Result.Success
       } catch (e: Exception) {
         Timber.warn(e) { e.message.orEmpty() }

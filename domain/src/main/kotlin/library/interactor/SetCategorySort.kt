@@ -10,31 +10,19 @@ package tachiyomi.domain.library.interactor
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import tachiyomi.core.util.Optional
-import tachiyomi.core.util.CoroutineDispatchers
-import tachiyomi.domain.library.model.Category
-import tachiyomi.domain.library.model.CategoryUpdate
 import tachiyomi.domain.library.model.LibrarySorting
 import tachiyomi.domain.library.prefs.LibraryPreferences
-import tachiyomi.domain.library.repository.CategoryRepository
 import timber.log.Timber
 import timber.log.warn
 import javax.inject.Inject
 
 class SetCategorySorting @Inject constructor(
-  private val categoryRepository: CategoryRepository,
-  private val libraryPreferences: LibraryPreferences,
-  private val dispatchers: CoroutineDispatchers
+  private val libraryPreferences: LibraryPreferences
 ) {
 
-  suspend fun await(category: Category, sorting: LibrarySorting) = withContext(NonCancellable) {
+  suspend fun await(sorting: LibrarySorting) = withContext(NonCancellable) {
     try {
-      if (category.useOwnFilters) {
-        val update = CategoryUpdate(category.id, sort = Optional.of(sorting))
-        withContext(dispatchers.io) { categoryRepository.savePartial(update) }
-      } else {
-        libraryPreferences.lastSorting().set(sorting)
-      }
+      libraryPreferences.lastSorting().set(sorting)
       Result.Success
     } catch (e: Exception) {
       Timber.warn(e) { e.message.orEmpty() }
