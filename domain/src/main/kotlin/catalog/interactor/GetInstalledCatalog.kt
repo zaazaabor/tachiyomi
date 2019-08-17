@@ -19,6 +19,10 @@ class GetInstalledCatalog @Inject constructor(
   private val catalogRepository: CatalogRepository
 ) {
 
+  fun get(pkgName: String): CatalogInstalled? {
+    return catalogRepository.installedCatalogs.find { it.pkgName == pkgName }
+  }
+
   fun subscribe(pkgName: String): Flow<CatalogInstalled?> {
     return catalogRepository.getInstalledCatalogsFlow()
       .map { catalogs ->

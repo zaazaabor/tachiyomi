@@ -17,6 +17,7 @@ sealed class Catalog {
 
 sealed class CatalogLocal : Catalog() {
   abstract val source: Source
+  val sourceId get() = source.id
 }
 
 data class CatalogInternal(

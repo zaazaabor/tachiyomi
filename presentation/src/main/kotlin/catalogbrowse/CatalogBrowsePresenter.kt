@@ -13,7 +13,7 @@ import com.freeletics.coredux.createStore
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.flow
 import tachiyomi.data.catalog.prefs.CatalogPreferences
-import tachiyomi.domain.catalog.repository.CatalogRepository
+import tachiyomi.domain.catalog.interactor.GetLocalCatalog
 import tachiyomi.domain.library.interactor.ChangeMangaFavorite
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.ListMangaPageFromCatalogSource
@@ -45,7 +45,7 @@ import javax.inject.Inject
  */
 class CatalogBrowsePresenter @Inject constructor(
   private val params: CatalogBrowseParams,
-  private val catalogRepository: CatalogRepository,
+  private val getLocalCatalog: GetLocalCatalog,
   private val listMangaPageFromCatalogSource: ListMangaPageFromCatalogSource,
   private val searchMangaPageFromCatalogSource: SearchMangaPageFromCatalogSource,
   private val mangaInitializer: MangaInitializer,
@@ -86,7 +86,7 @@ class CatalogBrowsePresenter @Inject constructor(
 
   private fun getInitialViewState(): ViewState {
     // Find the requested source or early return an initial state with a not found error.
-    val catalog = catalogRepository.get(params.sourceId)
+    val catalog = getLocalCatalog.get(params.sourceId)
     val source = catalog?.source as? CatalogSource
       ?: return ViewState(error = Exception("Source not found"))
 

@@ -18,10 +18,10 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.model.GlideUrl
 import okhttp3.Cache
 import tachiyomi.core.http.Http
+import tachiyomi.domain.catalog.interactor.GetLocalCatalog
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogInternal
 import tachiyomi.domain.catalog.model.CatalogRemote
-import tachiyomi.domain.catalog.repository.CatalogRepository
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.repository.LibraryCovers
 import tachiyomi.domain.manga.model.Manga
@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 class TachiyomiGlideInitCallback @Inject constructor(
   private val http: Http,
-  private val catalogRepository: CatalogRepository,
+  private val getLocalCatalog: GetLocalCatalog,
   private val libraryCovers: LibraryCovers
 ) : GlideInitCallback {
 
@@ -46,7 +46,7 @@ class TachiyomiGlideInitCallback @Inject constructor(
     }
 
     val mangaLoaderDelegate = MangaCoverModelLoaderDelegate(
-      libraryCovers, catalogRepository, http.defaultClient, coversCache)
+      libraryCovers, getLocalCatalog, http.defaultClient, coversCache)
 
     val networkFactory = OkHttpUrlLoader.Factory(http.defaultClient)
     val mangaCoverFactory = MangaCoverModelLoader.Factory(mangaLoaderDelegate)

@@ -12,7 +12,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import tachiyomi.core.di.AppScope
-import tachiyomi.domain.catalog.repository.CatalogRepository
+import tachiyomi.domain.catalog.interactor.GetInstalledCatalog
 import tachiyomi.source.DeepLink
 import tachiyomi.source.DeepLinkSource
 import tachiyomi.source.Source
@@ -24,7 +24,7 @@ import javax.inject.Inject
 class DeepLinkHandlerActivity : Activity() {
 
   @Inject
-  internal lateinit var catalogRepository: CatalogRepository
+  internal lateinit var getInstalledCatalog: GetInstalledCatalog
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -41,7 +41,7 @@ class DeepLinkHandlerActivity : Activity() {
     AppScope.inject(this)
 
     // Find caller extension
-    val catalog = catalogRepository.installedCatalogs.find { it.pkgName == referrer }
+    val catalog = getInstalledCatalog.get(referrer)
     if (catalog == null) {
       Timber.warn { "Extension not found: $referrer" }
       finish()
